@@ -5,8 +5,9 @@ type UserRole = 'deo' | 'supervisor' | 'ad' | null;
 type AuthState = {
   user: string | null;
   role: UserRole;
+  committee: string | null;
   isInitialized: boolean;
-  login: (username: string) => void;
+  login: (username: string, committee: string) => void;
   logout: () => void;
   initialize: () => void;
 };
@@ -20,26 +21,30 @@ const ROLE_MAP: Record<string, UserRole> = {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   role: null,
+  committee: null,
   isInitialized: false,
 
-  login: (username: string) => {
+  login: (username: string, committee: string) => {
     const role = ROLE_MAP[username] ?? null;
     if (role) {
       localStorage.setItem('user', username);
       localStorage.setItem('role', role);
-      set({ user: username, role });
+      localStorage.setItem('committee', committee);
+      set({ user: username, role, committee });
     }
   },
 
   logout: () => {
     localStorage.removeItem('user');
     localStorage.removeItem('role');
-    set({ user: null, role: null });
+    localStorage.removeItem('committee');
+    set({ user: null, role: null, committee: null });
   },
 
   initialize: () => {
     const user = localStorage.getItem('user');
     const role = localStorage.getItem('role') as UserRole;
-    set({ user, role, isInitialized: true });
+    const committee = localStorage.getItem('committee');
+    set({ user, role, committee, isInitialized: true });
   },
 }));

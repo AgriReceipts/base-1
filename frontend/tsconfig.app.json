@@ -7,6 +7,12 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "jsx": "react-jsx",
+     "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
