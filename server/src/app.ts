@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import receiptRoutes from './routes/receipts';
+import authRoutes from './routes/auth';
 
 // Load environment variables
 dotenv.config();
@@ -28,7 +30,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Logging
-app.use(morgan('combined'));
+app.use(morgan('dev'));
 
 // Body parsing middleware
 app.use(express.json({limit: '10mb'}));
@@ -44,8 +46,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // Routes will be added here
-// app.use('/api/auth', authRoutes);
-// app.use('/api/receipts', receiptRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/receipts', receiptRoutes);
 // app.use('/api/analytics', analyticsRoutes);
 // app.use('/api/metadata', metadataRoutes);
 
@@ -65,6 +67,7 @@ app.use(
     console.error('Error:', err);
 
     res.status(err.status || 500).json({
+      success: false,
       error:
         process.env.NODE_ENV === 'production'
           ? 'Internal server error'

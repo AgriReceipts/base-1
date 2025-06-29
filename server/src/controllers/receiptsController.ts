@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import {Request, Response} from 'express';
 import prisma from '../utils/database';
-import { CreateReceiptRequest, ReceiptQueryParams } from '../types/receipt';
+import {Prisma} from '@prisma/client';
+import {CreateReceiptRequest, ReceiptQueryParams} from '../types/receipt';
 
 // @desc    Create a new receipt
-// @route   POST /api/receipts
+// @route   POST /api/receipts/createReceipt
 // @access  Private
 export const createReceipt = async (req: Request, res: Response) => {
   try {
@@ -11,22 +12,22 @@ export const createReceipt = async (req: Request, res: Response) => {
     // TODO: Add validation for the request body
 
     const newReceipt = await prisma.receipt.create({
-      data: receiptData,
+      data: receiptData as unknown as Prisma.ReceiptCreateInput,
     });
 
     res.status(201).json(newReceipt);
   } catch (error) {
     console.error('Error creating receipt:', error);
-    res.status(500).json({ message: 'Server error while creating receipt' });
+    res.status(500).json({message: 'Server error while creating receipt'});
   }
 };
 
 // @desc    Get all receipts with filtering and pagination
-// @route   GET /api/receipts
+// @route   GET /api/receipts/getAllReceipts
 // @access  Private
 export const getAllReceipts = async (req: Request, res: Response) => {
   try {
-    const { page = 1, limit = 10, ...filters }: ReceiptQueryParams = req.query;
+    const {page = 1, limit = 10, ...filters}: ReceiptQueryParams = req.query;
 
     // TODO: Build a dynamic where clause based on filters
 
@@ -39,7 +40,9 @@ export const getAllReceipts = async (req: Request, res: Response) => {
       },
     });
 
-    const totalReceipts = await prisma.receipt.count({ /* where: whereClause */ });
+    const totalReceipts = await prisma.receipt.count({
+      /* where: whereClause */
+    });
 
     res.status(200).json({
       data: receipts,
@@ -52,27 +55,27 @@ export const getAllReceipts = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error fetching receipts:', error);
-    res.status(500).json({ message: 'Server error while fetching receipts' });
+    res.status(500).json({message: 'Server error while fetching receipts'});
   }
 };
 
 // @desc    Get a single receipt by ID
-// @route   GET /api/receipts/:id
+// @route   GET /api/receipts/getReceipt/:id
 // @access  Private
 export const getReceiptById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id;
     const receipt = await prisma.receipt.findUnique({
-      where: { id },
+      where: {id},
     });
 
     if (!receipt) {
-      return res.status(404).json({ message: 'Receipt not found' });
+      return res.status(404).json({message: 'Receipt not found'});
     }
 
     res.status(200).json(receipt);
   } catch (error) {
     console.error('Error fetching receipt by ID:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };

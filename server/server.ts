@@ -1,6 +1,8 @@
 import app from './src/app';
 import dotenv from 'dotenv';
 import prisma from './src/utils/database';
+/// <reference path="./types/express/index.d.ts" />
+// ...existing code...
 
 // Load environment variables
 dotenv.config();
