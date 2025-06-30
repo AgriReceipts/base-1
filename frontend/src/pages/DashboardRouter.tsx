@@ -22,12 +22,8 @@ const DashboardRouter: React.FC = () => {
     default:
       return <Navigate to="/login" replace={true} />;
   }
-   return (
-    <div className='max-w-screen-2xl mx-auto bg-gray-50'>
-      <NavBar />
-      {DashboardComponent}
-    </div>
-  );
+   
+  
 };
 
 export default DashboardRouter;
