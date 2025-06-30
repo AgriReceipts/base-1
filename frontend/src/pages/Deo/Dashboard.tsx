@@ -11,85 +11,91 @@ import { MetricCards } from '../../components/deocomponents/metric-cards';
 export default function DeoDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [activeNav, setActiveNav] = useState('overview');
+  const [activeNav, setActiveNav] = useState(() => {
+    return localStorage.getItem('activeNav') || 'overview';
+  });
 
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      if (mobile) {
-        setSidebarVisible(false);
-      } else {
-        setSidebarVisible(true);
-      }
+      setSidebarVisible(!mobile);
     };
-    handleResize();
+
+    handleResize(); // Set initial state
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('activeNav', activeNav);
+  }, [activeNav]);
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
 
   const renderContent = () => {
     switch (activeNav) {
-        case 'overview':
+      case 'overview':
         return <Overview onNavigate={setActiveNav} />;
-        case 'addReceipt':
+      case 'addReceipt':
         return <AddReceipt />;
-        case 'viewReceipts':
+      case 'viewReceipts':
         return <ViewReceipts />;
-        case 'reports':
+      case 'reports':
         return <Reports />;
-        default:
+      default:
         return <Overview onNavigate={setActiveNav} />;
-      }
-    };
+    }
+  };
 
-    return (
-      <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
-        <NavBar className="h-16 border-b-0 flex-shrink-0">
-          <button
-            onClick={toggleSidebar}
-            className="inline-flex text-gray-500 hover:text-blue-600 p-2 ml-2"
-            aria-label="Toggle Sidebar"
-          >
-            {sidebarVisible ? <FiX size={20} /> : <FiMenu size={20} />}
-          </button>
-        </NavBar>
+  return (
+    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+      <NavBar className="h-16 border-b-0 flex-shrink-0">
+        <button
+          onClick={toggleSidebar}
+          className="inline-flex text-gray-500 hover:text-blue-600 p-2 ml-2"
+          aria-label="Toggle Sidebar"
+        >
+          {sidebarVisible ? <FiX size={20} /> : <FiMenu size={20} />}
+        </button>
+      </NavBar>
 
-        <div className="flex flex-1 overflow-hidden relative">
-          <Sidebar
-            sidebarVisible={sidebarVisible}
-            isMobile={isMobile}
-            setSidebarVisible={setSidebarVisible}
-            activeNav={activeNav}
-            onNavClick={setActiveNav}
-          />
+      <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar
+          sidebarVisible={sidebarVisible}
+          isMobile={isMobile}
+          setSidebarVisible={setSidebarVisible}
+          activeNav={activeNav}
+          onNavClick={setActiveNav}
+        />
 
-          <main
-            className={`flex flex-col flex-1 overflow-auto h-full transition-all duration-300 ${
-              isMobile && sidebarVisible ? 'ml-0 opacity-50' : 'ml-0'
-            }`}
-          >
-            <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3 flex justify-between items-center">
-              <h1 className="text-xl font-bold">Dashboard</h1>
-              <button onClick={toggleSidebar} className="text-gray-500 hover:text-blue-600 p-2">
-                <FiSidebar size={20} />
-              </button>
-            </div>
+        <main
+          className={`flex flex-col flex-1 overflow-auto h-full transition-all duration-300 ${
+            isMobile && sidebarVisible ? 'ml-0 opacity-50' : 'ml-0'
+          }`}
+        >
+          <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3 flex justify-between items-center">
+            <h1 className="text-xl font-bold">Dashboard</h1>
+            <button onClick={toggleSidebar} className="text-gray-500 hover:text-blue-600 p-2">
+              <FiSidebar size={20} />
+            </button>
+          </div>
 
+          {activeNav === 'overview' && (
             <div className="p-4">
               <MetricCards />
             </div>
-            <div className="m-5 flex-1 flex bg-white/50 rounded-2xl">
-              {renderContent()}
-            </div>
-          </main>
-
-          {isMobile && sidebarVisible && (
-            <div className="fixed inset-0 bg-black/10 z-40 md:hidden" onClick={toggleSidebar} />
           )}
-        </div>
+
+          <div className="m-2 my-0 flex-1 flex bg-white/50 rounded-2xl">
+            {renderContent()}
+          </div>
+        </main>
+
+        {isMobile && sidebarVisible && (
+          <div className="fixed inset-0 bg-black/10 z-40 md:hidden" onClick={toggleSidebar} />
+        )}
       </div>
-    );
-  }
+    </div>
+  );
+}
