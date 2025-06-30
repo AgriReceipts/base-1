@@ -56,18 +56,21 @@ model User {
   // Relations
   committee Committee? @relation(fields: [committeeId], references: [id])
   receipts  Receipt[]
+
+  @@index([username])
 }
 
 model Committee {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id         String      @id @default(uuid())
+  name       String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   // Relations
   users      User[]
   checkposts Checkpost[]
   receipts   Receipt[]
+
+  @@index([name])
 }
 
 model Checkpost {
@@ -116,4 +119,5 @@ model Receipt {
 
   // Unique constraint for book_number + receipt_number per committee
   @@unique([bookNumber, receiptNumber, committeeId])
+  @@index([receiptNumber])
 }
