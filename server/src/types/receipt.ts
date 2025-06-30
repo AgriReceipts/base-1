@@ -20,6 +20,9 @@ export interface CreateReceiptRequest {
   officeSupervisor?: string;
   checkpostId?: string;
   collectionOtherText?: string;
+  generatedBy: string;
+  designation: string;
+  committeeId: string;
 }
 
 // Query parameters for listing receipts

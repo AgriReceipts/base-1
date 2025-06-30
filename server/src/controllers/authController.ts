@@ -4,11 +4,12 @@ import jwt, {SignOptions} from 'jsonwebtoken';
 import prisma from '../utils/database';
 
 // @desc    Register a new user
-// @route   POST /api/users/register
+// @route   POST /api/auth/register
 // @access  Private (only to admin)
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const {username, password, role, name, designation, committeeId} = req.body;
+    const {username, password, role, name, designation, committeeName} =
+      req.body;
 
     // Validate required fields
     if (!username || !password || !role || !name || !designation) {
@@ -36,17 +37,14 @@ export const registerUser = async (req: Request, res: Response) => {
       });
     }
 
-    // Validate committee exists if committeeId is provided
-    if (committeeId) {
-      const committee = await prisma.committee.findUnique({
-        where: {id: committeeId},
-      });
+    const committee = await prisma.committee.findUnique({
+      where: {name: committeeName},
+    });
 
-      if (!committee) {
-        return res.status(400).json({
-          message: 'Invalid committee ID',
-        });
-      }
+    if (!committee) {
+      return res.status(400).json({
+        message: 'Invalid committee , Doesnot exist',
+      });
     }
 
     // Hash password
@@ -61,7 +59,7 @@ export const registerUser = async (req: Request, res: Response) => {
         name,
         role,
         designation,
-        committeeId: committeeId || null,
+        committeeId: committee.id || null,
         isActive: true,
       },
       select: {
@@ -92,6 +90,8 @@ export const registerUser = async (req: Request, res: Response) => {
       {
         id: newUser.id,
         role: newUser.role,
+        username: newUser.username,
+        committee: newUser.committee,
       },
       jwtSecret,
       {expiresIn: '24h'}
@@ -109,6 +109,10 @@ export const registerUser = async (req: Request, res: Response) => {
     });
   }
 };
+
+// @desc    Logs in existing user
+// @route   POST /api/auth/login
+// @access  Public
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -169,6 +173,8 @@ export const login = async (req: Request, res: Response) => {
       {
         id: user.id,
         role: user.role,
+        username: user.username,
+        committee: user.committee,
       },
       jwtSecret,
       {expiresIn: '24h'}
