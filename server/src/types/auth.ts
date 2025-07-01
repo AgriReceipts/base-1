@@ -1,4 +1,5 @@
 import {UserRole} from '@prisma/client';
+import {z} from 'zod';
 
 export interface LoginRequest {
   username: string;
@@ -32,3 +33,15 @@ export interface AuthenticatedUser {
   designation: string;
   committeeId?: string;
 }
+
+export const RegisterUserSchema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  name: z.string().min(1, 'Name is required'),
+  role: z.enum(['deo', 'supervisor', 'secretary', 'ad']),
+  designation: z.string().min(1, 'Designation is required'),
+  committeeName: z.string().optional(),
+});
+
+// Inferred TypeScript type
+export type RegisterUserInput = z.infer<typeof RegisterUserSchema>;

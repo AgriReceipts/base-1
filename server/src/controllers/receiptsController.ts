@@ -1,25 +1,63 @@
 import {Request, Response} from 'express';
 import prisma from '../utils/database';
 import {Prisma} from '@prisma/client';
-import {CreateReceiptRequest, ReceiptQueryParams} from '../types/receipt';
+import {
+  CreateReceiptRequest,
+  CreateReceiptSchema,
+  ReceiptQueryParams,
+} from '../types/receipt';
 import {handlePrismaError} from '../utils/helpers';
-
 // @desc    Create a new receipt
 // @route   POST /api/receipts/createReceipt
 // @access  Private
+
 export const createReceipt = async (req: Request, res: Response) => {
   try {
-    const receiptData: CreateReceiptRequest = req.body;
+    const parseResult = CreateReceiptSchema.safeParse(req.body);
+
+    if (!parseResult.success) {
+      return res
+        .status(400)
+        .json({message: 'Invalid input', errors: parseResult.error.flatten()});
+    }
+
+    const receiptData = parseResult.data;
 
     if (!receiptData.committeeId) {
       return res.status(400).json({message: 'committeeId is required'});
     }
 
-    const user = await prisma.user.findUnique({
+    let commodityId: string | undefined;
+
+    // Handle "other" commodity
+    if (receiptData.commodity === 'other' && receiptData.newCommodityName) {
+      const existing = await prisma.commodity.findUnique({
+        where: {name: receiptData.newCommodityName},
+        select: {id: true},
+      });
+
+      if (existing) {
+        commodityId = existing.id;
+      } else {
+        const created = await prisma.commodity.create({
+          data: {name: receiptData.newCommodityName},
+        });
+        commodityId = created.id;
+      }
+    } else {
+      const found = await prisma.commodity.findUnique({
+        where: {name: receiptData.commodity},
+        select: {id: true},
+      });
+      commodityId = found?.id;
+    }
+
+    const userId = await prisma.user.findUnique({
       where: {username: receiptData.generatedBy},
+      select: {id: true},
     });
 
-    if (!user) {
+    if (!userId) {
       return res.status(404).json({message: 'User not found'});
     }
 
@@ -32,7 +70,7 @@ export const createReceipt = async (req: Request, res: Response) => {
         traderAddress: receiptData.traderAddress ?? '',
         payeeName: receiptData.payeeName,
         payeeAddress: receiptData.payeeAddress ?? '',
-        commodity: receiptData.commodity,
+        commodityId,
         quantity: receiptData.quantity,
         unit: receiptData.unit,
         natureOfReceipt: receiptData.natureOfReceipt,
@@ -45,13 +83,16 @@ export const createReceipt = async (req: Request, res: Response) => {
         officeSupervisor: receiptData.officeSupervisor,
         collectionOtherText: receiptData.collectionOtherText,
         designation: receiptData.designation,
-        generatedBy: user.id,
+        generatedBy: userId.id,
         committeeId: receiptData.committeeId,
-        checkpostId: receiptData.checkpostId || null, // optional
+        checkpostId: receiptData.checkpostId || null,
+      },
+      select: {
+        receiptNumber: true,
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Receipt created successfully',
       receiptNumber: newReceipt.receiptNumber,
     });
@@ -96,8 +137,8 @@ export const getAllReceipts = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Get a single receipt by ID
-// @route   GET /api/receipts/getReceipt/:id
+// @desc    Get a single receipt by receiptNumber
+// @route   GET /api/receipts/getReceiptByRn/:receiptNumber
 // @access  Private
 export const getReceiptByReceiptNumber = async (
   req: Request,
@@ -119,6 +160,10 @@ export const getReceiptByReceiptNumber = async (
     res.status(500).json({message: 'Server error'});
   }
 };
+
+// @desc    Get a single receipt by ID
+// @route   GET /api/receipts/getReceipt/:id
+// @access  Private
 
 export const getReceiptById = async (req: Request, res: Response) => {
   try {

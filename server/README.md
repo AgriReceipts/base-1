@@ -35,8 +35,7 @@
 
    ```bash
    npm run db:generate
-   npm run db:migrate
-   npm run db:seed
+
    ```
 
 5. **Start the development server**

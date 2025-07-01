@@ -1,21 +1,19 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
 
-type UserRole = 'deo' | 'supervisor' | 'ad' | null;
+type UserRole = 'deo' | 'supervisor' | 'ad' | 'secretary' | null;
 
 type AuthState = {
   user: string | null;
   role: UserRole;
   committee: string | null;
   isInitialized: boolean;
-  login: (username: string, committee: string) => void;
+  login: (payload: {
+    username: string;
+    role: UserRole;
+    committee: string | null;
+  }) => void;
   logout: () => void;
   initialize: () => void;
-};
-
-const ROLE_MAP: Record<string, UserRole> = {
-  demo_deo: 'deo',
-  demo_supervisor: 'supervisor',
-  demo_ad: 'ad',
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -24,27 +22,25 @@ export const useAuthStore = create<AuthState>((set) => ({
   committee: null,
   isInitialized: false,
 
-  login: (username: string, committee: string) => {
-    const role = ROLE_MAP[username] ?? null;
-    if (role) {
-      localStorage.setItem('user', username);
-      localStorage.setItem('role', role);
-      localStorage.setItem('committee', committee);
-      set({ user: username, role, committee });
-    }
+  login: ({username, role, committee}) => {
+    localStorage.setItem('user', username);
+    localStorage.setItem('role', role ?? '');
+    if (committee) localStorage.setItem('committee', committee);
+    else localStorage.removeItem('committee');
+    set({user: username, role, committee});
   },
 
   logout: () => {
     localStorage.removeItem('user');
     localStorage.removeItem('role');
     localStorage.removeItem('committee');
-    set({ user: null, role: null, committee: null });
+    set({user: null, role: null, committee: null});
   },
 
   initialize: () => {
     const user = localStorage.getItem('user');
     const role = localStorage.getItem('role') as UserRole;
     const committee = localStorage.getItem('committee');
-    set({ user, role, committee, isInitialized: true });
+    set({user, role, committee, isInitialized: true});
   },
 }));

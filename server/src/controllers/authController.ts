@@ -1,34 +1,29 @@
 import {Request, Response} from 'express';
 import bcrypt from 'bcryptjs';
-import jwt, {SignOptions} from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import prisma from '../utils/database';
-
+import {handlePrismaError} from '../utils/helpers';
+import {RegisterUserInput, RegisterUserSchema} from '../types/auth';
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Private (only to admin)
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const {username, password, role, name, designation, committeeName} =
-      req.body;
+    // Validate with Zod
+    const parsed = RegisterUserSchema.safeParse(req.body);
 
-    // Validate required fields
-    if (!username || !password || !role || !name || !designation) {
+    if (!parsed.success) {
       return res.status(400).json({
-        message:
-          'All fields are required: username, password, role, name, designation',
+        message: 'Validation failed',
+        errors: parsed.error.flatten().fieldErrors,
       });
     }
 
-    // Validate password strength (optional but recommended)
-    if (password.length < 6) {
-      return res.status(400).json({
-        message: 'Password must be at least 6 characters long',
-      });
-    }
+    const data: RegisterUserInput = parsed.data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: {username},
+      where: {username: data.username},
     });
 
     if (existingUser) {
@@ -37,40 +32,47 @@ export const registerUser = async (req: Request, res: Response) => {
       });
     }
 
-    const committee = await prisma.committee.findUnique({
-      where: {name: committeeName},
-    });
+    // Validate committee
+    let committeeId: string | null = null;
 
-    if (!committee) {
-      return res.status(400).json({
-        message: 'Invalid committee , Doesnot exist',
+    if (data.role !== 'ad') {
+      if (!data.committeeName) {
+        return res
+          .status(400)
+          .json({message: 'committeeName is required for non-AD users'});
+      }
+
+      const committee = await prisma.committee.findUnique({
+        where: {name: data.committeeName},
       });
+
+      if (!committee) {
+        return res.status(400).json({
+          message: 'Invalid committee, does not exist',
+        });
+      }
+
+      committeeId = committee.id;
     }
 
     // Hash password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const passwordHash = await bcrypt.hash(data.password, 12);
 
-    // Create new user
+    //  Create user
     const newUser = await prisma.user.create({
       data: {
-        username,
+        username: data.username,
         passwordHash,
-        name,
-        role,
-        designation,
-        committeeId: committee.id || null,
+        name: data.name,
+        role: data.role,
+        designation: data.designation,
+        committeeId: committeeId,
         isActive: true,
       },
       select: {
         id: true,
         username: true,
-        name: true,
         role: true,
-        designation: true,
-        committeeId: true,
-        isActive: true,
-        createdAt: true,
         committee: {
           select: {
             id: true,
@@ -80,11 +82,9 @@ export const registerUser = async (req: Request, res: Response) => {
       },
     });
 
-    // Generate JWT token
+    // Generate JWT
     const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not defined in environment variables');
-    }
+    if (!jwtSecret) throw new Error('JWT_SECRET not defined');
 
     const token = jwt.sign(
       {
@@ -97,19 +97,17 @@ export const registerUser = async (req: Request, res: Response) => {
       {expiresIn: '24h'}
     );
 
+    // Respond
     res.status(201).json({
       message: 'User registered successfully',
-      user: newUser,
+      user: newUser.username,
+      password: data.password,
       token,
     });
   } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({
-      message: 'Server error while creating new user',
-    });
+    return handlePrismaError(res, error);
   }
 };
-
 // @desc    Logs in existing user
 // @route   POST /api/auth/login
 // @access  Public
@@ -186,9 +184,6 @@ export const login = async (req: Request, res: Response) => {
       token,
     });
   } catch (error) {
-    console.error('Error during login:', error);
-    res.status(500).json({
-      message: 'Server error during login',
-    });
+    return handlePrismaError(res, error);
   }
 };

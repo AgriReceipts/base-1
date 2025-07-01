@@ -1,4 +1,4 @@
-import {Interface} from 'readline';
+// shared/types/receipt.ts
 import {z} from 'zod';
 
 export const CreateReceiptSchema = z.object({
@@ -29,15 +29,3 @@ export const CreateReceiptSchema = z.object({
 });
 
 export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
-
-// Query parameters for listing receipts
-export interface ReceiptQueryParams {
-  page?: number;
-  limit?: number;
-  committeeId?: string;
-  startDate?: string;
-  endDate?: string;
-  traderName?: string;
-  commodity?: string;
-  natureOfReceipt?: string;
-}
