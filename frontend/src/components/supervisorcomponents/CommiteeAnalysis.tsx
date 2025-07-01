@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiSearch, FiFilter, FiPlus, FiDownload } from 'react-icons/fi';
+import PieChartComponent from '../supervisorcomponents/PieChartComponent';
 
 export default function CommitteeAnalysis() {
   const committees = [
@@ -10,8 +11,22 @@ export default function CommitteeAnalysis() {
     { id: 'COM-005', name: 'Compliance Committee', members: 7, status: 'Active', created: 'May 20, 2023' },
   ];
 
+  // Data for pie charts
+  const committeeStatusData = [
+    { name: 'Gold', value: 35 },
+    { name: 'Silver', value: 25 },
+    { name: 'Crude Oil', value: 20 },
+    { name: 'Natural Gas', value: 15 },
+    { name: 'Copper', value: 5 },
+  ];
+
+  const committeeMembersData = committees.map(committee => ({
+    name: committee.name,
+    value: committee.members
+  }));
+
   return (
-    <div className="w-full p-6">
+    <div className="w-full p-4 md:p-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h2 className="text-xl font-bold mb-4 md:mb-0">Committee Analysis</h2>
         <div className="flex space-x-2">
@@ -25,7 +40,24 @@ export default function CommitteeAnalysis() {
           </button>
         </div>
       </div>
+
+      {/* Pie Charts Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <h3 className="text-lg font-semibold mb-4">Committee </h3>
+          <div className="h-64 md:h-80">
+            <PieChartComponent data={committeeStatusData} />
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <h3 className="text-lg font-semibold mb-4">Members by Committee</h3>
+          <div className="h-64 md:h-80">
+            <PieChartComponent data={committeeMembersData} />
+          </div>
+        </div>
+      </div>
       
+      {/* Committees Table Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="relative mb-4 md:mb-0 md:w-64">
@@ -78,8 +110,8 @@ export default function CommitteeAnalysis() {
           </table>
         </div>
         
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
+        <div className="px-6 py-4 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between">
+          <div className="text-sm text-gray-700 mb-4 md:mb-0">
             Showing <span className="font-medium">1</span> to <span className="font-medium">5</span> of <span className="font-medium">12</span> results
           </div>
           <div className="flex space-x-2">

@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import React, { useState, useRef, useEffect } from 'react';
-=======
-import React, { useEffect } from 'react';
 import { useReceiptContext } from '../../contexts/ReceiptContext';
 import { v4 as uuidv4 } from 'uuid';
 import { useForm, Controller } from 'react-hook-form';
@@ -39,12 +36,45 @@ type FormData = {
   designation: string;
   otherLocation: string;
 };
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
 
 const AddReceipt: React.FC = () => {
   const { addReceipt } = useReceiptContext();
+  const [formData, setFormData] = useState<FormData>({
+    receiptDate: '2025-06-30',
+    bookNumber: '',
+    receiptNumber: '',
+    traderName: '',
+    traderAddress: '',
+    payeeName: '',
+    payeeAddress: '',
+    commodity: '',
+    quantity: 0,
+    unit: '',
+    nature: '',
+    value: 0,
+    feesPaid: 0,
+    vehicleNumber: '',
+    invoiceNumber: '',
+    collectionLocation: '',
+    collectedBy: '',
+    designation: '',
+    otherLocation: ''
+  });
 
-<<<<<<< HEAD
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isValid, isSubmitting },
+    watch,
+    reset
+  } = useForm<FormData>({
+    mode: 'onChange',
+    defaultValues: formData
+  });
+
+  const collectionLocation = watch('collectionLocation');
+
   // Refs for all input fields
   const inputRefs = {
     receiptDate: useRef<HTMLInputElement>(null),
@@ -66,11 +96,6 @@ const AddReceipt: React.FC = () => {
     generatedBy: useRef<HTMLInputElement>(null),
     designation: useRef<HTMLInputElement>(null)
   };
-
-  const units = ['Kg', 'Quintal', 'Ton'];
-  const natures = ['Purchase', 'Sale', 'Commission'];
-  const checkposts = ['Tuni', 'K/P Puram', 'Rekavanipalem'];
-  const commodities = ['Rice', 'Wheat', 'Maize'];
 
   // Order of fields for navigation
   const fieldOrder = [
@@ -116,28 +141,25 @@ const AddReceipt: React.FC = () => {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form Submitted:', formData);
+  const onSubmit = async (data: FormData) => {
+    try {
+      const receipt = {
+        id: uuidv4(),
+        ...data,
+        createdAt: new Date().toISOString(),
+      };
+      await addReceipt(receipt);
+      reset();
+      // Show success message or redirect
+    } catch (error) {
+      console.error('Error saving receipt:', error);
+      // Show error message
+    }
   };
 
   const handleReset = () => {
-    setFormData({
+    reset({
       receiptDate: '2025-06-30',
-=======
-  const {
-    register,
-    handleSubmit,
-    watch,
-    reset,
-    setValue,
-    control,
-    formState: { errors, isValid, isSubmitting },
-  } = useForm<FormData>({
-    mode: 'onChange',
-    defaultValues: {
-      receiptDate: new Date().toISOString().split('T')[0],
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
       bookNumber: '',
       receiptNumber: '',
       traderName: '',
@@ -153,49 +175,13 @@ const AddReceipt: React.FC = () => {
       vehicleNumber: '',
       invoiceNumber: '',
       collectionLocation: '',
-<<<<<<< HEAD
-      generatedBy: '',
-      designation: ''
+      collectedBy: '',
+      designation: '',
+      otherLocation: ''
     });
     // Focus back to first field after reset
     if (inputRefs.receiptDate.current) {
       inputRefs.receiptDate.current.focus();
-=======
-      collectedBy: '',
-      designation: '',
-      otherLocation: '',
-    },
-  });
-
-  const nature = watch('nature');
-  const value = watch('value');
-  const collectionLocation = watch('collectionLocation');
-
-  useEffect(() => {
-    if (nature === 'mf') {
-      // Set feesPaid to value if nature is market fees
-      // Use setValue from useForm instead of control
-      setValue('feesPaid', value);
-    }
-  }, [nature, value, setValue]);
-
-  const onSubmit = async (data: FormData) => {
-    try {
-      const newReceipt = {
-        id: uuidv4(),
-        ...data,
-        quantity: data.quantity.toString(),
-        value: data.value.toString(),
-        feesPaid: data.feesPaid.toString(),
-        collectionLocation:
-          data.collectionLocation === 'other' ? data.otherLocation : data.collectionLocation,
-      };
-      await addReceipt(newReceipt);
-      alert('Receipt saved successfully!');
-      reset();
-    } catch (error: any) {
-      alert('Failed to save receipt: ' + (error.message || 'Unknown error'));
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
     }
   };
 
@@ -273,25 +259,12 @@ const AddReceipt: React.FC = () => {
                     Receipt Date<span className="text-red-600">*</span>
                   </label>
                   <input
-<<<<<<< HEAD
                     ref={inputRefs.receiptDate}
                     type="date"
-                    name="receiptDate"
-                    value={formData.receiptDate}
-                    onChange={handleChange}
+                    id="receiptDate"
+                    {...register('receiptDate', { required: 'Receipt date is required' })}
                     onKeyDown={(e) => handleKeyDown(e, 'receiptDate')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white transition-colors"
-=======
-                    id="receiptDate"
-                    type="date"
-                    {...register('receiptDate', { required: 'Receipt date is required' })}
-                    aria-invalid={errors.receiptDate ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.receiptDate
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    } bg-white`}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
                   />
                   {errors.receiptDate && (
                     <p role="alert" className="text-red-600 text-xs mt-1">
@@ -304,27 +277,13 @@ const AddReceipt: React.FC = () => {
                     Book Number<span className="text-red-600">*</span>
                   </label>
                   <input
-<<<<<<< HEAD
                     ref={inputRefs.bookNumber}
-=======
-                    id="bookNumber"
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
                     type="text"
+                    id="bookNumber"
                     placeholder="Book number"
-<<<<<<< HEAD
-                    value={formData.bookNumber}
-                    onChange={handleChange}
+                    {...register('bookNumber', { required: 'Book number is required' })}
                     onKeyDown={(e) => handleKeyDown(e, 'bookNumber')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
-=======
-                    {...register('bookNumber', { required: 'Book number is required' })}
-                    aria-invalid={errors.bookNumber ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.bookNumber
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    }`}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
                   />
                   {errors.bookNumber && (
                     <p role="alert" className="text-red-600 text-xs mt-1">
@@ -340,27 +299,13 @@ const AddReceipt: React.FC = () => {
                     Receipt Number<span className="text-red-600">*</span>
                   </label>
                   <input
-<<<<<<< HEAD
                     ref={inputRefs.receiptNumber}
-=======
-                    id="receiptNumber"
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
                     type="text"
+                    id="receiptNumber"
                     placeholder="Receipt number"
-<<<<<<< HEAD
-                    value={formData.receiptNumber}
-                    onChange={handleChange}
+                    {...register('receiptNumber', { required: 'Receipt number is required' })}
                     onKeyDown={(e) => handleKeyDown(e, 'receiptNumber')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
-=======
-                    {...register('receiptNumber', { required: 'Receipt number is required' })}
-                    aria-invalid={errors.receiptNumber ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.receiptNumber
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    }`}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
                   />
                   {errors.receiptNumber && (
                     <p role="alert" className="text-red-600 text-xs mt-1">
@@ -371,181 +316,80 @@ const AddReceipt: React.FC = () => {
               </div>
             </section>
 
-<<<<<<< HEAD
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  {/* Trader/Farmer Details */}
-  <div className="bg-blue-50 rounded-md p-3 border border-blue-100">
-    <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
-      <span className="bg-blue-400 w-1.5 h-4 rounded-full mr-2"></span>
-      Trader/Farmer Details
-    </h3>
-    <div className="space-y-2">
-      <div>
-        <label className="block text-sm font-normal text-gray-600 mb-1">Trader/Farmer Name</label>
-        <input
-          ref={inputRefs.traderName}
-          type="text"
-          name="traderName"
-          placeholder="Trader/Farmer name"
-          value={formData.traderName}
-          onChange={handleChange}
-          onKeyDown={(e) => handleKeyDown(e, 'traderName')}
-          className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-normal text-gray-600 mb-1">Trader Address</label>
-        <input
-          ref={inputRefs.traderAddress}
-          type="text"
-          name="traderAddress"
-          placeholder="Trader address"
-          value={formData.traderAddress}
-          onChange={handleChange}
-          onKeyDown={(e) => handleKeyDown(e, 'traderAddress')}
-          className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors"
-        />
-      </div>
-    </div>
-  </div>
-
-  {/* Payee Details */}
-  <div className="bg-teal-50 rounded-md p-3 border border-teal-100">
-    <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
-      <span className="bg-teal-400 w-1.5 h-4 rounded-full mr-2"></span>
-      Payee Details
-    </h3>
-    <div className="space-y-2">
-      <div>
-        <label className="block text-sm font-normal text-gray-600 mb-1">Payee Name</label>
-        <input
-          ref={inputRefs.payeeName}
-          type="text"
-          name="payeeName"
-          placeholder="Payee name"
-          value={formData.payeeName}
-          onChange={handleChange}
-          onKeyDown={(e) => handleKeyDown(e, 'payeeName')}
-          className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-normal text-gray-600 mb-1">Payee Address</label>
-        <input
-          ref={inputRefs.payeeAddress}
-          type="text"
-          name="payeeAddress"
-          placeholder="Payee address"
-          value={formData.payeeAddress}
-          onChange={handleChange}
-          onKeyDown={(e) => handleKeyDown(e, 'payeeAddress')}
-          className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
-        />
-      </div>
-    </div>
-  </div>
-</div>
-
-=======
-            {/* Trader/Farmer Details */}
-            <section
-              aria-labelledby="trader-details"
-              className="bg-blue-50 rounded-md p-3 border border-blue-100"
-            >
-              <h3
-                id="trader-details"
-                className="text-base font-medium text-gray-700 mb-2 flex items-center"
-              >
-                <span className="bg-blue-400 w-1.5 h-4 rounded-full mr-2"></span>
-                Trader/Farmer Details
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label
-                    htmlFor="traderName"
-                    className="block text-sm font-normal text-gray-600 mb-2"
-                  >
-                    Trader/Farmer Name<span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    id="traderName"
-                    type="text"
-                    placeholder="Trader/farmer name"
-                    {...register('traderName', { required: 'Trader/Farmer name is required' })}
-                    aria-invalid={errors.traderName ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.traderName
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-blue-200 focus:ring-blue-100 focus:border-blue-300'
-                    } bg-white/70`}
-                  />
-                  {errors.traderName && (
-                    <p role="alert" className="text-red-600 text-xs mt-1">
-                      {errors.traderName.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor="traderAddress"
-                    className="block text-sm font-normal text-gray-600 mb-2"
-                  >
-                    Trader Address
-                  </label>
-                  <textarea
-                    id="traderAddress"
-                    placeholder="Trader address"
-                    {...register('traderAddress')}
-                    rows={2}
-                    className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors"
-                  />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Trader/Farmer Details */}
+              <div className="bg-blue-50 rounded-md p-3 border border-blue-100">
+                <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
+                  <span className="bg-blue-400 w-1.5 h-4 rounded-full mr-2"></span>
+                  Trader/Farmer Details
+                </h3>
+                <div className="space-y-2">
+                  <div>
+                    <label htmlFor="traderName" className="block text-sm font-normal text-gray-600 mb-1">Trader/Farmer Name</label>
+                    <input
+                      ref={inputRefs.traderName}
+                      type="text"
+                      id="traderName"
+                      placeholder="Trader/Farmer name"
+                      {...register('traderName', { required: 'Trader name is required' })}
+                      onKeyDown={(e) => handleKeyDown(e, 'traderName')}
+                      className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors"
+                    />
+                    {errors.traderName && (
+                      <p role="alert" className="text-red-600 text-xs mt-1">
+                        {errors.traderName.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="traderAddress" className="block text-sm font-normal text-gray-600 mb-1">Trader Address</label>
+                    <textarea
+                      ref={inputRefs.traderAddress}
+                      id="traderAddress"
+                      placeholder="Trader address"
+                      {...register('traderAddress')}
+                      onKeyDown={(e) => handleKeyDown(e, 'traderAddress')}
+                      className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors"
+                      rows={3}
+                    />
+                  </div>
                 </div>
               </div>
-            </section>
 
-            {/* Payee Details */}
-            <section
-              aria-labelledby="payee-details"
-              className="bg-teal-50 rounded-md p-3 border border-teal-100"
-            >
-              <h3
-                id="payee-details"
-                className="text-base font-medium text-gray-700 mb-2 flex items-center"
-              >
-                <span className="bg-teal-400 w-1.5 h-4 rounded-full mr-2"></span>
-                Payee Details
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label htmlFor="payeeName" className="block text-sm font-normal text-gray-600 mb-2">
-                    Payee Name
-                  </label>
-                  <input
-                    id="payeeName"
-                    type="text"
-                    placeholder="Payee name"
-                    {...register('payeeName')}
-                    className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="payeeAddress"
-                    className="block text-sm font-normal text-gray-600 mb-2"
-                  >
-                    Payee Address
-                  </label>
-                  <textarea
-                    id="payeeAddress"
-                    placeholder="Payee address"
-                    {...register('payeeAddress')}
-                    rows={2}
-                    className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
-                  />
+              {/* Payee Details */}
+              <div className="bg-teal-50 rounded-md p-3 border border-teal-100">
+                <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
+                  <span className="bg-teal-400 w-1.5 h-4 rounded-full mr-2"></span>
+                  Payee Details
+                </h3>
+                <div className="space-y-2">
+                  <div>
+                    <label htmlFor="payeeName" className="block text-sm font-normal text-gray-600 mb-1">Payee Name</label>
+                    <input
+                      ref={inputRefs.payeeName}
+                      type="text"
+                      id="payeeName"
+                      placeholder="Payee name"
+                      {...register('payeeName')}
+                      onKeyDown={(e) => handleKeyDown(e, 'payeeName')}
+                      className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="payeeAddress" className="block text-sm font-normal text-gray-600 mb-1">Payee Address</label>
+                    <textarea
+                      ref={inputRefs.payeeAddress}
+                      id="payeeAddress"
+                      placeholder="Payee address"
+                      {...register('payeeAddress')}
+                      onKeyDown={(e) => handleKeyDown(e, 'payeeAddress')}
+                      className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
+                      rows={3}
+                    />
+                  </div>
                 </div>
               </div>
-            </section>
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
+            </div>
 
             {/* Commodity Details */}
             <section aria-labelledby="commodity-details" className="space-y-2">
@@ -562,23 +406,11 @@ const AddReceipt: React.FC = () => {
                     Commodity<span className="text-red-600">*</span>
                   </label>
                   <select
-<<<<<<< HEAD
                     ref={inputRefs.commodity}
-                    name="commodity"
-                    value={formData.commodity}
-                    onChange={handleChange}
-                    onKeyDown={(e) => handleKeyDown(e, 'commodity')}
-                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
-=======
                     id="commodity"
                     {...register('commodity', { required: 'Commodity is required' })}
-                    aria-invalid={errors.commodity ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.commodity
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    }`}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
+                    onKeyDown={(e) => handleKeyDown(e, 'commodity')}
+                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
                   >
                     <option value="">Select commodity</option>
                     {commodities.map((commodity) => (
@@ -598,29 +430,16 @@ const AddReceipt: React.FC = () => {
                     Quantity<span className="text-red-600">*</span>
                   </label>
                   <input
-<<<<<<< HEAD
                     ref={inputRefs.quantity}
                     type="number"
-                    name="quantity"
+                    id="quantity"
                     placeholder="Quantity"
-                    value={formData.quantity}
-                    onChange={handleChange}
+                    {...register('quantity', { 
+                      required: 'Quantity is required',
+                      min: { value: 0, message: 'Quantity must be positive' }
+                    })}
                     onKeyDown={(e) => handleKeyDown(e, 'quantity')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
-=======
-                    id="quantity"
-                    type="number"
-                    {...register('quantity', {
-                      required: 'Quantity is required',
-                      min: { value: 1, message: 'Quantity must be greater than zero' },
-                    })}
-                    aria-invalid={errors.quantity ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.quantity
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    }`}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
                   />
                   {errors.quantity && (
                     <p role="alert" className="text-red-600 text-xs mt-1">
@@ -633,23 +452,11 @@ const AddReceipt: React.FC = () => {
                     Unit<span className="text-red-600">*</span>
                   </label>
                   <select
-<<<<<<< HEAD
                     ref={inputRefs.unit}
-                    name="unit"
-                    value={formData.unit}
-                    onChange={handleChange}
-                    onKeyDown={(e) => handleKeyDown(e, 'unit')}
-                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
-=======
                     id="unit"
                     {...register('unit', { required: 'Unit is required' })}
-                    aria-invalid={errors.unit ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.unit
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    }`}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
+                    onKeyDown={(e) => handleKeyDown(e, 'unit')}
+                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
                   >
                     <option value="">Select unit</option>
                     {units.map((unit) => (
@@ -682,23 +489,11 @@ const AddReceipt: React.FC = () => {
                     Nature<span className="text-red-600">*</span>
                   </label>
                   <select
-<<<<<<< HEAD
                     ref={inputRefs.nature}
-                    name="nature"
-                    value={formData.nature}
-                    onChange={handleChange}
-                    onKeyDown={(e) => handleKeyDown(e, 'nature')}
-                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
-=======
                     id="nature"
                     {...register('nature', { required: 'Nature is required' })}
-                    aria-invalid={errors.nature ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.nature
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    }`}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
+                    onKeyDown={(e) => handleKeyDown(e, 'nature')}
+                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
                   >
                     <option value="">Select nature</option>
                     {natures.map((nature) => (
@@ -714,8 +509,7 @@ const AddReceipt: React.FC = () => {
                   )}
                 </div>
                 <div>
-<<<<<<< HEAD
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Value (₹)</label>
+                  <label htmlFor="value" className="block text-sm font-normal text-gray-600 mb-2">Value (₹)</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                       <span className="text-gray-400 text-sm">₹</span>
@@ -723,17 +517,16 @@ const AddReceipt: React.FC = () => {
                     <input
                       ref={inputRefs.value}
                       type="number"
-                      name="value"
+                      id="value"
                       placeholder="Value"
-                      value={formData.value}
-                      onChange={handleChange}
+                      {...register('value', { min: 0 })}
                       onKeyDown={(e) => handleKeyDown(e, 'value')}
                       className="w-full pl-6 pr-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Fees Paid (₹)</label>
+                  <label htmlFor="feesPaid" className="block text-sm font-normal text-gray-600 mb-2">Fees Paid (₹)</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                       <span className="text-gray-400 text-sm">₹</span>
@@ -741,62 +534,21 @@ const AddReceipt: React.FC = () => {
                     <input
                       ref={inputRefs.feesPaid}
                       type="number"
-                      name="feesPaid"
+                      id="feesPaid"
                       placeholder="Fees paid"
-                      value={formData.feesPaid}
-                      onChange={handleChange}
+                      {...register('feesPaid', { 
+                        required: 'Fees paid is required',
+                        min: { value: 0, message: 'Fees must be positive' }
+                      })}
                       onKeyDown={(e) => handleKeyDown(e, 'feesPaid')}
                       className="w-full pl-6 pr-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300"
                     />
+                    {errors.feesPaid && (
+                      <p role="alert" className="text-red-600 text-xs mt-1">
+                        {errors.feesPaid.message}
+                      </p>
+                    )}
                   </div>
-=======
-                  <label htmlFor="value" className="block text-sm font-normal text-gray-600 mb-2">
-                    Value<span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    id="value"
-                    type="number"
-                    {...register('value', {
-                      required: 'Value is required',
-                      min: { value: 0, message: 'Value must be non-negative' },
-                    })}
-                    aria-invalid={errors.value ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.value
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    }`}
-                  />
-                  {errors.value && (
-                    <p role="alert" className="text-red-600 text-xs mt-1">
-                      {errors.value.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="feesPaid" className="block text-sm font-normal text-gray-600 mb-2">
-                    Fees Paid
-                  </label>
-                  <input
-                    id="feesPaid"
-                    type="number"
-                    {...register('feesPaid', {
-                      min: { value: 0, message: 'Fees Paid must be non-negative' },
-                    })}
-                    aria-invalid={errors.feesPaid ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.feesPaid
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    }`}
-                    readOnly={nature === 'mf'}
-                  />
-                  {errors.feesPaid && (
-                    <p role="alert" className="text-red-600 text-xs mt-1">
-                      {errors.feesPaid.message}
-                    </p>
-                  )}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
                 </div>
               </div>
             </section>
@@ -812,148 +564,44 @@ const AddReceipt: React.FC = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div>
-<<<<<<< HEAD
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Vehicle Number</label>
+                  <label htmlFor="vehicleNumber" className="block text-sm font-normal text-gray-600 mb-2">Vehicle Number</label>
                   <input
                     ref={inputRefs.vehicleNumber}
                     type="text"
-                    name="vehicleNumber"
+                    id="vehicleNumber"
                     placeholder="Vehicle number"
-                    value={formData.vehicleNumber}
-                    onChange={handleChange}
+                    {...register('vehicleNumber')}
                     onKeyDown={(e) => handleKeyDown(e, 'vehicleNumber')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Invoice Number</label>
+                  <label htmlFor="invoiceNumber" className="block text-sm font-normal text-gray-600 mb-2">Invoice Number</label>
                   <input
                     ref={inputRefs.invoiceNumber}
                     type="text"
-                    name="invoiceNumber"
+                    id="invoiceNumber"
                     placeholder="Invoice number"
-                    value={formData.invoiceNumber}
-                    onChange={handleChange}
+                    {...register('invoiceNumber')}
                     onKeyDown={(e) => handleKeyDown(e, 'invoiceNumber')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Collection Location</label>
+                  <label htmlFor="collectionLocation" className="block text-sm font-normal text-gray-600 mb-2">Collection Location</label>
                   <select
                     ref={inputRefs.collectionLocation}
-                    name="collectionLocation"
-                    value={formData.collectionLocation}
-                    onChange={handleChange}
+                    id="collectionLocation"
+                    {...register('collectionLocation')}
                     onKeyDown={(e) => handleKeyDown(e, 'collectionLocation')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
-=======
-                  <label
-                    htmlFor="collectionLocation"
-                    className="block text-sm font-normal text-gray-600 mb-2"
-                  >
-                    Collection Location<span className="text-red-600">*</span>
-                  </label>
-                  <select
-                    id="collectionLocation"
-                    {...register('collectionLocation', { required: 'Collection location is required' })}
-                    aria-invalid={errors.collectionLocation ? 'true' : 'false'}
-                    className={`w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors ${
-                      errors.collectionLocation
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-300'
-                    }`}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
                   >
                     <option value="">Select location</option>
                     <option value="office">Office</option>
                     <option value="checkpost">Checkpost</option>
                     <option value="other">Other</option>
                   </select>
-                  {errors.collectionLocation && (
-                    <p role="alert" className="text-red-600 text-xs mt-1">
-                      {errors.collectionLocation.message}
-                    </p>
-                  )}
                 </div>
-
-<<<<<<< HEAD
-            {/* Generated By */}
-            <div className="bg-gray-50 rounded-md p-3 border border-gray-100">
-              <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
-                <span className="bg-blue-400 w-1.5 h-4 rounded-full mr-2"></span>
-                Generated By
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Generated By</label>
-                  <input
-                    ref={inputRefs.generatedBy}
-                    type="text"
-                    name="generatedBy"
-                    placeholder="Generated by"
-                    value={formData.generatedBy}
-                    onChange={handleChange}
-                    onKeyDown={(e) => handleKeyDown(e, 'generatedBy')}
-                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Designation</label>
-                  <input
-                    ref={inputRefs.designation}
-                    type="text"
-                    name="designation"
-                    placeholder="Designation"
-                    value={formData.designation}
-                    onChange={handleChange}
-                    onKeyDown={(e) => handleKeyDown(e, 'designation')}
-                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
-                  />
-                </div>
-              </div>
-            </div>
-=======
-                {collectionLocation === 'office' && (
-                  <>
-                    <div>
-                      <label
-                        htmlFor="collectedBy"
-                        className="block text-sm font-normal text-gray-600 mb-2"
-                      >
-                        Collected By
-                      </label>
-                      <select
-                        id="collectedBy"
-                        {...register('collectedBy')}
-                        className="w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors"
-                      >
-                        <option value="">Select supervisor</option>
-                        {supervisors.map((supervisor) => (
-                          <option key={supervisor} value={supervisor}>
-                            {supervisor}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="designation"
-                        className="block text-sm font-normal text-gray-600 mb-2"
-                      >
-                        Designation
-                      </label>
-                      <input
-                        id="designation"
-                        type="text"
-                        placeholder="Enter designation"
-                        {...register('designation')}
-                        className="w-full px-3 py-1.5 text-sm border rounded-md shadow-xs focus:outline-none focus:ring-1 transition-colors"
-                      />
-                    </div>
-                  </>
-                )}
->>>>>>> bc2f6810d7aa6c25edeb1b00f72e4f18354ce0e4
 
                 {collectionLocation === 'checkpost' && checkposts.length > 0 && (
                   <div>
@@ -998,12 +646,63 @@ const AddReceipt: React.FC = () => {
               </div>
             </section>
 
-            {/* Submit Button */}
-            <div className="pt-4">
+            {/* Generated By */}
+            <div className="bg-gray-50 rounded-md p-3 border border-gray-100">
+              <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
+                <span className="bg-blue-400 w-1.5 h-4 rounded-full mr-2"></span>
+                Generated By
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div>
+                  <label htmlFor="collectedBy" className="block text-sm font-normal text-gray-600 mb-2">Generated By</label>
+                  <input
+                    ref={inputRefs.generatedBy}
+                    type="text"
+                    id="collectedBy"
+                    placeholder="Generated by"
+                    {...register('collectedBy', { required: 'Generated by is required' })}
+                    onKeyDown={(e) => handleKeyDown(e, 'collectedBy')}
+                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
+                  />
+                  {errors.collectedBy && (
+                    <p role="alert" className="text-red-600 text-xs mt-1">
+                      {errors.collectedBy.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label htmlFor="designation" className="block text-sm font-normal text-gray-600 mb-2">Designation</label>
+                  <input
+                    ref={inputRefs.designation}
+                    type="text"
+                    id="designation"
+                    placeholder="Designation"
+                    {...register('designation', { required: 'Designation is required' })}
+                    onKeyDown={(e) => handleKeyDown(e, 'designation')}
+                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
+                  />
+                  {errors.designation && (
+                    <p role="alert" className="text-red-600 text-xs mt-1">
+                      {errors.designation.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex justify-between pt-4">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Reset Form
+              </button>
               <button
                 type="submit"
                 disabled={!isValid || isSubmitting}
-                className={`w-full py-2 rounded-md text-white transition-colors ${
+                className={`px-6 py-2 text-sm font-medium text-white rounded-md transition-colors ${
                   !isValid || isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                 }`}
                 aria-disabled={!isValid || isSubmitting}

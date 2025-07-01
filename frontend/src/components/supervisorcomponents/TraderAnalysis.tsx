@@ -1,7 +1,8 @@
 import { Divide } from 'lucide-react';
 import React from 'react';
 import { FiSearch, FiFilter, FiDownload, FiPrinter } from 'react-icons/fi';
-import AreaChartComponent from '../supervisorcomponents/AreaChartComponent'
+import AreaChartComponent from '../supervisorcomponents/AreaChartComponent';
+import PieChartComponent from '../supervisorcomponents/PieChartComponent';
 
 export default function TraderAnalysis() {
   const traders = [
@@ -12,19 +13,50 @@ export default function TraderAnalysis() {
     { id: 5, name: 'Michael Wilson', volume: '$21,300', compliance: '97%', lastActive: '1 day ago' },
   ];
 
+  // Data for pie charts
+  const commoditiesData = [
+    { name: 'Gold', value: 35 },
+    { name: 'Silver', value: 25 },
+    { name: 'Crude Oil', value: 20 },
+    { name: 'Natural Gas', value: 15 },
+    { name: 'Copper', value: 5 },
+  ];
+
+  const marketFeeData = [
+    { name: 'North America', value: 40 },
+    { name: 'Europe', value: 30 },
+    { name: 'Asia', value: 20 },
+    { name: 'Others', value: 10 },
+  ];
+
   return (
-    <div className="w-full p-6">
+    <div className="w-full p-4 md:p-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h2 className="text-xl font-bold mb-4 md:mb-0">Trader Analysis</h2>
-        
       </div>
 
-       {/* Chart Component */}
-  <div className="mb-6">
-    <AreaChartComponent />
-  </div>
+      {/* Chart Component */}
+      <div className="mb-6">
+        <AreaChartComponent />
+      </div>
+
+      {/* Pie Charts Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <h3 className="text-lg font-semibold mb-4">Top Traders</h3>
+          <div className="h-64 md:h-80">
+            <PieChartComponent data={commoditiesData} />
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <h3 className="text-lg font-semibold mb-4">Market Fee Analysis by Location</h3>
+          <div className="h-64 md:h-80">
+            <PieChartComponent data={marketFeeData} />
+          </div>
+        </div>
+      </div>
       
-      
+      {/* Traders Table Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="relative mb-4 md:mb-0 md:w-64">
@@ -35,10 +67,20 @@ export default function TraderAnalysis() {
               className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
-            <FiFilter className="mr-2" />
-            Filters
-          </button>
+          <div className="flex space-x-2">
+            <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
+              <FiDownload className="mr-2" />
+              Export
+            </button>
+            <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
+              <FiPrinter className="mr-2" />
+              Print
+            </button>
+            <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
+              <FiFilter className="mr-2" />
+              Filters
+            </button>
+          </div>
         </div>
         
         <div className="overflow-x-auto">
@@ -85,8 +127,8 @@ export default function TraderAnalysis() {
           </table>
         </div>
         
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
+        <div className="px-6 py-4 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between">
+          <div className="text-sm text-gray-700 mb-4 md:mb-0">
             Showing <span className="font-medium">1</span> to <span className="font-medium">5</span> of <span className="font-medium">24</span> results
           </div>
           <div className="flex space-x-2">
