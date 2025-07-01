@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 const AddReceipt: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -22,10 +22,43 @@ const AddReceipt: React.FC = () => {
     designation: ''
   });
 
+  // Refs for all input fields
+  const inputRefs = {
+    receiptDate: useRef<HTMLInputElement>(null),
+    bookNumber: useRef<HTMLInputElement>(null),
+    receiptNumber: useRef<HTMLInputElement>(null),
+    traderName: useRef<HTMLInputElement>(null),
+    traderAddress: useRef<HTMLTextAreaElement>(null),
+    payeeName: useRef<HTMLInputElement>(null),
+    payeeAddress: useRef<HTMLTextAreaElement>(null),
+    commodity: useRef<HTMLSelectElement>(null),
+    quantity: useRef<HTMLInputElement>(null),
+    unit: useRef<HTMLSelectElement>(null),
+    nature: useRef<HTMLSelectElement>(null),
+    value: useRef<HTMLInputElement>(null),
+    feesPaid: useRef<HTMLInputElement>(null),
+    vehicleNumber: useRef<HTMLInputElement>(null),
+    invoiceNumber: useRef<HTMLInputElement>(null),
+    collectionLocation: useRef<HTMLSelectElement>(null),
+    generatedBy: useRef<HTMLInputElement>(null),
+    designation: useRef<HTMLInputElement>(null)
+  };
+
   const units = ['Kg', 'Quintal', 'Ton'];
   const natures = ['Purchase', 'Sale', 'Commission'];
   const checkposts = ['Tuni', 'K/P Puram', 'Rekavanipalem'];
   const commodities = ['Rice', 'Wheat', 'Maize'];
+
+  // Order of fields for navigation
+  const fieldOrder = [
+    'receiptDate', 'bookNumber', 'receiptNumber',
+    'traderName', 'traderAddress',
+    'payeeName', 'payeeAddress',
+    'commodity', 'quantity', 'unit',
+    'nature', 'value', 'feesPaid',
+    'vehicleNumber', 'invoiceNumber', 'collectionLocation',
+    'generatedBy', 'designation'
+  ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -34,6 +67,31 @@ const AddReceipt: React.FC = () => {
       [name]: value,
     }));
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      moveToNextField(fieldName);
+    }
+  };
+
+  const moveToNextField = (currentField: string) => {
+    const currentIndex = fieldOrder.indexOf(currentField);
+    if (currentIndex < fieldOrder.length - 1) {
+      const nextField = fieldOrder[currentIndex + 1];
+      const nextRef = inputRefs[nextField as keyof typeof inputRefs];
+      if (nextRef && nextRef.current) {
+        nextRef.current.focus();
+      }
+    }
+  };
+
+  // Auto-focus on mount
+  useEffect(() => {
+    if (inputRefs.receiptDate.current) {
+      inputRefs.receiptDate.current.focus();
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +119,10 @@ const AddReceipt: React.FC = () => {
       generatedBy: '',
       designation: ''
     });
+    // Focus back to first field after reset
+    if (inputRefs.receiptDate.current) {
+      inputRefs.receiptDate.current.focus();
+    }
   };
 
   return (
@@ -115,101 +177,118 @@ const AddReceipt: React.FC = () => {
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Receipt Date</label>
                   <input
+                    ref={inputRefs.receiptDate}
                     type="date"
                     name="receiptDate"
                     value={formData.receiptDate}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'receiptDate')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white transition-colors"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Book Number</label>
                   <input
+                    ref={inputRefs.bookNumber}
                     type="text"
                     name="bookNumber"
                     placeholder="Book number"
                     value={formData.bookNumber}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'bookNumber')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Receipt Number</label>
                   <input
+                    ref={inputRefs.receiptNumber}
                     type="text"
                     name="receiptNumber"
                     placeholder="Receipt number"
                     value={formData.receiptNumber}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'receiptNumber')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Trader/Farmer Details */}
-            <div className="bg-blue-50 rounded-md p-3 border border-blue-100">
-              <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
-                <span className="bg-blue-400 w-1.5 h-4 rounded-full mr-2"></span>
-                Trader/Farmer Details
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Trader/Farmer Name</label>
-                  <input
-                    type="text"
-                    name="traderName"
-                    placeholder="Trader/farmer name"
-                    value={formData.traderName}
-                    onChange={handleChange}
-                    className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Trader Address</label>
-                  <textarea
-                    name="traderAddress"
-                    placeholder="Trader address"
-                    value={formData.traderAddress}
-                    onChange={handleChange}
-                    rows={2}
-                    className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors"
-                  />
-                </div>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {/* Trader/Farmer Details */}
+  <div className="bg-blue-50 rounded-md p-3 border border-blue-100">
+    <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
+      <span className="bg-blue-400 w-1.5 h-4 rounded-full mr-2"></span>
+      Trader/Farmer Details
+    </h3>
+    <div className="space-y-2">
+      <div>
+        <label className="block text-sm font-normal text-gray-600 mb-1">Trader/Farmer Name</label>
+        <input
+          ref={inputRefs.traderName}
+          type="text"
+          name="traderName"
+          placeholder="Trader/Farmer name"
+          value={formData.traderName}
+          onChange={handleChange}
+          onKeyDown={(e) => handleKeyDown(e, 'traderName')}
+          className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-normal text-gray-600 mb-1">Trader Address</label>
+        <input
+          ref={inputRefs.traderAddress}
+          type="text"
+          name="traderAddress"
+          placeholder="Trader address"
+          value={formData.traderAddress}
+          onChange={handleChange}
+          onKeyDown={(e) => handleKeyDown(e, 'traderAddress')}
+          className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors"
+        />
+      </div>
+    </div>
+  </div>
 
-            {/* Payee Details */}
-            <div className="bg-teal-50 rounded-md p-3 border border-teal-100">
-              <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
-                <span className="bg-teal-400 w-1.5 h-4 rounded-full mr-2"></span>
-                Payee Details
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Payee Name</label>
-                  <input
-                    type="text"
-                    name="payeeName"
-                    placeholder="Payee name"
-                    value={formData.payeeName}
-                    onChange={handleChange}
-                    className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-normal text-gray-600 mb-2">Payee Address</label>
-                  <textarea
-                    name="payeeAddress"
-                    placeholder="Payee address"
-                    value={formData.payeeAddress}
-                    onChange={handleChange}
-                    rows={2}
-                    className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
-                  />
-                </div>
-              </div>
-            </div>
+  {/* Payee Details */}
+  <div className="bg-teal-50 rounded-md p-3 border border-teal-100">
+    <h3 className="text-base font-medium text-gray-700 mb-2 flex items-center">
+      <span className="bg-teal-400 w-1.5 h-4 rounded-full mr-2"></span>
+      Payee Details
+    </h3>
+    <div className="space-y-2">
+      <div>
+        <label className="block text-sm font-normal text-gray-600 mb-1">Payee Name</label>
+        <input
+          ref={inputRefs.payeeName}
+          type="text"
+          name="payeeName"
+          placeholder="Payee name"
+          value={formData.payeeName}
+          onChange={handleChange}
+          onKeyDown={(e) => handleKeyDown(e, 'payeeName')}
+          className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-normal text-gray-600 mb-1">Payee Address</label>
+        <input
+          ref={inputRefs.payeeAddress}
+          type="text"
+          name="payeeAddress"
+          placeholder="Payee address"
+          value={formData.payeeAddress}
+          onChange={handleChange}
+          onKeyDown={(e) => handleKeyDown(e, 'payeeAddress')}
+          className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-teal-100 focus:border-teal-300 bg-white/70 transition-colors"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
 
             {/* Commodity Details */}
             <div className="space-y-2">
@@ -221,9 +300,11 @@ const AddReceipt: React.FC = () => {
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Commodity</label>
                   <select
+                    ref={inputRefs.commodity}
                     name="commodity"
                     value={formData.commodity}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'commodity')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
                   >
                     <option value="">Select commodity</option>
@@ -235,20 +316,24 @@ const AddReceipt: React.FC = () => {
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Quantity</label>
                   <input
+                    ref={inputRefs.quantity}
                     type="number"
                     name="quantity"
                     placeholder="Quantity"
                     value={formData.quantity}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'quantity')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Unit</label>
                   <select
+                    ref={inputRefs.unit}
                     name="unit"
                     value={formData.unit}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'unit')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
                   >
                     <option value="">Select unit</option>
@@ -270,9 +355,11 @@ const AddReceipt: React.FC = () => {
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Nature of Receipt</label>
                   <select
+                    ref={inputRefs.nature}
                     name="nature"
                     value={formData.nature}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'nature')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
                   >
                     <option value="">Select nature</option>
@@ -288,11 +375,13 @@ const AddReceipt: React.FC = () => {
                       <span className="text-gray-400 text-sm">₹</span>
                     </div>
                     <input
+                      ref={inputRefs.value}
                       type="number"
                       name="value"
                       placeholder="Value"
                       value={formData.value}
                       onChange={handleChange}
+                      onKeyDown={(e) => handleKeyDown(e, 'value')}
                       className="w-full pl-6 pr-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300"
                     />
                   </div>
@@ -304,11 +393,13 @@ const AddReceipt: React.FC = () => {
                       <span className="text-gray-400 text-sm">₹</span>
                     </div>
                     <input
+                      ref={inputRefs.feesPaid}
                       type="number"
                       name="feesPaid"
                       placeholder="Fees paid"
                       value={formData.feesPaid}
                       onChange={handleChange}
+                      onKeyDown={(e) => handleKeyDown(e, 'feesPaid')}
                       className="w-full pl-6 pr-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300"
                     />
                   </div>
@@ -326,31 +417,37 @@ const AddReceipt: React.FC = () => {
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Vehicle Number</label>
                   <input
+                    ref={inputRefs.vehicleNumber}
                     type="text"
                     name="vehicleNumber"
                     placeholder="Vehicle number"
                     value={formData.vehicleNumber}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'vehicleNumber')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Invoice Number</label>
                   <input
+                    ref={inputRefs.invoiceNumber}
                     type="text"
                     name="invoiceNumber"
                     placeholder="Invoice number"
                     value={formData.invoiceNumber}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'invoiceNumber')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Collection Location</label>
                   <select
+                    ref={inputRefs.collectionLocation}
                     name="collectionLocation"
                     value={formData.collectionLocation}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'collectionLocation')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]"
                   >
                     <option value="">Select location</option>
@@ -372,22 +469,26 @@ const AddReceipt: React.FC = () => {
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Generated By</label>
                   <input
+                    ref={inputRefs.generatedBy}
                     type="text"
                     name="generatedBy"
                     placeholder="Generated by"
                     value={formData.generatedBy}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'generatedBy')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-normal text-gray-600 mb-2">Designation</label>
                   <input
+                    ref={inputRefs.designation}
                     type="text"
                     name="designation"
                     placeholder="Designation"
                     value={formData.designation}
                     onChange={handleChange}
+                    onKeyDown={(e) => handleKeyDown(e, 'designation')}
                     className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                   />
                 </div>

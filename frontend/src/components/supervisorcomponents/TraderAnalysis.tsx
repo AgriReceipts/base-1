@@ -1,5 +1,7 @@
+import { Divide } from 'lucide-react';
 import React from 'react';
 import { FiSearch, FiFilter, FiDownload, FiPrinter } from 'react-icons/fi';
+import AreaChartComponent from '../supervisorcomponents/AreaChartComponent'
 
 export default function TraderAnalysis() {
   const traders = [
@@ -14,17 +16,14 @@ export default function TraderAnalysis() {
     <div className="w-full p-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h2 className="text-xl font-bold mb-4 md:mb-0">Trader Analysis</h2>
-        <div className="flex space-x-2">
-          <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
-            <FiDownload className="mr-2" />
-            Export
-          </button>
-          <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
-            <FiPrinter className="mr-2" />
-            Print
-          </button>
-        </div>
+        
       </div>
+
+       {/* Chart Component */}
+  <div className="mb-6">
+    <AreaChartComponent />
+  </div>
+      
       
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between">

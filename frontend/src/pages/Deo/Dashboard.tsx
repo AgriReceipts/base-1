@@ -12,7 +12,8 @@ export default function DeoDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [activeNav, setActiveNav] = useState(() => {
-    return localStorage.getItem('activeNav') || 'overview';
+    // Set default to 'overview' only if there's nothing stored
+    return localStorage.getItem('activeNav') ?? 'overview';
   });
 
   useEffect(() => {
