@@ -33,7 +33,7 @@ export const authenticateUser = (
           name: string;
         };
       };
-      console.log('the decode jwt', req.user);
+
       next();
     } else {
       return res.status(401).json({message: 'Unauthorized: Invalid token'});

@@ -6,14 +6,6 @@ import {CreateReceiptSchema} from '@/types/receipt';
 import api, {isAxiosError} from '@/lib/axiosInstance';
 import FormReceipt from './FormReceipt';
 import {useAuthStore} from '@/stores/authStore';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {Save} from 'lucide-react';
 
 // Define types for better readability and maintenance
 type FormData = Omit<z.infer<typeof CreateReceiptSchema>, 'receiptDate'>;
@@ -156,36 +148,21 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className='flex items-center'>
-          <Save className='mr-2 h-5 w-5' />
-          {isEditing ? 'Edit Receipt Entry' : 'New Receipt Entry'} -{' '}
-          {committee?.name || 'Kakinada Agricultural Market Committee'}
-        </CardTitle>
-        <CardDescription>
-          Enter details for a new trade receipt for{' '}
-          {committee?.name || 'Kakinada Agricultural Market Committee'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <FormReceipt
-          formData={formData}
-          onFormChange={handleFormChange}
-          handleSubmit={handleSubmit}
-          handleReset={handleReset}
-          date={date}
-          onDateChange={handleDateChange}
-          isEditing={isEditing}
-          loading={loading}
-          committeeData={committee}
-          availableCheckposts={availableCheckposts}
-          commodities={commodities}
-          commoditySearch={commoditySearch}
-          setCommoditySearch={setCommoditySearch}
-        />
-      </CardContent>
-    </Card>
+    <FormReceipt
+      formData={formData}
+      onFormChange={handleFormChange}
+      handleSubmit={handleSubmit}
+      handleReset={handleReset}
+      date={date}
+      onDateChange={handleDateChange}
+      isEditing={isEditing}
+      loading={loading}
+      committeeData={committee}
+      availableCheckposts={availableCheckposts}
+      commodities={commodities}
+      commoditySearch={commoditySearch}
+      setCommoditySearch={setCommoditySearch}
+    />
   );
 };
 
