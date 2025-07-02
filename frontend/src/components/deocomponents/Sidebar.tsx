@@ -1,5 +1,6 @@
 import React from "react";
 import { FiPlus, FiFileText, FiHome, FiBarChart2, FiSettings } from "react-icons/fi";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   sidebarVisible: boolean;
@@ -16,110 +17,87 @@ const Sidebar: React.FC<SidebarProps> = ({
   activeNav,
   onNavClick,
 }) => {
+  const navigationItems = [
+    { id: 'overview', label: 'Overview', icon: <FiHome size={20} /> },
+    { id: 'addReceipt', label: 'Add Receipt', icon: <FiPlus size={20} /> },
+    { id: 'viewReceipts', label: 'View Receipts', icon: <FiFileText size={20} /> },
+    { id: 'reports', label: 'Reports', icon: <FiBarChart2 size={20} /> },
+  ];
+
+  const handleNavClick = (navId: string) => {
+    onNavClick(navId);
+    if (isMobile) setSidebarVisible(false);
+  };
+
   return (
-    <aside
-      className={`bg-white border-r border-gray-200 flex flex-col z-50 transition-all duration-300 fixed md:relative h-full ${
-        sidebarVisible ? 'w-64 left-0' : '-left-64 w-0'
-      } ${isMobile ? 'shadow-lg' : ''}`}
-    >
-      <div className="flex-1 overflow-y-auto">
-        {/* Sidebar Header */}
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Admin Menu</h2>
+    <>
+      {/* Overlay for mobile */}
+      {isMobile && sidebarVisible && (
+        <div 
+          className="fixed inset-0 bg-neutral-900/50 z-40"
+          onClick={() => setSidebarVisible(false)}
+        />
+      )}
+      
+      <aside
+        className={cn(
+          "bg-white border-r border-neutral-200 flex flex-col z-50 transition-all duration-300",
+          "fixed md:relative h-full",
+          {
+            'w-64 left-0': sidebarVisible,
+            '-left-64 w-0': !sidebarVisible,
+          },
+          isMobile && "shadow-lg"
+        )}
+      >
+        <div className="flex-1 overflow-y-auto">
+          {/* Sidebar Header */}
+          <div className="p-6 border-b border-neutral-200">
+            <h2 className="text-lg font-semibold text-neutral-900">Navigation</h2>
+            <p className="text-sm text-neutral-500 mt-1">DEO Dashboard</p>
+          </div>
+
+          {/* Navigation */}
+          <nav className="p-4 space-y-2">
+            {navigationItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={cn(
+                  "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200",
+                  "text-left font-medium text-sm",
+                  {
+                    'bg-primary-50 text-primary-700 border border-primary-200': activeNav === item.id,
+                    'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50': activeNav !== item.id,
+                  }
+                )}
+              >
+                <span className="flex-shrink-0">{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
         </div>
 
-        {/* Sidebar Navigation */}
-        <nav className="p-2">
-          <ul className="space-y-1">
-            <li>
-              <button
-                onClick={() => {
-                  onNavClick("overview");
-                  if (isMobile) setSidebarVisible(false);
-                }}
-                className={`w-full flex items-center p-3 rounded-lg transition-colors ${
-                  activeNav === "overview"
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="mr-3"><FiHome /></span>
-                <span>Overview</span>
-              </button>
-            </li>
-
-            <li>
-              <button
-                onClick={() => {
-                  onNavClick("addReceipt");
-                  if (isMobile) setSidebarVisible(false);
-                }}
-                className={`w-full flex items-center p-3 rounded-lg transition-colors ${
-                  activeNav === "addReceipt"
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="mr-3"><FiPlus /></span>
-                <span>Add Receipt</span>
-              </button>
-            </li>
-
-            <li>
-              <button
-                onClick={() => {
-                  onNavClick("viewReceipts");
-                  if (isMobile) setSidebarVisible(false);
-                }}
-                className={`w-full flex items-center p-3 rounded-lg transition-colors ${
-                  activeNav === "viewReceipts"
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="mr-3"><FiFileText /></span>
-                <span>View Receipts</span>
-              </button>
-            </li>
-
-            <li>
-              <button
-                onClick={() => {
-                  onNavClick("reports");
-                  if (isMobile) setSidebarVisible(false);
-                }}
-                className={`w-full flex items-center p-3 rounded-lg transition-colors ${
-                  activeNav === "reports"
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="mr-3"><FiBarChart2 /></span>
-                <span>Reports</span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </div>
-
-      {/* Settings Button at Bottom */}
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={() => {
-            onNavClick("settings");
-            if (isMobile) setSidebarVisible(false);
-          }}
-          className={`w-full flex items-center p-3 rounded-lg transition-colors ${
-            activeNav === "settings"
-              ? 'bg-blue-50 text-blue-600'
-              : 'text-gray-700 hover:bg-gray-100'
-          }`}
-        >
-          <span className="mr-3"><FiSettings /></span>
-          <span>Settings</span>
-        </button>
-      </div>
-    </aside>
+        {/* Settings at bottom */}
+        <div className="p-4 border-t border-neutral-200">
+          <button
+            onClick={() => handleNavClick('settings')}
+            className={cn(
+              "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200",
+              "text-left font-medium text-sm",
+              {
+                'bg-primary-50 text-primary-700 border border-primary-200': activeNav === 'settings',
+                'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50': activeNav !== 'settings',
+              }
+            )}
+          >
+            <span className="flex-shrink-0"><FiSettings size={20} /></span>
+            <span>Settings</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 

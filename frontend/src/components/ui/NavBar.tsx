@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { FaBuilding, FaSignOutAlt } from 'react-icons/fa';
-import { HiDotsVertical } from 'react-icons/hi';
+import { HiOutlineLogout, HiOutlineUser, HiMenu } from 'react-icons/hi';
+import { FiBuilding } from 'react-icons/fi';
+import Button from './Button';
 
 interface AuthState {
   logout: () => void;
   role?: string | null;
   committee?: string | null;
+  user?: string | null;
 }
 
 const NavBar: React.FC = () => {
   const logout = useAuthStore((state: AuthState) => state.logout);
   const role = useAuthStore((state: AuthState) => state.role);
   const committee = useAuthStore((state: AuthState) => state.committee);
+  const user = useAuthStore((state: AuthState) => state.user);
   const navigate = useNavigate();
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,71 +26,106 @@ const NavBar: React.FC = () => {
     navigate('/login');
   };
 
+  const getRoleDisplay = (role: string | null | undefined) => {
+    switch (role) {
+      case 'deo': return 'Data Entry Operator';
+      case 'supervisor': return 'Supervisor';
+      case 'ad': return 'Assistant Director';
+      default: return role || 'User';
+    }
+  };
+
   return (
-    <nav className="w-full bg-white shadow-sm px-4 sm:px-6 md:px-8 py-4 border-b border-slate-200 relative z-50">
-      <div className="flex items-center justify-between">
-        {/* Committee Info */}
-        <div className="flex items-center gap-4">
-          <div className="p-2 rounded-xl bg-blue-50 shadow-inner flex items-center justify-center">
-            <FaBuilding className="text-blue-600 w-8 h-8" />
-          </div>
-          <div>
-            <div className="text-lg sm:text-xl font-bold text-blue-600 tracking-tight uppercase">
-              {(committee || 'Committee').toUpperCase()}
-            </div>
-            <div className="text-sm text-gray-500">
-              Agricultural Market Committee Receipt Management
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side */}
-        <div className="hidden sm:flex items-center gap-4">
-          {/* Role Badge */}
-          <div
-            className="px-4 py-1 rounded-full bg-blue-100 text-blue-800 font-semibold text-sm shadow-sm hover:bg-blue-200 transition"
-            title="Your current user role"
-          >
-            👤 {role || 'Role'}
-          </div>
-
-          {/* Logout */}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-md transition-all duration-200 text-sm font-medium"
-            aria-label="Logout"
-            title="Logout"
-          >
-            <FaSignOutAlt className="w-4 h-4" />
-            <span>Logout</span>
-          </button>
-        </div>
-
-        {/* Mobile Dropdown Toggle */}
-        <div className="sm:hidden relative">
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded-md hover:bg-gray-100 transition"
-            aria-label="Menu"
-          >
-            <HiDotsVertical className="w-6 h-6 text-gray-700" />
-          </button>
-
-          {menuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg border border-gray-200 rounded-md py-2">
-              <div className="px-4 py-2 text-sm text-gray-700 font-semibold">
-                👤 {role || 'Role'}
+    <nav className="bg-white border-b border-neutral-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Left side - Logo and Committee */}
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-primary-100 rounded-lg">
+                <FiBuilding className="w-5 h-5 text-primary-600" />
               </div>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-              >
-                <FaSignOutAlt className="w-4 h-4" />
-                Logout
-              </button>
+              <div className="hidden sm:block">
+                <h1 className="text-lg font-semibold text-neutral-900">
+                  AMC Receipt System
+                </h1>
+                {committee && (
+                  <p className="text-sm text-neutral-500 truncate max-w-xs">
+                    {committee}
+                  </p>
+                )}
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Right side - User info and actions */}
+          <div className="flex items-center space-x-4">
+            {/* Desktop view */}
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="flex items-center space-x-3 px-3 py-2 bg-neutral-50 rounded-lg">
+                <HiOutlineUser className="w-5 h-5 text-neutral-400" />
+                <div className="text-sm">
+                  <p className="font-medium text-neutral-900">{user}</p>
+                  <p className="text-neutral-500">{getRoleDisplay(role)}</p>
+                </div>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="flex items-center space-x-2"
+              >
+                <HiOutlineLogout className="w-4 h-4" />
+                <span>Logout</span>
+              </Button>
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMenuOpen(!menuOpen)}
+              >
+                <HiMenu className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
         </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="md:hidden border-t border-neutral-200 py-4">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 px-3 py-2 bg-neutral-50 rounded-lg">
+                <HiOutlineUser className="w-5 h-5 text-neutral-400" />
+                <div className="text-sm">
+                  <p className="font-medium text-neutral-900">{user}</p>
+                  <p className="text-neutral-500">{getRoleDisplay(role)}</p>
+                </div>
+              </div>
+              
+              {committee && (
+                <div className="px-3 py-2">
+                  <p className="text-sm text-neutral-500">Committee</p>
+                  <p className="text-sm font-medium text-neutral-900">{committee}</p>
+                </div>
+              )}
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                fullWidth
+                className="flex items-center justify-center space-x-2"
+              >
+                <HiOutlineLogout className="w-4 h-4" />
+                <span>Logout</span>
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

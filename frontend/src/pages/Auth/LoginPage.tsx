@@ -1,14 +1,92 @@
 import React from 'react';
-import LoginHeroSection from '../../components/Authcompo/LoginHeroSection';
+import { Card, CardContent } from '../../components/ui/Card';
 import LoginForm from '../../components/Authcompo/LoginForm';
+import { FiShield, FiUsers, FiBarChart, FiFileText } from 'react-icons/fi';
 
 const LoginPage = () => {
+  const features = [
+    {
+      icon: <FiFileText size={20} />,
+      title: 'Receipt Management',
+      description: 'Digital entry and validation of trade receipts'
+    },
+    {
+      icon: <FiBarChart size={20} />,
+      title: 'Analytics & Insights',
+      description: 'Comprehensive analytics and performance tracking'
+    },
+    {
+      icon: <FiUsers size={20} />,
+      title: 'Role-Based Access',
+      description: 'Secure access for DEOs, Supervisors, and Directors'
+    },
+    {
+      icon: <FiShield size={20} />,
+      title: 'Secure & Compliant',
+      description: 'Complete system administration and audit trails'
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 flex items-center justify-center p-4">
-      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <LoginHeroSection />
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-neutral-50 flex items-center justify-center p-4">
+      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        
+        {/* Left side - Hero content */}
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <h1 className="text-4xl lg:text-5xl font-bold text-neutral-900 leading-tight">
+              AMC Receipt
+              <span className="text-primary-600 block">Management System</span>
+            </h1>
+            <p className="text-xl text-neutral-600 leading-relaxed">
+              Secure, efficient, and transparent management of agricultural market committee trade receipts.
+            </p>
+          </div>
+
+          {/* Features grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {features.map((feature, index) => (
+              <div key={index} className="flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm border border-neutral-200">
+                <div className="flex items-center justify-center w-10 h-10 bg-primary-100 rounded-lg flex-shrink-0">
+                  <div className="text-primary-600">
+                    {feature.icon}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-neutral-900 text-sm">{feature.title}</h3>
+                  <p className="text-neutral-600 text-sm leading-relaxed">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Demo credentials */}
+          <Card className="bg-primary-50 border-primary-200">
+            <CardContent className="space-y-3">
+              <h3 className="font-semibold text-primary-900">Demo Login Credentials</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-primary-700">DEO (Data Entry):</span>
+                  <code className="bg-white px-2 py-1 rounded text-primary-800 font-mono">demo_deo</code>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-primary-700">Supervisor:</span>
+                  <code className="bg-white px-2 py-1 rounded text-primary-800 font-mono">demo_supervisor</code>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-primary-700">Assistant Director:</span>
+                  <code className="bg-white px-2 py-1 rounded text-primary-800 font-mono">demo_ad</code>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right side - Login form */}
         <div className="flex items-center justify-center">
-          <LoginForm />
+          <div className="w-full max-w-md">
+            <LoginForm />
+          </div>
         </div>
       </div>
     </div>
