@@ -13,7 +13,7 @@
 
    ```bash
    git clone <your-repo-url>
-   cd agri-receipts-backend
+   cd server
    ```
 ````
 
