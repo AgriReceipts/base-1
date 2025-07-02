@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { FiSidebar, FiX, FiMenu } from 'react-icons/fi';
+import React, {useState, useEffect} from 'react';
+import {FiSidebar, FiX, FiMenu} from 'react-icons/fi';
 import NavBar from '../../components/ui/NavBar';
 import Sidebar from '../../components/supervisorcomponents/Sidebar';
 import Overview from '../../components/supervisorcomponents/Overview';
 import TraderAnalysis from '../../components/supervisorcomponents/TraderAnalysis';
 import CommitteeAnalysis from '../../components/supervisorcomponents/CommiteeAnalysis';
 import Reports from '../../components/supervisorcomponents/Reports';
-import AddReceipt from '../../components/supervisorcomponents/AddRecepit';
 import ViewReceipt from '../../components/supervisorcomponents/ViewRecepits';
-import { MetricCards } from '../../components/supervisorcomponents/metric-cards';
+import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
+import ReceiptEntry from '@/components/common/ReceiptEntry';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -44,7 +44,7 @@ export default function SupervisorDashboard() {
       case 'committeeAnalysis':
         return <CommitteeAnalysis />;
       case 'addReceipt':
-        return <AddReceipt />;
+        return <ReceiptEntry />;
       case 'viewReceipts':
         return <ViewReceipt />;
       case 'reports':
@@ -55,18 +55,17 @@ export default function SupervisorDashboard() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
-      <NavBar className="h-16 border-b-0 flex-shrink-0">
+    <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
+      <NavBar className='h-16 border-b-0 flex-shrink-0'>
         <button
           onClick={toggleSidebar}
-          className="inline-flex text-gray-500 hover:text-blue-600 p-2 ml-2"
-          aria-label="Toggle Sidebar"
-        >
+          className='inline-flex text-gray-500 hover:text-blue-600 p-2 ml-2'
+          aria-label='Toggle Sidebar'>
           {sidebarVisible ? <FiX size={20} /> : <FiMenu size={20} />}
         </button>
       </NavBar>
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className='flex flex-1 overflow-hidden relative'>
         <Sidebar
           sidebarVisible={sidebarVisible}
           isMobile={isMobile}
@@ -78,28 +77,32 @@ export default function SupervisorDashboard() {
         <main
           className={`flex flex-col flex-1 overflow-auto h-full transition-all duration-300 ${
             isMobile && sidebarVisible ? 'ml-0 opacity-50' : 'ml-0'
-          }`}
-        >
-          <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3 flex justify-between items-center">
-            <h1 className="text-xl font-bold">Supervisor Dashboard</h1>
-            <button onClick={toggleSidebar} className="text-gray-500 hover:text-blue-600 p-2">
+          }`}>
+          <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3 flex justify-between items-center'>
+            <h1 className='text-xl font-bold'>Supervisor Dashboard</h1>
+            <button
+              onClick={toggleSidebar}
+              className='text-gray-500 hover:text-blue-600 p-2'>
               <FiSidebar size={20} />
             </button>
           </div>
 
           {activeNav === 'overview' && (
-            <div className="p-4">
+            <div className='p-4'>
               <MetricCards />
             </div>
           )}
 
-          <div className="m-2 my-0 flex-1 flex bg-white/50 rounded-2xl">
+          <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
             {renderContent()}
           </div>
         </main>
 
         {isMobile && sidebarVisible && (
-          <div className="fixed inset-0 bg-black/10 z-40 md:hidden" onClick={toggleSidebar} />
+          <div
+            className='fixed inset-0 bg-black/10 z-40 md:hidden'
+            onClick={toggleSidebar}
+          />
         )}
       </div>
     </div>

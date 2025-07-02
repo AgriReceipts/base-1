@@ -15,13 +15,15 @@ datasource db {
 
 // Enums
 enum UserRole {
-  deo
+  deo //data entry operator
   supervisor
   secretary
-  ad
+  ad //assitant director( has disctrict wide access while the above 3 only has committee wide access)
 }
 
 enum Unit {
+  tons
+  kilograms
   quintals
   numbers
   bags
@@ -85,6 +87,17 @@ model Checkpost {
   receipts  Receipt[]
 }
 
+model Commodity {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  category    String?
+  description String?
+  receipts    Receipt[]
+
+  @@index([name])
+  @@index([category])
+}
+
 model Receipt {
   id                  String             @id @default(uuid())
   receiptDate         DateTime
@@ -94,7 +107,7 @@ model Receipt {
   traderAddress       String
   payeeName           String
   payeeAddress        String
-  commodity           String
+  commodityId         String?
   quantity            Decimal
   unit                Unit
   natureOfReceipt     NatureOfReceipt
@@ -116,6 +129,7 @@ model Receipt {
   committee           Committee          @relation(fields: [committeeId], references: [id])
   checkpost           Checkpost?         @relation(fields: [checkpostId], references: [id])
   user                User               @relation(fields: [generatedBy], references: [id])
+  Commodity           Commodity?         @relation(fields: [commodityId], references: [id])
 
   // Unique constraint for book_number + receipt_number per committee
   @@unique([bookNumber, receiptNumber, committeeId])

@@ -8,7 +8,7 @@ export const authenticateUser = (
 ) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader || !authHeader.startsWith('Bearer')) {
     return res.status(401).json({message: 'Unauthorized: No token provided'});
   }
 
@@ -20,9 +20,20 @@ export const authenticateUser = (
       typeof decoded === 'object' &&
       decoded !== null &&
       'id' in decoded &&
-      'role' in decoded
+      'role' in decoded &&
+      'username' in decoded &&
+      'committee' in decoded
     ) {
-      req.user = decoded as {id: string; role: string};
+      req.user = decoded as {
+        id: string;
+        role: string;
+        username: string;
+        committee: {
+          id: string;
+          name: string;
+        };
+      };
+
       next();
     } else {
       return res.status(401).json({message: 'Unauthorized: Invalid token'});

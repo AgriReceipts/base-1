@@ -7,8 +7,8 @@ const authRoutes = Router();
 
 authRoutes.post(
   '/register',
-  authenticateUser,
-  authorizeRoles('ad'),
+  //authenticateUser,
+  //authorizeRoles('ad'),
   registerUser
 );
 authRoutes.post('/login', login);

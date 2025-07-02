@@ -7,7 +7,10 @@ declare global {
         id: string;
         role: string;
         username: string;
-        committee: string;
+        committee: {
+          id: string;
+          name: string;
+        };
       };
     }
   }
