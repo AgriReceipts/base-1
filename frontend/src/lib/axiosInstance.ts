@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, {isAxiosError} from 'axios';
 import {useAuthStore} from '@/stores/authStore';
 import {toast} from 'react-hot-toast';
 
@@ -11,7 +11,7 @@ const api = axios.create({
   },
 });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -20,8 +20,8 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (res) => res,
-  (err) => {
+  res => res,
+  err => {
     const isLoginPage = window.location.pathname === '/login';
     if (err.response?.status === 401 && !isLoginPage) {
       toast.error('Session expired. Please log in again.');
@@ -29,7 +29,9 @@ api.interceptors.response.use(
       window.location.href = '/login';
     }
     return Promise.reject(err);
-  }
+  },
 );
 
 export default api;
+export {isAxiosError};
+

@@ -29,3 +29,7 @@ export const CreateReceiptSchema = z.object({
 });
 
 export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
+
+export type Receipt = CreateReceiptRequest & {
+  id: string;
+};

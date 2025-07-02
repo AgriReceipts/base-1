@@ -23,7 +23,9 @@ export const createReceipt = async (req: Request, res: Response) => {
 
     const receiptData = parseResult.data;
 
-    if (!receiptData.committeeId) {
+    const committeeId = req.user?.committee.id;
+
+    if (!committeeId) {
       return res.status(400).json({message: 'committeeId is required'});
     }
 
@@ -84,7 +86,7 @@ export const createReceipt = async (req: Request, res: Response) => {
         collectionOtherText: receiptData.collectionOtherText,
         designation: receiptData.designation,
         generatedBy: userId.id,
-        committeeId: receiptData.committeeId,
+        committeeId: committeeId,
         checkpostId: receiptData.checkpostId || null,
       },
       select: {

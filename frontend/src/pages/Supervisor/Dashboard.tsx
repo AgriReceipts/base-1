@@ -8,7 +8,7 @@ import CommitteeAnalysis from '../../components/supervisorcomponents/CommiteeAna
 import Reports from '../../components/supervisorcomponents/Reports';
 import ViewReceipt from '../../components/supervisorcomponents/ViewRecepits';
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
-import {ReceiptForm} from '@/components/common/ReceiptForm';
+import ReceiptEntry from '@/components/common/ReceiptEntry';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -44,7 +44,7 @@ export default function SupervisorDashboard() {
       case 'committeeAnalysis':
         return <CommitteeAnalysis />;
       case 'addReceipt':
-        return <ReceiptForm />;
+        return <ReceiptEntry />;
       case 'viewReceipts':
         return <ViewReceipt />;
       case 'reports':

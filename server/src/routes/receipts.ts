@@ -15,7 +15,7 @@ receiptRoutes.use(authenticateUser);
 
 receiptRoutes.post(
   '/createReceipt',
-  authorizeRoles('deo,superviser,secretary'),
+  authorizeRoles('deo', 'supervisor', 'secretary'),
   createReceipt
 );
 receiptRoutes.get('/getAllReceipts', getAllReceipts);

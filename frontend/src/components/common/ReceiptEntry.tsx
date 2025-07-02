@@ -1,0 +1,192 @@
+import {useState, useEffect, useCallback} from 'react';
+import {toast} from 'react-hot-toast';
+import {z} from 'zod';
+import type {Receipt, CreateReceiptRequest} from '@/types/receipt';
+import {CreateReceiptSchema} from '@/types/receipt';
+import api, {isAxiosError} from '@/lib/axiosInstance';
+import FormReceipt from './FormReceipt';
+import {useAuthStore} from '@/stores/authStore';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {Save} from 'lucide-react';
+
+// Define types for better readability and maintenance
+type FormData = Omit<z.infer<typeof CreateReceiptSchema>, 'receiptDate'>;
+type Commodity = {id: string; name: string};
+type Checkpost = {id: string; name: string};
+
+interface ReceiptEntryProps {
+  receiptToEdit?: Receipt;
+}
+
+// Helper to generate initial form data, ensuring type safety
+const getInitialFormData = (
+  committeeId?: string,
+  user?: {name: string; designation: string} | null
+): FormData => ({
+  bookNumber: '',
+  receiptNumber: '',
+  traderName: '',
+  traderAddress: '',
+  payeeName: '',
+  payeeAddress: '',
+  commodity: '',
+  newCommodityName: '',
+  quantity: 0,
+  unit: 'quintals',
+  natureOfReceipt: 'mf',
+  natureOtherText: '',
+  value: 0,
+  feesPaid: 0,
+  vehicleNumber: '',
+  invoiceNumber: '',
+  collectionLocation: 'office',
+  officeSupervisor: '',
+  checkpostId: '',
+  collectionOtherText: '',
+  generatedBy: user?.name || '',
+  designation: user?.designation || '',
+  committeeId: committeeId || '',
+});
+
+const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
+  const {user, committee} = useAuthStore();
+  const [formData, setFormData] = useState<FormData>(
+    getInitialFormData(committee?.id, user)
+  );
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [commodities, setCommodities] = useState<Commodity[]>([]);
+  const [availableCheckposts, setAvailableCheckposts] = useState<Checkpost[]>(
+    []
+  );
+  const [loading, setLoading] = useState(false);
+  const [commoditySearch, setCommoditySearch] = useState('');
+  const isEditing = !!receiptToEdit;
+
+  const fetchInitialData = useCallback(async () => {
+    if (!committee?.id) return;
+    try {
+      const [commoditiesRes, checkpostsRes] = await Promise.all([
+        api.get(`/commodities/${committee.id}`),
+        api.get(`/checkposts/committee/${committee.id}`),
+      ]);
+      setCommodities(commoditiesRes.data);
+      setAvailableCheckposts(checkpostsRes.data);
+    } catch (error) {
+      console.error('Failed to fetch initial data:', error);
+      toast.error('Failed to fetch initial data.');
+    }
+  }, [committee?.id]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  useEffect(() => {
+    if (receiptToEdit) {
+      const {receiptDate, ...rest} = receiptToEdit;
+      setFormData(rest as FormData);
+      setDate(new Date(receiptDate));
+    } else {
+      setFormData(getInitialFormData(committee?.id, user));
+      setDate(new Date());
+    }
+  }, [receiptToEdit, committee, user]);
+
+  const handleFormChange = (field: keyof FormData, value: string | number) => {
+    setFormData((prev) => ({...prev, [field]: value}));
+  };
+
+  const handleDateChange = (newDate: Date | undefined) => {
+    if (newDate) {
+      setDate(newDate);
+    }
+  };
+
+  const handleReset = () => {
+    setFormData(getInitialFormData(committee?.id, user));
+    setDate(new Date());
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const payload: CreateReceiptRequest = {
+      ...formData,
+      receiptDate: date ? date.toISOString() : new Date().toISOString(),
+      quantity: Number(formData.quantity),
+      value: Number(formData.value),
+      feesPaid: Number(formData.feesPaid),
+    };
+
+    const validation = CreateReceiptSchema.safeParse(payload);
+
+    if (!validation.success) {
+      const errors = validation.error.flatten().fieldErrors;
+      console.error('Validation Errors:', errors);
+      Object.values(errors).forEach((err) => toast.error(err[0]));
+      setLoading(false);
+      return;
+    }
+
+    try {
+      if (isEditing) {
+        await api.put(`/receipts/${receiptToEdit.id}`, validation.data);
+        toast.success('Receipt updated successfully!');
+      } else {
+        await api.post('/receipts/createReceipt', validation.data);
+        toast.success('Receipt saved successfully!');
+        handleReset();
+      }
+    } catch (error) {
+      if (isAxiosError(error) && error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('An error occurred while saving the receipt.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className='flex items-center'>
+          <Save className='mr-2 h-5 w-5' />
+          {isEditing ? 'Edit Receipt Entry' : 'New Receipt Entry'} -{' '}
+          {committee?.name || 'Kakinada Agricultural Market Committee'}
+        </CardTitle>
+        <CardDescription>
+          Enter details for a new trade receipt for{' '}
+          {committee?.name || 'Kakinada Agricultural Market Committee'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <FormReceipt
+          formData={formData}
+          onFormChange={handleFormChange}
+          handleSubmit={handleSubmit}
+          handleReset={handleReset}
+          date={date}
+          onDateChange={handleDateChange}
+          isEditing={isEditing}
+          loading={loading}
+          committeeData={committee}
+          availableCheckposts={availableCheckposts}
+          commodities={commodities}
+          commoditySearch={commoditySearch}
+          setCommoditySearch={setCommoditySearch}
+        />
+      </CardContent>
+    </Card>
+  );
+};
+
+export default ReceiptEntry;
