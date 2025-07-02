@@ -123,6 +123,7 @@ const LoginForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             placeholder='••••••••'
           />
+        </div>
 
         <button
           type='submit'

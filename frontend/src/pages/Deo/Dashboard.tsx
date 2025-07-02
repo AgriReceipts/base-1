@@ -8,6 +8,7 @@ import ViewReceipts from '../../components/deocomponents/ViewReceipts';
 import Reports from '../../components/deocomponents/Reports';
 import {MetricCards} from '../../components/deocomponents/metric-cards';
 import ReceiptEntry from '@/components/common/ReceiptEntry';
+import NavBar from '@/components/ui/NavBar';
 
 export default function DeoDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -66,6 +67,14 @@ export default function DeoDashboard() {
 
   return (
     <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
+      <NavBar className='h-16 border-b-0 flex-shrink-0'>
+        <button
+          onClick={toggleSidebar}
+          className='inline-flex text-gray-500 hover:text-blue-600 p-2 ml-2'
+          aria-label='Toggle Sidebar'>
+          {sidebarVisible ? <FiX size={20} /> : <FiMenu size={20} />}
+        </button>
+      </NavBar>
       <div className='flex flex-1 overflow-hidden relative'>
         <Sidebar
           sidebarVisible={sidebarVisible}
