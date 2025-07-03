@@ -1,48 +1,77 @@
-🔐 Default Login Credentials
+
+---
+
+## 🔐 Default Login Credentials
+
 This project uses pre-defined user accounts for testing and demo purposes. Below are the details for usernames and passwords based on user roles.
 
-🔑 Password
-All user accounts created by this script use the same default password:
+---
 
-nginx
-Copy
-Edit
+### 🔑 **Password**
+
+All user accounts created by this script use the **same default password**:
+
+```
 password123
-👤 Usernames
-📌 Committee Users (DEO, Supervisor, Secretary)
+```
+
+---
+
+### 👤 **Usernames**
+
+#### 📌 Committee Users (DEO, Supervisor, Secretary)
+
 Usernames are generated using the format:
 
-php-template
-Copy
-Edit
+```
 <role>_<committeename>
-The role is one of: deo, supervisor, or secretary
+```
 
-The committee name is in lowercase with spaces removed
+* The **role** is one of: `deo`, `supervisor`, or `secretary`
+* The **committee name** is in lowercase with **spaces removed**
 
-✅ Examples
-For the "Kakinada Rural" committee:
+##### ✅ Examples
 
-deo_kakinadarural
+For the `"Kakinada Rural"` committee:
 
-supervisor_kakinadarural
+* `deo_kakinadarural`
+* `supervisor_kakinadarural`
+* `secretary_kakinadarural`
 
-secretary_kakinadarural
+For the `"Pithapuram"` committee:
 
-For the "Pithapuram" committee:
+* `deo_pithapuram`
+* `supervisor_pithapuram`
+* `secretary_pithapuram`
 
-deo_pithapuram
+---
 
-supervisor_pithapuram
+### 🗂️ Available Committees
 
-secretary_pithapuram
+The following committee names are currently configured:
 
-🧑‍💼 Assistant Director (AD) Users
-These users are not tied to a specific committee. Their usernames are predefined:
+* Karapa
+* Kakinada Rural
+* Pithapuram
+* Tuni
+* Prathipadu
+* Jaggampeta
+* Peddapuram
+* Samalkota
+* Kakinada
 
-ad_user1
+Use these committee names (lowercased and without spaces) when forming usernames.
 
-ad_user2
+---
 
-ad_user3
+#### 🧑‍💼 Assistant Director (AD) Users
+
+These users are **not tied to a specific committee**. Their usernames are predefined:
+
+* `ad_user1`
+* `ad_user2`
+* `ad_user3`
+
+---
+
 
