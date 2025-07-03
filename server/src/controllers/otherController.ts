@@ -24,6 +24,28 @@ export const getAllCommodities = async (req: Request, res: Response) => {
   }
 };
 
+// @desc    Gets all commities
+// @route   GET /api/metaData/commities
+// @access  Public
+
+export const getAllCommitties = async (req: Request, res: Response) => {
+  try {
+    const committees = await prisma.committee.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return res.status(200).json({
+      message: 'Commities Fetchec Successfully',
+      data: committees,
+    });
+  } catch (error) {
+    return handlePrismaError(res, error);
+  }
+};
+
 // @desc    Gets all checkposts for a committee
 // @route   GET /api/metadata/checkpost/:committeeId
 // @access  Public

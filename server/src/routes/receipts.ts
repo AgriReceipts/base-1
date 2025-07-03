@@ -1,6 +1,7 @@
 import {Router} from 'express';
 import {
   createReceipt,
+  downloadReceipt,
   getAllReceipts,
   getReceiptById,
   getReceiptByReceiptNumber,
@@ -21,5 +22,6 @@ receiptRoutes.post(
 receiptRoutes.get('/getAllReceipts', getAllReceipts);
 receiptRoutes.get('/getReceipt/:id', getReceiptById);
 receiptRoutes.get('/getReceiptByRn/:receiptNumber', getReceiptByReceiptNumber);
+receiptRoutes.get('/download/:id', downloadReceipt);
 
 export default receiptRoutes;
