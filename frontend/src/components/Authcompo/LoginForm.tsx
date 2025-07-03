@@ -147,10 +147,6 @@ const LoginForm = () => {
             'Sign In'
           )}
         </button>
-
-        <div className='text-center text-sm text-gray-500 mt-4'>
-          <p>Demo credentials only. No password required.</p>
-        </div>
       </form>
     </AuthCard>
   );

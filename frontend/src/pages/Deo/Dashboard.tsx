@@ -1,12 +1,14 @@
 import {useState, useEffect} from 'react';
 import {FiSidebar, FiX, FiMenu} from 'react-icons/fi';
-import Sidebar from '../../components/deocomponents/Sidebar';
-import Overview from '../../components/deocomponents/Overview';
-import ViewReceipts from '../../components/common/ViewReceipts';
+import Sidebar from '../../components/common/Sidebar';
+import ViewReceipts from '../../components/common/viewReceipt/ViewReceipts';
 import Reports from '../../components/deocomponents/Reports';
 import {MetricCards} from '../../components/deocomponents/metric-cards';
-import ReceiptEntry from '@/components/common/ReceiptEntry';
-import NavBar from '@/components/ui/NavBar';
+import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
+
+import Overview from '@/components/common/overview/Overview';
+import logo from '../../assets/logo-ap.png';
+import Nav from '@/components/ui/Nav';
 
 export default function DeoDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -65,14 +67,6 @@ export default function DeoDashboard() {
 
   return (
     <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
-      <NavBar className='h-16 border-b-0 flex-shrink-0'>
-        <button
-          onClick={toggleSidebar}
-          className='inline-flex text-gray-500 hover:text-blue-600 p-2 ml-2'
-          aria-label='Toggle Sidebar'>
-          {sidebarVisible ? <FiX size={20} /> : <FiMenu size={20} />}
-        </button>
-      </NavBar>
       <div className='flex flex-1 overflow-hidden relative'>
         <Sidebar
           sidebarVisible={sidebarVisible}
@@ -86,15 +80,9 @@ export default function DeoDashboard() {
           className={`flex flex-col flex-1 overflow-auto h-full transition-all duration-300 ${
             isMobile && sidebarVisible ? 'ml-0 opacity-50' : 'ml-0'
           }`}>
-          <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3 flex justify-between items-center'>
-            <h1 className='text-xl font-bold'>Dashboard</h1>
-            <button
-              onClick={toggleSidebar}
-              className='text-gray-500 hover:text-blue-600 p-2'>
-              <FiSidebar size={20} />
-            </button>
+          <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
+            <Nav onToggleSidebar={toggleSidebar} />
           </div>
-
           {/* Metrics for overview page */}
           {activeNav === 'overview' && (
             <div className='p-4'>

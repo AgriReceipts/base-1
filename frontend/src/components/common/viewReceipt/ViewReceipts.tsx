@@ -84,7 +84,7 @@ const ViewReceipts = () => {
     if (user?.designation === 'ad') {
       fetchAllCommittees().then(setCommittees);
     }
-  }, [user.role]);
+  }, [user?.designation]);
 
   const handleFilterChange = (e) => {
     const {name, value} = e.target;
@@ -177,8 +177,8 @@ const ViewReceipts = () => {
               className='w-full py-2 px-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500'>
               <option value=''>All Natures</option>
               <option value='mf'>Market Fees (MF)</option>
-              <option value='lf'>License Fees (LF)</option>
-              <option value='other'>Other</option>
+              <option value='lc'>License Fees (LF)</option>
+              <option value='others'>Other</option>
             </select>
           </div>
           {/* Date Filters */}
