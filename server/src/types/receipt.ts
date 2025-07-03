@@ -1,3 +1,4 @@
+import {NatureOfReceipt} from '@prisma/client';
 import {Interface} from 'readline';
 import {z} from 'zod';
 
@@ -32,12 +33,11 @@ export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
 
 // Query parameters for listing receipts
 export interface ReceiptQueryParams {
-  page?: number;
-  limit?: number;
-  committeeId?: string;
+  page?: string;
+  limit?: string;
+  search?: string;
+  natureOfReceipt?: NatureOfReceipt;
+  committeeId?: string; // For AD role to filter by committee
   startDate?: string;
   endDate?: string;
-  traderName?: string;
-  commodity?: string;
-  natureOfReceipt?: string;
 }

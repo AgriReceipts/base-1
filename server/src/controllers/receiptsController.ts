@@ -1,12 +1,9 @@
 import {Request, Response} from 'express';
 import prisma from '../utils/database';
 import {Prisma} from '@prisma/client';
-import {
-  CreateReceiptRequest,
-  CreateReceiptSchema,
-  ReceiptQueryParams,
-} from '../types/receipt';
+import {CreateReceiptSchema, ReceiptQueryParams} from '../types/receipt';
 import {handlePrismaError} from '../utils/helpers';
+
 // @desc    Create a new receipt
 // @route   POST /api/receipts/createReceipt
 // @access  Private
@@ -100,42 +97,6 @@ export const createReceipt = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Get all receipts with filtering and pagination
-// @route   GET /api/receipts/getAllReceipts
-// @access  Private
-export const getAllReceipts = async (req: Request, res: Response) => {
-  try {
-    const {page = 1, limit = 10, ...filters}: ReceiptQueryParams = req.query;
-
-    // TODO: Build a dynamic where clause based on filters
-
-    const receipts = await prisma.receipt.findMany({
-      skip: (Number(page) - 1) * Number(limit),
-      take: Number(limit),
-      // where: whereClause, // Add your dynamic filters here
-      orderBy: {
-        receiptDate: 'desc',
-      },
-    });
-
-    const totalReceipts = await prisma.receipt.count({
-      /* where: whereClause */
-    });
-
-    res.status(200).json({
-      data: receipts,
-      pagination: {
-        total: totalReceipts,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(totalReceipts / Number(limit)),
-      },
-    });
-  } catch (error) {
-    return handlePrismaError(res, error);
-  }
-};
-
 // @desc    Get a single receipt by receiptNumber
 // @route   GET /api/receipts/getReceiptByRn/:receiptNumber
 // @access  Private
@@ -159,25 +120,160 @@ export const getReceiptByReceiptNumber = async (
     res.status(500).json({message: 'Server error'});
   }
 };
+// @desc    Get all receipts with filtering, pagination, and role-based access
+// @route   GET /api/receipts/getAllReceipts
+// @access  Private
+export const getAllReceipts = async (req: Request, res: Response) => {
+  try {
+    const {
+      page = '1',
+      limit = '10',
+      search,
+      natureOfReceipt,
+      committeeId,
+      startDate,
+      endDate,
+    }: ReceiptQueryParams = req.query;
 
-// @desc    Get a single receipt by ID
+    // @ts-ignore - Assuming user object is attached by auth middleware
+    const user = req.user; // e.g., { id: '...', role: 'deo', committee: { id: '...' } }
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
+
+    // 1. Build the dynamic 'where' clause for Prisma
+    const where: Prisma.ReceiptWhereInput = {};
+
+    // 2. Role-Based Access Control (RBAC)
+    if (user?.role !== 'ad') {
+      // If user is not an Admin, restrict to their own committee
+      where.committeeId = user?.committee.id;
+    } else if (committeeId) {
+      // If user is an Admin and a committeeId filter is provided, use it
+      where.committeeId = committeeId;
+    }
+    // If user is 'ad' and no committeeId is provided, they see all committees.
+
+    // 3. Add other filters to the 'where' clause
+    if (search) {
+      where.OR = [
+        {receiptNumber: {contains: search, mode: 'insensitive'}},
+        {bookNumber: {contains: search, mode: 'insensitive'}},
+      ];
+    }
+
+    if (natureOfReceipt) {
+      where.natureOfReceipt = natureOfReceipt;
+    }
+
+    if (startDate || endDate) {
+      where.receiptDate = {};
+      if (startDate) {
+        where.receiptDate.gte = new Date(startDate);
+      }
+      if (endDate) {
+        // Add 1 day to the end date to include the whole day
+        const endOfDay = new Date(endDate);
+        endOfDay.setDate(endOfDay.getDate() + 1);
+        where.receiptDate.lt = endOfDay;
+      }
+    }
+
+    // 4. Fetch receipts and total count concurrently
+    const [receipts, totalReceipts] = await prisma.$transaction([
+      prisma.receipt.findMany({
+        skip,
+        take: limitNum,
+        where,
+        // Select only the necessary fields to keep the response lean
+        select: {
+          id: true,
+          receiptNumber: true,
+          bookNumber: true,
+          traderName: true,
+          payeeName: true,
+          value: true,
+          natureOfReceipt: true,
+          receiptSignedBy: true, // Renamed from signedBy for clarity
+          receiptDate: true,
+          committee: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          receiptDate: 'desc',
+        },
+      }),
+      prisma.receipt.count({where}),
+    ]);
+
+    res.status(200).json({
+      data: receipts,
+      pagination: {
+        total: totalReceipts,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(totalReceipts / limitNum),
+      },
+    });
+  } catch (error) {
+    // Make sure to have a proper error handler
+    handlePrismaError(res, error);
+  }
+};
+
+// @desc    Get a single receipt by its ID
 // @route   GET /api/receipts/getReceipt/:id
 // @access  Private
-
 export const getReceiptById = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id;
+    const {id} = req.params;
+    // @ts-ignore
+    const user = req.user;
 
     const receipt = await prisma.receipt.findUnique({
       where: {id},
+      include: {
+        Commodity: true,
+        checkpost: true,
+        committee: true,
+      },
     });
 
     if (!receipt) {
-      return res.status(400).json({message: 'Receipt not found'});
+      return res.status(404).json({message: 'Receipt not found'});
     }
-    res.status(200).json(receipt);
+
+    // Security Check: Ensure user is an admin or belongs to the receipt's committee
+    if (user?.role !== 'ad' && receipt.committeeId !== user?.committee.id) {
+      return res
+        .status(403)
+        .json({message: 'Forbidden: You do not have access to this receipt'});
+    }
+
+    res.status(200).json({data: receipt});
   } catch (error) {
-    console.error('Error fetching receipt by Id', error);
-    res.status(500).json({message: 'Server error'});
+    handlePrismaError(res, error);
   }
+};
+
+// You would also have a download endpoint like this
+// @desc    Download a single receipt
+// @route   GET /api/receipts/download/:id
+// @access  Private
+export const downloadReceipt = async (req: Request, res: Response) => {
+  const {id} = req.params;
+  // 1. Fetch receipt data using getReceiptById logic
+  // 2. Use a library like 'pdfkit' or 'puppeteer' to generate a PDF from the data
+  // 3. Set response headers for file download
+  // res.setHeader('Content-Type', 'application/pdf');
+  // res.setHeader('Content-Disposition', `attachment; filename=receipt-${id}.pdf`);
+  // 4. Send the generated PDF buffer
+  // res.send(pdfBuffer);
+  res
+    .status(501)
+    .json({message: `PDF generation for ${id} not implemented yet.`});
 };

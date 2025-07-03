@@ -4,7 +4,7 @@ import {handlePrismaError} from '../utils/helpers';
 import {da} from '@faker-js/faker/.';
 
 // @desc    Gets all commodities
-// @route   GET /api/metadata/getAllCommodities
+// @route   GET /api/metaData/commodities
 // @access  Public
 export const getAllCommodities = async (req: Request, res: Response) => {
   try {
