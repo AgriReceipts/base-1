@@ -1,16 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {useAuthStore} from '../../stores/authStore';
+import {handleJwtLogin} from '../../stores/authStore';
 import AuthCard from './AuthCard';
-import {jwtDecode} from 'jwt-decode';
-import api from '@/lib/axiosInstance';
 
-type JwtPayload = {
-  id: string;
-  username: string;
-  role: 'deo' | 'supervisor' | 'ad' | 'secretary';
-  committee?: {id: string; name: string};
-};
+import api from '@/lib/axiosInstance';
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
@@ -18,7 +11,6 @@ const LoginForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {login} = useAuthStore();
   const navigate = useNavigate();
 
   // Reset error when user types again
@@ -37,19 +29,16 @@ const LoginForm = () => {
         username,
         password,
       });
+      const result = handleJwtLogin(res.data.token);
+      if (result.success) {
+        // Login successful
+        console.log('Logged in:', result.decoded);
+      } else {
+        // Handle login error
+        console.error('Login failed:', result.error);
+      }
 
-      const token = res.data.token;
-      localStorage.setItem('token', token);
-
-      const decoded = jwtDecode<JwtPayload>(token);
-
-      login({
-        username: decoded.username,
-        role: decoded.role,
-        committee: decoded.committee?.name ?? null,
-      });
-
-      switch (decoded.role) {
+      switch (result.decoded?.role) {
         case 'deo':
           navigate('/deo');
           break;

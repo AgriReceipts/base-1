@@ -1,33 +1,98 @@
-// shared/types/receipt.ts
 import {z} from 'zod';
 
-export const CreateReceiptSchema = z.object({
-  receiptDate: z.string(),
-  bookNumber: z.string(),
-  receiptNumber: z.string(),
-  traderName: z.string(),
-  traderAddress: z.string().optional(),
-  payeeName: z.string(),
-  payeeAddress: z.string().optional(),
-  commodity: z.string(),
-  newCommodityName: z.string().optional(),
-  quantity: z.number(),
-  unit: z.enum(['quintals', 'numbers', 'bags']),
-  natureOfReceipt: z.enum(['mf', 'lc', 'uc', 'others']),
-  natureOtherText: z.string().optional(),
-  value: z.number(),
-  feesPaid: z.number(),
-  vehicleNumber: z.string().optional(),
-  invoiceNumber: z.string().optional(),
-  collectionLocation: z.enum(['office', 'checkpost', 'other']),
-  officeSupervisor: z.string().optional(),
-  checkpostId: z.string().optional(),
-  collectionOtherText: z.string().optional(),
-  generatedBy: z.string(),
-  designation: z.string(),
-  committeeId: z.string(),
-});
-
+export const CreateReceiptSchema = z
+  .object({
+    receiptDate: z.string().min(1, 'Receipt date is required'),
+    bookNumber: z.string().min(1, 'Book number is required'),
+    receiptNumber: z.string().min(1, 'Receipt number is required'),
+    traderName: z.string().min(1, 'Trader name is required'),
+    traderAddress: z.string().optional(),
+    payeeName: z.string().min(1, 'Payee name is required'),
+    payeeAddress: z.string().optional(),
+    commodity: z.string().min(1, 'Commodity is required'),
+    newCommodityName: z.string().optional(),
+    quantity: z.number().positive('Quantity must be greater than 0'),
+    unit: z.enum(['quintals', 'numbers', 'bags'], {
+      errorMap: () => ({message: 'Please select a valid unit'}),
+    }),
+    natureOfReceipt: z.enum(['mf', 'lc', 'uc', 'others'], {
+      errorMap: () => ({message: 'Please select nature of receipt'}),
+    }),
+    natureOtherText: z.string().optional(),
+    value: z.number().nonnegative('Value must be 0 or greater'),
+    feesPaid: z.number().nonnegative('Fees paid must be 0 or greater'),
+    vehicleNumber: z.string().optional(),
+    invoiceNumber: z.string().optional(),
+    collectionLocation: z.enum(['office', 'checkpost', 'other'], {
+      errorMap: () => ({message: 'Please select a collection location'}),
+    }),
+    officeSupervisor: z.string().optional(),
+    checkpostId: z.string().optional(),
+    collectionOtherText: z.string().optional(),
+    receiptSignedBy: z.string().min(1, 'Receipt signed by is required'),
+    designation: z.string().min(1, 'Designation is required'),
+    committeeId: z.string().min(1, 'Committee ID is required'),
+  })
+  .refine(
+    (data) => {
+      if (data.commodity === 'Other') {
+        return !!data.newCommodityName?.trim();
+      }
+      return true;
+    },
+    {
+      message: 'Please enter a new commodity name',
+      path: ['newCommodityName'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.natureOfReceipt === 'others') {
+        return !!data.natureOtherText?.trim();
+      }
+      return true;
+    },
+    {
+      message: 'Please specify the nature of receipt',
+      path: ['natureOtherText'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.collectionLocation === 'office') {
+        return !!data.officeSupervisor?.trim();
+      }
+      return true;
+    },
+    {
+      message: 'Please select an office supervisor',
+      path: ['officeSupervisor'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.collectionLocation === 'checkpost') {
+        return !!data.checkpostId?.trim();
+      }
+      return true;
+    },
+    {
+      message: 'Please select a checkpost',
+      path: ['checkpostId'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.collectionLocation === 'other') {
+        return !!data.collectionOtherText?.trim();
+      }
+      return true;
+    },
+    {
+      message: 'Please enter the other location',
+      path: ['collectionOtherText'],
+    }
+  );
 export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
 
 export type Receipt = CreateReceiptRequest & {

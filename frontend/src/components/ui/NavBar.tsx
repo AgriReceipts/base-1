@@ -5,18 +5,11 @@ import {HiOutlineLogout, HiOutlineUser, HiMenu} from 'react-icons/hi';
 import Button from './Button';
 import {Building} from 'lucide-react';
 
-interface AuthState {
-  logout: () => void;
-  role?: string | null;
-  committee?: string | null;
-  user?: string | null;
-}
-
 const NavBar: React.FC = () => {
-  const logout = useAuthStore((state: AuthState) => state.logout);
-  const role = useAuthStore((state: AuthState) => state.role);
-  const committee = useAuthStore((state: AuthState) => state.committee);
-  const user = useAuthStore((state: AuthState) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const role = useAuthStore((state) => state.role);
+  const committee = useAuthStore((state) => state.committee);
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -34,6 +27,8 @@ const NavBar: React.FC = () => {
         return 'Supervisor';
       case 'ad':
         return 'Assistant Director';
+      case 'secretary':
+        return 'Secretary';
       default:
         return role || 'User';
     }
@@ -55,7 +50,7 @@ const NavBar: React.FC = () => {
                 </h1>
                 {committee && (
                   <p className='text-sm text-neutral-500 truncate max-w-xs'>
-                    {committee}
+                    {committee.name}
                   </p>
                 )}
               </div>
@@ -69,7 +64,7 @@ const NavBar: React.FC = () => {
               <div className='flex items-center space-x-3 px-3 py-2 bg-neutral-50 rounded-lg'>
                 <HiOutlineUser className='w-5 h-5 text-neutral-400' />
                 <div className='text-sm'>
-                  <p className='font-medium text-neutral-900'>{user}</p>
+                  <p className='font-medium text-neutral-900'>{user?.name}</p>
                   <p className='text-neutral-500'>{getRoleDisplay(role)}</p>
                 </div>
               </div>
@@ -103,7 +98,7 @@ const NavBar: React.FC = () => {
               <div className='flex items-center space-x-3 px-3 py-2 bg-neutral-50 rounded-lg'>
                 <HiOutlineUser className='w-5 h-5 text-neutral-400' />
                 <div className='text-sm'>
-                  <p className='font-medium text-neutral-900'>{user}</p>
+                  <p className='font-medium text-neutral-900'>{user?.name}</p>
                   <p className='text-neutral-500'>{getRoleDisplay(role)}</p>
                 </div>
               </div>
@@ -112,7 +107,7 @@ const NavBar: React.FC = () => {
                 <div className='px-3 py-2'>
                   <p className='text-sm text-neutral-500'>Committee</p>
                   <p className='text-sm font-medium text-neutral-900'>
-                    {committee}
+                    {committee.name}
                   </p>
                 </div>
               )}

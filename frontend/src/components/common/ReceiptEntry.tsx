@@ -9,7 +9,7 @@ import {useAuthStore} from '@/stores/authStore';
 
 // Define types for better readability and maintenance
 type FormData = Omit<z.infer<typeof CreateReceiptSchema>, 'receiptDate'>;
-type Commodity = {id: string; name: string};
+type Commodity = string;
 type Checkpost = {id: string; name: string};
 
 interface ReceiptEntryProps {
@@ -17,10 +17,7 @@ interface ReceiptEntryProps {
 }
 
 // Helper to generate initial form data, ensuring type safety
-const getInitialFormData = (
-  committeeId?: string,
-  user?: {name: string; designation: string} | null
-): FormData => ({
+const getInitialFormData = (committeeId?: string): FormData => ({
   bookNumber: '',
   receiptNumber: '',
   traderName: '',
@@ -29,27 +26,27 @@ const getInitialFormData = (
   payeeAddress: '',
   commodity: '',
   newCommodityName: '',
-  quantity: 0,
+  quantity: '',
   unit: 'quintals',
   natureOfReceipt: 'mf',
   natureOtherText: '',
-  value: 0,
-  feesPaid: 0,
+  value: '',
+  feesPaid: '',
   vehicleNumber: '',
   invoiceNumber: '',
   collectionLocation: 'office',
   officeSupervisor: '',
   checkpostId: '',
   collectionOtherText: '',
-  generatedBy: user?.name || '',
-  designation: user?.designation || '',
+  receiptSignedBy: '',
+  designation: '',
   committeeId: committeeId || '',
 });
 
 const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
-  const {user, committee} = useAuthStore();
+  const {committee} = useAuthStore();
   const [formData, setFormData] = useState<FormData>(
-    getInitialFormData(committee?.id, user)
+    getInitialFormData(committee?.id)
   );
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [commodities, setCommodities] = useState<Commodity[]>([]);
@@ -64,11 +61,13 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
     if (!committee?.id) return;
     try {
       const [commoditiesRes, checkpostsRes] = await Promise.all([
-        api.get(`/commodities/${committee.id}`),
-        api.get(`/checkposts/committee/${committee.id}`),
+        api.get(`metaData/commodities`),
+        api.get(`/metaData/checkpost/${committee.id}`),
       ]);
-      setCommodities(commoditiesRes.data);
-      setAvailableCheckposts(checkpostsRes.data);
+
+      setCommodities(['Other', ...commoditiesRes.data.data]);
+      setAvailableCheckposts(checkpostsRes.data.data.checkposts);
+      console.log('Checkpost data', availableCheckposts);
     } catch (error) {
       console.error('Failed to fetch initial data:', error);
       toast.error('Failed to fetch initial data.');
@@ -85,10 +84,10 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
       setFormData(rest as FormData);
       setDate(new Date(receiptDate));
     } else {
-      setFormData(getInitialFormData(committee?.id, user));
+      setFormData(getInitialFormData(committee?.id));
       setDate(new Date());
     }
-  }, [receiptToEdit, committee, user]);
+  }, [receiptToEdit, committee]);
 
   const handleFormChange = (field: keyof FormData, value: string | number) => {
     setFormData((prev) => ({...prev, [field]: value}));
@@ -101,7 +100,7 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
   };
 
   const handleReset = () => {
-    setFormData(getInitialFormData(committee?.id, user));
+    setFormData(getInitialFormData(committee?.id));
     setDate(new Date());
   };
 

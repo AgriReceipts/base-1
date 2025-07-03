@@ -18,7 +18,7 @@ interface FormReceiptProps {
   loading: boolean;
   committeeData: {id: string; name: string; code?: string} | null;
   availableCheckposts: {id: string; name: string}[];
-  commodities: {id: string; name: string}[];
+  commodities: string[];
   commoditySearch: string;
   setCommoditySearch: (search: string) => void;
 }
@@ -31,7 +31,7 @@ const natureOfReceipt = [
   {value: 'uc', label: 'User Charges (UC)'},
   {value: 'others', label: 'Others'},
 ];
-const supervisors = ['SUPERVISOR_1', 'SUPERVISOR_2'];
+const supervisors = ['SUPERVISOR_1', 'SUPERVISOR_2', 'SUPERVISOR_3'];
 
 const FormReceipt: React.FC<FormReceiptProps> = ({
   formData,
@@ -49,7 +49,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
   setCommoditySearch,
 }) => {
   const filteredCommodities = commodities.filter((c) =>
-    c.name.toLowerCase().includes(commoditySearch.toLowerCase())
+    c.toLowerCase().includes(commoditySearch.toLowerCase())
   );
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +76,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                 className='bg-white/20 rounded-full px-2 py-0.5 text-sm font-light backdrop-blur-sm'
                 role='contentinfo'
                 aria-label='Committee code'>
-                Code: {committeeData?.code || 'AMC'}
+                Code: {committeeData?.name || 'AMC'}
               </div>
             </div>
           </div>
@@ -291,14 +291,32 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     id='commodity'
                     value={formData.commodity}
                     onChange={(e) => onFormChange('commodity', e.target.value)}
-                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjRCNUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.5rem]">
+                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,...')] bg-no-repeat bg-[center_right_0.5rem]">
                     <option value=''>Select commodity</option>
-                    {commodities.map((commodity) => (
-                      <option key={commodity.id} value={commodity.name}>
-                        {commodity.name}
+                    {filteredCommodities.map((commodity) => (
+                      <option key={commodity} value={commodity}>
+                        {commodity}
                       </option>
                     ))}
                   </select>
+                  {formData.commodity === 'Other' && (
+                    <>
+                      <input
+                        type='text'
+                        placeholder='Enter new commodity name'
+                        value={formData.newCommodityName || ''}
+                        onChange={(e) =>
+                          onFormChange('newCommodityName', e.target.value)
+                        }
+                        className='w-full px-3 py-1.5 my-2 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300'
+                      />
+                      {!formData.newCommodityName?.trim() && (
+                        <p className='text-xs text-red-600'>
+                          New commodity name is required
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
                 <div>
                   <label
@@ -469,12 +487,12 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                   <label
                     htmlFor='invoiceNumber'
                     className='block text-sm font-normal text-gray-600 mb-2'>
-                    Invoice Number
+                    EY Bill Number/Invoice Number
                   </label>
                   <input
                     type='text'
                     id='invoiceNumber'
-                    placeholder='Invoice number'
+                    placeholder='Ey Bill Number/Invoice number'
                     value={formData.invoiceNumber}
                     onChange={(e) =>
                       onFormChange('invoiceNumber', e.target.value)
@@ -555,17 +573,17 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
               {formData.collectionLocation === 'other' && (
                 <div className='mt-2'>
                   <label
-                    htmlFor='otherLocation'
+                    htmlFor='collectionOtherText'
                     className='block text-sm font-normal text-gray-600 mb-2'>
-                    Other Location<span className='text-red-600'>*</span>
+                    Other Location <span className='text-red-600'>*</span>
                   </label>
                   <input
                     type='text'
-                    id='otherLocation'
+                    id='collectionOtherText'
                     placeholder='Specify other location'
-                    value={formData.collectionLocation}
+                    value={formData.collectionOtherText}
                     onChange={(e) =>
-                      onFormChange('collectionLocation', e.target.value)
+                      onFormChange('collectionOtherText', e.target.value)
                     }
                     className='w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors'
                   />
@@ -575,28 +593,28 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
 
             {/* Generated By */}
             <section
-              aria-labelledby='generated-by'
+              aria-labelledby='signed-by'
               className='bg-gray-50 rounded-md p-3 border border-gray-100'>
               <h3
-                id='generated-by'
+                id='signed-by'
                 className='text-base font-medium text-gray-700 mb-2 flex items-center'>
                 <span className='bg-blue-400 w-1.5 h-4 rounded-full mr-2'></span>
-                Generated By
+                Receipt Signed By
               </h3>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
                 <div>
                   <label
                     htmlFor='collectedBy'
                     className='block text-sm font-normal text-gray-600 mb-2'>
-                    Generated By<span className='text-red-600'>*</span>
+                    Receipt Signed By<span className='text-red-600'>*</span>
                   </label>
                   <input
                     type='text'
                     id='collectedBy'
-                    placeholder='Generated by'
-                    value={formData.generatedBy}
+                    placeholder='Receipt Signed By'
+                    value={formData.receiptSignedBy}
                     onChange={(e) =>
-                      onFormChange('generatedBy', e.target.value)
+                      onFormChange('receiptSignedBy', e.target.value)
                     }
                     className='w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 transition-colors'
                   />
