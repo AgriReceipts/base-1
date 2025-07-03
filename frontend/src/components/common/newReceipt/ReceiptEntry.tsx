@@ -1,8 +1,11 @@
 import {useState, useEffect, useCallback} from 'react';
 import {toast} from 'react-hot-toast';
 import {z} from 'zod';
-import type {Receipt, CreateReceiptRequest} from '@/types/receipt';
-import {CreateReceiptSchema} from '@/types/receipt';
+import {
+  type Receipt,
+  type CreateReceiptRequest,
+  CreateReceiptSchema,
+} from '@/types/receipt';
 import api, {isAxiosError} from '@/lib/axiosInstance';
 import FormReceipt from './FormReceipt';
 import {useAuthStore} from '@/stores/authStore';
@@ -26,11 +29,14 @@ const getInitialFormData = (committeeId?: string): FormData => ({
   payeeAddress: '',
   commodity: '',
   newCommodityName: '',
+  // @ts-ignore
   quantity: '',
   unit: 'quintals',
   natureOfReceipt: 'mf',
   natureOtherText: '',
+  // @ts-ignore
   value: '',
+  // @ts-ignore
   feesPaid: '',
   vehicleNumber: '',
   invoiceNumber: '',

@@ -4,8 +4,6 @@ import LoginPage from '../pages/Auth/LoginPage';
 import DashboardRouter from '../pages/DashboardRouter';
 import {useAuthStore} from '../stores/authStore';
 import {LoadingScreen} from '../components/ui/LoadingScreen';
-
-import {ReceiptProvider} from '../contexts/ReceiptContext';
 import {Toaster} from 'react-hot-toast';
 
 export const AppRouter: React.FC = () => {
@@ -32,14 +30,7 @@ export const AppRouter: React.FC = () => {
           }
         />
         <Route path='/login' element={<LoginPage />} />
-        <Route
-          path='/dashboard'
-          element={
-            <ReceiptProvider>
-              <DashboardRouter />
-            </ReceiptProvider>
-          }
-        />
+        <Route path='/dashboard' element={<DashboardRouter />} />
         <Route
           path='/ad'
           element={<Navigate to='/dashboard' replace={true} />}
