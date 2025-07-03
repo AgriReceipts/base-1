@@ -64,10 +64,10 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
         api.get(`metaData/commodities`),
         api.get(`/metaData/checkpost/${committee.id}`),
       ]);
+      console.log('metadat api called');
 
       setCommodities(['Other', ...commoditiesRes.data.data]);
       setAvailableCheckposts(checkpostsRes.data.data.checkposts);
-      console.log('Checkpost data', availableCheckposts);
     } catch (error) {
       console.error('Failed to fetch initial data:', error);
       toast.error('Failed to fetch initial data.');

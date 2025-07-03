@@ -1,10 +1,8 @@
-import React, {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import {FiSidebar, FiX, FiMenu} from 'react-icons/fi';
-
 import Sidebar from '../../components/deocomponents/Sidebar';
 import Overview from '../../components/deocomponents/Overview';
-
-import ViewReceipts from '../../components/deocomponents/ViewReceipts';
+import ViewReceipts from '../../components/common/ViewReceipts';
 import Reports from '../../components/deocomponents/Reports';
 import {MetricCards} from '../../components/deocomponents/metric-cards';
 import ReceiptEntry from '@/components/common/ReceiptEntry';
