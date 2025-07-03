@@ -23,7 +23,7 @@ export const CreateReceiptSchema = z.object({
   officeSupervisor: z.string().optional(),
   checkpostId: z.string().optional(),
   collectionOtherText: z.string().optional(),
-  generatedBy: z.string(),
+  receiptSignedBy: z.string(),
   designation: z.string(),
   committeeId: z.string(),
 });

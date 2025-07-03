@@ -24,6 +24,11 @@ export const createReceipt = async (req: Request, res: Response) => {
     const receiptData = parseResult.data;
 
     const committeeId = req.user?.committee.id;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(404).json({message: 'User not found'});
+    }
 
     if (!committeeId) {
       return res.status(400).json({message: 'committeeId is required'});
@@ -54,15 +59,6 @@ export const createReceipt = async (req: Request, res: Response) => {
       commodityId = found?.id;
     }
 
-    const userId = await prisma.user.findUnique({
-      where: {username: receiptData.generatedBy},
-      select: {id: true},
-    });
-
-    if (!userId) {
-      return res.status(404).json({message: 'User not found'});
-    }
-
     const newReceipt = await prisma.receipt.create({
       data: {
         receiptDate: new Date(receiptData.receiptDate),
@@ -85,7 +81,8 @@ export const createReceipt = async (req: Request, res: Response) => {
         officeSupervisor: receiptData.officeSupervisor,
         collectionOtherText: receiptData.collectionOtherText,
         designation: receiptData.designation,
-        generatedBy: userId.id,
+        receiptSignedBy: receiptData.receiptSignedBy,
+        generatedBy: userId,
         committeeId: committeeId,
         checkpostId: receiptData.checkpostId || null,
       },

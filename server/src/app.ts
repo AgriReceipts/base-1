@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import receiptRoutes from './routes/receipts';
 import authRoutes from './routes/auth';
+import metaDataRoutes from './routes/metadata';
 
 // Load environment variables
 dotenv.config();
@@ -49,7 +50,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/receipts', receiptRoutes);
 // app.use('/api/analytics', analyticsRoutes);
-// app.use('/api/metadata', metadataRoutes);
+app.use('/api/metaData', metaDataRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

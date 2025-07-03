@@ -120,6 +120,7 @@ model Receipt {
   officeSupervisor    String?
   checkpostId         String?
   collectionOtherText String?
+  receiptSignedBy     String
   generatedBy         String
   designation         String
   committeeId         String
