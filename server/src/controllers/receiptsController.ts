@@ -4,7 +4,6 @@ import {Prisma} from '@prisma/client';
 import {CreateReceiptSchema, ReceiptQueryParams} from '../types/receipt';
 import {handlePrismaError} from '../utils/helpers';
 import PDFDocument from 'pdfkit';
-import {Decimal} from '@prisma/client/runtime/library';
 
 // @desc    Create a new receipt
 // @route   POST /api/receipts/createReceipt

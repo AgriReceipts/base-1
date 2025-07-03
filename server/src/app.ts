@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import receiptRoutes from './routes/receipts';
 import authRoutes from './routes/auth';
 import metaDataRoutes from './routes/metadata';
+import analyticsRoutes from './routes/analytics';
 
 // Load environment variables
 dotenv.config();
@@ -70,7 +71,7 @@ app.get('/api/health', (req, res) => {
 // Routes will be added here
 app.use('/api/auth', authRoutes);
 app.use('/api/receipts', receiptRoutes);
-// app.use('/api/analytics', analyticsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api/metaData', metaDataRoutes);
 
 // 404 handler
