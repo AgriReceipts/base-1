@@ -1,57 +1,34 @@
-#base-1
+Password
+The password for every user account created by this script is:
+password123
 
-Test Accounts
+Usernames
+The usernames follow a specific pattern depending on the user's role:
 
-Ad:-
-username: ad01
-password: test123
+Committee Users (DEO, Supervisor, Secretary):
+The username is a combination of the role and the committee name (in lowercase, with spaces removed). The format is: role_committeename
 
-Supervisor:-
-username:supervisor1
-password: test123
-committee: Kakinada
+Examples for the "Kakinada Rural" committee:
 
-Deo:-
-username:deo1
-password:test123
-committee: Kakinada
+deo_kakinadarural
 
-// Committee and checkpost data from CSV
-const committeesData = [
-{
-name: 'Karapa',
-checkposts: ['Penuguduru'],
-},
-{
-name: 'Kakinada Rural',
-checkposts: ['Atchempeta', 'Turangi Bypass'],
-},
-{
-name: 'Pithapuram',
-checkposts: ['Pithapuram', 'Chebrolu'],
-},
-{
-name: 'Tuni',
-checkposts: ['Tuni', 'K/P/Puram', 'Rekavanipalem'],
-},
-{
-name: 'Prathipadu',
-checkposts: ['Kathipudi', 'Prathipadu', 'Yerravaram'],
-},
-{
-name: 'Jaggampeta',
-checkposts: ['Jaggampeta', 'Rajupalem'],
-},
-{
-name: 'Peddapuram',
-checkposts: ['Peddapuram'],
-},
-{
-name: 'Samalkota',
-checkposts: [],
-},
-{
-name: 'Kakinada',
-checkposts: [],
-},
-];
+supervisor_kakinadarural
+
+secretary_kakinadarural
+
+Examples for the "Pithapuram" committee:
+
+deo_pithapuram
+
+supervisor_pithapuram
+
+secretary_pithapuram
+
+Assistant Director (AD) Users:
+These users are not tied to a committee and have predefined usernames:
+
+ad_user1
+
+ad_user2
+
+ad_user3
