@@ -5,17 +5,56 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import ReceiptModal from './ReceiptModal';
 
+interface commitie {
+  id: string;
+  name: string;
+}
+
+interface FilterChangeEvent
+  extends React.ChangeEvent<HTMLInputElement | HTMLSelectElement> {}
+
+interface Filters {
+  search: string;
+  natureOfReceipt: string;
+  committeeId: string;
+  startDate: string;
+  endDate: string;
+}
+
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+interface Receipt {
+  id: string;
+  receiptNumber: string;
+  bookNumber: string;
+  receiptDate: string;
+  traderName: string;
+  payeeName: string;
+  value: number;
+  natureOfReceipt: string;
+  receiptSignedBy: string;
+  // Add any other fields as needed
+}
+
 const ViewReceipts = () => {
   const {user, committee} = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [receipts, setReceipts] = useState([]);
-  const [committees, setCommittees] = useState([]);
-  const [pagination, setPagination] = useState(null);
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [committees, setCommittees] = useState<commitie[]>([]);
+
+  const [pagination, setPagination] = useState<Pagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [selectedReceiptId, setSelectedReceiptId] = useState(null);
+  const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(
+    null
+  );
 
   // Filters state, initialized from URL search params
   const [filters, setFilters] = useState({
@@ -42,14 +81,12 @@ const ViewReceipts = () => {
   }, [searchParams, filters, user?.designation]);
 
   const fetchAllCommittees = async () => {
-    // In a real app, this would be an API call: await axios.get('/api/committees');
-    return [
-      {id: '4673a520-42fa-48cd-b712-b1d52e60b90a', name: 'Tuni Committee'},
-      {
-        id: '9876b543-12ab-34cd-56ef-gh78ij90kl12',
-        name: 'Anakapalli Committee',
-      },
-    ];
+    try {
+      const response = await api.get('/metaData/commities');
+      return response.data.data;
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Data fetching effect
@@ -58,7 +95,6 @@ const ViewReceipts = () => {
       setIsLoading(true);
       setError('');
       try {
-        // Replace with your actual API endpoint
         const response = await api.get(
           `/receipts/getAllReceipts?${queryParams.toString()}`
         );
@@ -86,17 +122,17 @@ const ViewReceipts = () => {
     }
   }, [user?.designation]);
 
-  const handleFilterChange = (e) => {
+  const handleFilterChange = (e: FilterChangeEvent) => {
     const {name, value} = e.target;
-    setFilters((prev) => ({...prev, [name]: value}));
+    setFilters((prev: Filters) => ({...prev, [name]: value}));
     // Reset page to 1 when filters change
     const newParams = new URLSearchParams(searchParams);
     newParams.set('page', '1');
     setSearchParams(newParams);
   };
 
-  const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= pagination.totalPages) {
+  const handlePageChange = (newPage: number) => {
+    if (pagination && newPage > 0 && newPage <= pagination.totalPages) {
       const newParams = new URLSearchParams(searchParams);
       newParams.set('page', newPage.toString());
       setSearchParams(newParams);

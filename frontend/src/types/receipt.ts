@@ -97,4 +97,13 @@ export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
 
 export type Receipt = CreateReceiptRequest & {
   id: string;
+  generatedBy: string;
+  committee: {
+    id: string;
+    name: string;
+  };
+  Commodity: {
+    id: string;
+    name: string;
+  };
 };

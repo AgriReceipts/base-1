@@ -4,7 +4,11 @@ import logo from '../../assets/logo-ap.png';
 import {useAuthStore} from '@/stores/authStore';
 
 // ADD: Accept `onToggleSidebar` as a prop
-function Nav({onToggleSidebar}) {
+interface NavProps {
+  onToggleSidebar: () => void;
+}
+
+function Nav({onToggleSidebar}: NavProps) {
   // REMOVED: All useState and useEffect hooks for sidebar state
   const committee = useAuthStore((state) => state.committee);
 
@@ -19,11 +23,10 @@ function Nav({onToggleSidebar}) {
             <img src={logo} alt='Ap logo'></img>
           </div>
           <div className='hidden sm:block'>
-            {committee && (
-              <h1 className='text-lg font-semibold text-neutral-900'>
-                {committee.name} AMC Receipt System
-              </h1>
-            )}
+            <h1 className='text-lg font-semibold text-neutral-900'>
+              AMC Receipt System - {committee && <span>{committee.name}</span>}
+            </h1>
+
             <p className='text-sm text-neutral-500 truncate max-w-xs'>
               Agricultural Market Committee Receipt Management
             </p>

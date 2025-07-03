@@ -38,6 +38,9 @@ const roleNavItems = {
     // Add navigation items for 'Assistant Director' here
     {id: 'overview', label: 'Overview', icon: <FiHome />},
     {id: 'reports', label: 'Reports', icon: <FiFileText />},
+    {id: 'viewReceipts', label: 'View Receipts', icon: <FiEye />},
+    {id: 'traderAnalysis', label: 'Trader Analysis', icon: <FiTrendingUp />},
+    {id: 'committeeAnalysis', label: 'Committee Analysis', icon: <FiUsers />},
   ],
   secretary: [
     // Add navigation items for 'Secretary' here
