@@ -142,6 +142,10 @@ export const getAllReceipts = async (req: Request, res: Response) => {
 export const getReceiptById = async (req: Request, res: Response) => {
   try {
     const {id} = req.params;
+
+    if (!id) {
+      return res.status(404).json({message: 'Receipt Id required'});
+    }
     // @ts-ignore
     const user = req.user;
     const receipt = await prisma.receipt.findUnique({

@@ -1,3 +1,5 @@
+import {Prisma} from '@prisma/client';
+
 // Analytics response types
 export interface CommitteeAnalytics {
   totalReceipts: number;
@@ -22,3 +24,13 @@ export interface DistrictAnalytics {
     fees: number;
   }[];
 }
+
+export type AnalyticsInput = {
+  committeeId: string;
+  traderId: string;
+  commodityId: string;
+  receiptDate: Date;
+  value: Prisma.Decimal;
+  feesPaid: Prisma.Decimal;
+  totalWeightKg: Prisma.Decimal;
+};

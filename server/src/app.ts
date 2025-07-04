@@ -8,6 +8,7 @@ import receiptRoutes from './routes/receipts';
 import authRoutes from './routes/auth';
 import metaDataRoutes from './routes/metadata';
 import analyticsRoutes from './routes/analytics';
+import {swaggerDocs} from './utils/swagger';
 
 // Load environment variables
 dotenv.config();
@@ -22,6 +23,16 @@ app.use(
     credentials: true,
   })
 );
+
+// Logging
+app.use(morgan('dev'));
+
+// Body parsing middleware
+app.use(express.json({limit: '10mb'}));
+app.use(express.urlencoded({extended: true}));
+
+//swaggerHub
+swaggerDocs(app);
 
 // 👇 Stricter limiter for auth
 const authLimiter = rateLimit({
@@ -48,16 +59,10 @@ const generalLimiter = rateLimit({
     });
   },
 });
+
 app.use('/api/auth', authLimiter);
 app.use('/api/receipts/createReceipt', authLimiter);
 app.use('/api', generalLimiter);
-
-// Logging
-app.use(morgan('dev'));
-
-// Body parsing middleware
-app.use(express.json({limit: '10mb'}));
-app.use(express.urlencoded({extended: true}));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

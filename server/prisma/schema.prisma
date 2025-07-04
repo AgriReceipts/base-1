@@ -22,11 +22,15 @@ enum UserRole {
 }
 
 enum Unit {
-  tons
   kilograms
   quintals
   numbers
   bags
+}
+
+enum ReportLevel {
+  committee
+  district
 }
 
 enum NatureOfReceipt {
@@ -40,6 +44,17 @@ enum CollectionLocation {
   office
   checkpost
   other
+}
+
+enum TargetType {
+  annual
+  monthly
+  quarterly
+}
+
+enum TargetLevel {
+  district
+  committee
 }
 
 // Models
@@ -69,9 +84,14 @@ model Committee {
   updatedAt DateTime @updatedAt
 
   // Relations
-  users      User[]
-  checkposts Checkpost[]
-  receipts   Receipt[]
+  users                     User[]
+  checkposts                Checkpost[]
+  receipts                  Receipt[]
+  MonthlyReport             MonthlyReport[]
+  Target                    Target[]
+  CommitteeMonthlyAnalytics CommitteeMonthlyAnalytics[]
+  TraderAnalytics           TraderAnalytics[]
+  CommodityAnalytics        CommodityAnalytics[]
 
   @@index([name])
 }
@@ -84,8 +104,10 @@ model Checkpost {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  committee Committee @relation(fields: [committeeId], references: [id])
-  receipts  Receipt[]
+  committee     Committee       @relation(fields: [committeeId], references: [id])
+  receipts      Receipt[]
+  Target        Target[]
+  MonthlyReport MonthlyReport[]
 }
 
 model Trader {
@@ -102,7 +124,8 @@ model Trader {
   updatedAt     DateTime @updatedAt
 
   // Relations
-  receipts Receipt[]
+  receipts        Receipt[]
+  TraderAnalytics TraderAnalytics[]
 
   @@index([name])
   @@index([phone])
@@ -117,7 +140,10 @@ model Commodity {
   description String?
 
   // Relations
-  receipts Receipt[]
+  receipts           Receipt[]
+  CommodityAnalytics CommodityAnalytics[]
+  Target             Target[]
+  MonthlyReport      MonthlyReport[]
 
   @@index([name])
   @@index([category])
@@ -187,4 +213,162 @@ model Receipt {
   @@index([value])
   @@index([feesPaid])
   @@index([collectionLocation])
+}
+
+model Target {
+  id          String      @id @default(uuid())
+  year        Int
+  month       Int? // null for annual targets
+  quarter     Int? // null for non-quarterly targets
+  targetType  TargetType
+  targetLevel TargetLevel
+
+  // Reference IDs (nullable based on level)
+  committeeId String?
+
+  // Target amounts
+  marketFeeTarget  Decimal
+  totalValueTarget Decimal? // Optional: target for total trade value
+  quantityTarget   Decimal? // Optional: target for quantity
+
+  // Metadata
+  setBy      String // User who set the target
+  approvedBy String? // Supervisor who approved
+  isActive   Boolean @default(true)
+  notes      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  committee   Committee? @relation(fields: [committeeId], references: [id])
+  Checkpost   Checkpost? @relation(fields: [checkpostId], references: [id])
+  checkpostId String?
+  Commodity   Commodity? @relation(fields: [commodityId], references: [id])
+  commodityId String?
+
+  @@unique([year, month, targetType, targetLevel, committeeId])
+  @@index([year, month, targetLevel])
+  @@index([committeeId, year])
+}
+
+// Analytics
+// To store pre-calculated stats for each trader
+model TraderAnalytics {
+  traderId             String
+  totalReceipts        Int      @default(0)
+  totalValue           Decimal  @default(0)
+  totalFeesPaid        Decimal  @default(0)
+  totalQuantity        Decimal  @default(0) //total weight in kg
+  firstTransactionDate DateTime
+  lastTransactionDate  DateTime
+
+  // Relation back to the original trader
+  trader      Trader    @relation(fields: [traderId], references: [id], onDelete: Cascade)
+  Committee   Committee @relation(fields: [committeeId], references: [id])
+  committeeId String
+
+  @@id([traderId, committeeId])
+  @@index([committeeId])
+}
+
+// To store pre-calculated stats for each commodity
+model CommodityAnalytics {
+  commodityId         String
+  totalReceipts       Int      @default(0)
+  totalValue          Decimal  @default(0)
+  totalFeesPaid       Decimal  @default(0)
+  totalQuantity       Decimal  @default(0) // Sum of totalWeightKg
+  lastTransactionDate DateTime
+
+  // Relation back to the original commodity
+  commodity   Commodity @relation(fields: [commodityId], references: [id], onDelete: Cascade)
+  Committee   Committee @relation(fields: [committeeId], references: [id])
+  committeeId String
+
+  @@id([commodityId, committeeId])
+  @@index([committeeId])
+}
+
+model CommitteeMonthlyAnalytics {
+  id          String @id @default(uuid())
+  committeeId String
+  year        Int
+  month       Int
+
+  totalReceipts     Int     @default(0)
+  totalValue        Decimal @default(0)
+  totalFeesPaid     Decimal @default(0)
+  marketFees        Decimal @default(0)
+  officeFees        Decimal @default(0)
+  checkpostFees     Decimal @default(0)
+  otherFees         Decimal @default(0)
+  uniqueTraders     Int     @default(0) // optional
+  uniqueCommodities Int     @default(0) // optional
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  committee Committee @relation(fields: [committeeId], references: [id])
+
+  @@unique([committeeId, year, month]) // Ensure only one row per month
+  @@index([committeeId, year, month])
+}
+
+model MonthlyReport {
+  id    String @id
+  year  Int
+  month Int
+
+  // Committee reference (null for district-level records)
+  committeeId String?
+  checkpostId String? // For checkpost-level reports
+  commodityId String? // For commodity-level reports
+
+  // Report level indicator
+  reportLevel ReportLevel
+
+  // Basic metrics
+  totalReceipts Int
+  totalValue    Decimal
+  totalFeesPaid Decimal
+  totalQuantity Decimal
+
+  // Target comparison
+  monthlyTarget         Decimal? // Monthly market fee target
+  cumulativeTarget      Decimal? // Cumulative target up to this month
+  monthlyAchievement    Decimal // Market fees collected this month
+  cumulativeAchievement Decimal // Progressive total up to this month
+
+  // Performance metrics
+  monthlyVariance    Decimal? // Monthly target vs achievement
+  cumulativeVariance Decimal? // Cumulative target vs achievement
+  achievementPercent Decimal? // Percentage of annual target achieved
+
+  // Previous year comparison
+  prevYearSameMonth Decimal? // Same month previous year
+  yearOnYearGrowth  Decimal? // YoY growth percentage
+
+  // Breakdown by nature of receipt
+  mf_fees     Decimal @default(0)
+  lc_fees     Decimal @default(0)
+  uc_fees     Decimal @default(0)
+  others_fees Decimal @default(0)
+
+  // Additional analytics
+  uniqueTraders     Int     @default(0)
+  uniqueCommodities Int     @default(0)
+  avgReceiptValue   Decimal @default(0)
+  avgFeeRate        Decimal @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  committee Committee? @relation(fields: [committeeId], references: [id])
+  checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
+  commodity Commodity? @relation(fields: [commodityId], references: [id])
+
+  @@index([year, month, reportLevel])
+  @@index([committeeId, year, month])
 }

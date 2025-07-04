@@ -1,0 +1,52 @@
+openapi: 3.0.0
+info:
+  title: ACM Receipts API
+  version: 1.0.0
+  description: API documentation for your backend
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+
+paths:
+  /receipts/getAllReceipts:
+    get:
+      summary: Get all receipts
+      tags:
+        - Receipts
+      responses:
+        '200':
+          description: List of receipts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    amount:
+                      type: number
+
+  /auth/login:
+    post:
+      summary: Login user
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login success
+        '401':
+          description: Invalid credentials

@@ -1,5 +1,4 @@
 import {NatureOfReceipt} from '@prisma/client';
-import {Interface} from 'readline';
 import {z} from 'zod';
 
 export const CreateReceiptSchema = z.object({
@@ -14,7 +13,9 @@ export const CreateReceiptSchema = z.object({
   commodity: z.string(),
   newCommodityName: z.string().optional(),
   quantity: z.number(),
-  unit: z.enum(['quintals', 'numbers', 'bags']),
+  unit: z.enum(['quintals', 'kilograms', 'bags', 'numbers']),
+  weightPerBag: z.number().optional(),
+  totalWeightKg: z.number().optional(),
   natureOfReceipt: z.enum(['mf', 'lc', 'uc', 'others']),
   natureOtherText: z.string().optional(),
   value: z.number(),
