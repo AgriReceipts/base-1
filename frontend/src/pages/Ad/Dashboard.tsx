@@ -1,24 +1,33 @@
-import React, {useState, useEffect} from 'react';
-<<<<<<< HEAD
-import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
-import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysis';
-=======
-import CommitteeAnalysis from '../../components/supervisorcomponents/CommiteeAnalysis';
-import TraderAnalysis from '../../components/supervisorcomponents/TraderAnalysis';
->>>>>>> sri
+import {useState, useEffect} from 'react';
+
 import Reports from '../../components/supervisorcomponents/Reports';
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
-import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
+
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
-import { FiHome, FiBarChart2, FiFileText, FiTarget, FiUsers, FiBarChart } from 'react-icons/fi';
+import {
+  FiHome,
+  FiBarChart2,
+  FiFileText,
+  FiTarget,
+  FiUsers,
+  FiBarChart,
+} from 'react-icons/fi';
 import TargetManagement from './TargetManagement';
 
 // Placeholder components for new pages
-const DistrictAnalysis = () => <div className="p-8 w-full text-center text-xl text-gray-600">District Analysis (Coming Soon)</div>;
-const UserManagement = () => <div className="p-8 w-full text-center text-xl text-gray-600">User Management (Coming Soon)</div>;
+const DistrictAnalysis = () => (
+  <div className='p-8 w-full text-center text-xl text-gray-600'>
+    District Analysis (Coming Soon)
+  </div>
+);
+const UserManagement = () => (
+  <div className='p-8 w-full text-center text-xl text-gray-600'>
+    User Management (Coming Soon)
+  </div>
+);
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -47,12 +56,16 @@ export default function SupervisorDashboard() {
 
   // New navigation fields for AD with icons
   const navItems = [
-    { key: 'overview', label: 'Overview', icon: <FiHome /> },
-    { key: 'districtAnalysis', label: 'District Analysis', icon: <FiBarChart2 /> },
-    { key: 'allReceipts', label: 'All Receipts', icon: <FiFileText /> },
-    { key: 'targetManagement', label: 'Target Management', icon: <FiTarget /> },
-    { key: 'userManagement', label: 'User Management', icon: <FiUsers /> },
-    { key: 'viewReports', label: 'View Reports', icon: <FiBarChart /> },
+    {key: 'overview', label: 'Overview', icon: <FiHome />},
+    {
+      key: 'districtAnalysis',
+      label: 'District Analysis',
+      icon: <FiBarChart2 />,
+    },
+    {key: 'allReceipts', label: 'All Receipts', icon: <FiFileText />},
+    {key: 'targetManagement', label: 'Target Management', icon: <FiTarget />},
+    {key: 'userManagement', label: 'User Management', icon: <FiUsers />},
+    {key: 'viewReports', label: 'View Reports', icon: <FiBarChart />},
   ];
 
   const renderContent = () => {

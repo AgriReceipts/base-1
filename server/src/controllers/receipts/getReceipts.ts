@@ -98,7 +98,11 @@ export const getAllReceipts = async (req: Request, res: Response) => {
           id: true,
           receiptNumber: true,
           bookNumber: true,
-          traderName: true,
+          trader: {
+            select: {
+              name: true,
+            },
+          },
           payeeName: true,
           value: true,
           natureOfReceipt: true,
@@ -140,13 +144,41 @@ export const getReceiptById = async (req: Request, res: Response) => {
     const {id} = req.params;
     // @ts-ignore
     const user = req.user;
-
     const receipt = await prisma.receipt.findUnique({
       where: {id},
-      include: {
-        Commodity: true,
-        checkpost: true,
-        committee: true,
+      select: {
+        receiptNumber: true,
+        bookNumber: true,
+        receiptDate: true,
+        payeeName: true,
+        value: true,
+        natureOfReceipt: true,
+        quantity: true,
+        unit: true,
+        vehicleNumber: true,
+        receiptSignedBy: true,
+        committeeId: true,
+        commodity: {
+          select: {
+            name: true,
+          },
+        },
+        checkpost: {
+          select: {
+            name: true,
+          },
+        },
+        committee: {
+          select: {
+            name: true,
+          },
+        },
+        trader: {
+          select: {
+            name: true,
+          },
+        },
+        generatedBy: true,
       },
     });
 

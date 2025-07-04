@@ -1,5 +1,5 @@
 import api from '@/lib/axiosInstance';
-import type {Receipt} from '@/types/receipt';
+import type {DetailedReceipt, Receipt} from '@/types/receipt';
 import {FileDown, Loader2, X} from 'lucide-react';
 import {useEffect, useState} from 'react';
 
@@ -10,7 +10,7 @@ interface ReceiptModalProps {
 }
 
 const ReceiptModal = ({receiptId, onClose, onDownload}: ReceiptModalProps) => {
-  const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [receipt, setReceipt] = useState<DetailedReceipt | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
 
@@ -70,7 +70,7 @@ const ReceiptModal = ({receiptId, onClose, onDownload}: ReceiptModalProps) => {
                   label='Committee'
                   value={receipt.committee?.name || 'N/A'}
                 />
-                <InfoItem label='Trader Name' value={receipt.traderName} />
+                <InfoItem label='Trader Name' value={receipt.trader?.name} />
                 <InfoItem label='Payee Name' value={receipt.payeeName} />
                 <InfoItem
                   label='Value (INR)'
@@ -82,7 +82,7 @@ const ReceiptModal = ({receiptId, onClose, onDownload}: ReceiptModalProps) => {
                 />
                 <InfoItem
                   label='Commodity'
-                  value={receipt.Commodity?.name || 'N/A'}
+                  value={receipt.commodity?.name || 'N/A'}
                 />
                 <InfoItem
                   label='Quantity'

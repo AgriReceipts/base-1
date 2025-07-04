@@ -14,6 +14,7 @@ import {useAuthStore} from '@/stores/authStore';
 type FormData = Omit<z.infer<typeof CreateReceiptSchema>, 'receiptDate'>;
 type Commodity = string;
 type Checkpost = {id: string; name: string};
+type Trader = string;
 
 interface ReceiptEntryProps {
   receiptToEdit?: Receipt;
@@ -23,6 +24,7 @@ interface ReceiptEntryProps {
 const getInitialFormData = (committeeId?: string): FormData => ({
   bookNumber: '',
   receiptNumber: '',
+  newTraderName: '',
   traderName: '',
   traderAddress: '',
   payeeName: '',
@@ -56,6 +58,7 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
   );
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [commodities, setCommodities] = useState<Commodity[]>([]);
+  const [traders, setTraders] = useState<Trader[]>([]);
   const [availableCheckposts, setAvailableCheckposts] = useState<Checkpost[]>(
     []
   );
@@ -66,13 +69,15 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
   const fetchInitialData = useCallback(async () => {
     if (!committee?.id) return;
     try {
-      const [commoditiesRes, checkpostsRes] = await Promise.all([
+      const [commoditiesRes, checkpostsRes, traderRes] = await Promise.all([
         api.get(`metaData/commodities`),
         api.get(`/metaData/checkpost/${committee.id}`),
+        api.get('/metaData/traders'),
       ]);
 
       setCommodities(['Other', ...commoditiesRes.data.data]);
       setAvailableCheckposts(checkpostsRes.data.data.checkposts);
+      setTraders(['New', ...traderRes.data.data]);
     } catch (error) {
       console.error('Failed to fetch initial data:', error);
       toast.error('Failed to fetch initial data.');
@@ -164,6 +169,7 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
       committeeData={committee}
       availableCheckposts={availableCheckposts}
       commodities={commodities}
+      traders={traders}
       commoditySearch={commoditySearch}
       setCommoditySearch={setCommoditySearch}
     />

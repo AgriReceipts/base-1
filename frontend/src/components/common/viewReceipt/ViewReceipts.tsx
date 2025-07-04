@@ -4,6 +4,7 @@ import {ChevronLeft, ChevronRight, Eye, Loader2, Search} from 'lucide-react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import ReceiptModal from './ReceiptModal';
+import type {Receipt} from '@/types/receipt';
 
 interface commitie {
   id: string;
@@ -26,19 +27,6 @@ interface Pagination {
   limit: number;
   total: number;
   totalPages: number;
-}
-
-interface Receipt {
-  id: string;
-  receiptNumber: string;
-  bookNumber: string;
-  receiptDate: string;
-  traderName: string;
-  payeeName: string;
-  value: number;
-  natureOfReceipt: string;
-  receiptSignedBy: string;
-  // Add any other fields as needed
 }
 
 const ViewReceipts = () => {
@@ -326,7 +314,7 @@ const ViewReceipts = () => {
                     {new Date(receipt.receiptDate).toLocaleDateString()}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                    {receipt.traderName}
+                    {receipt.trader?.name}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                     {receipt.payeeName}

@@ -6,6 +6,7 @@ export const CreateReceiptSchema = z
     bookNumber: z.string().min(1, 'Book number is required'),
     receiptNumber: z.string().min(1, 'Receipt number is required'),
     traderName: z.string().min(1, 'Trader name is required'),
+    newTraderName: z.string().optional(),
     traderAddress: z.string().optional(),
     payeeName: z.string().min(1, 'Payee name is required'),
     payeeAddress: z.string().optional(),
@@ -95,15 +96,46 @@ export const CreateReceiptSchema = z
   );
 export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
 
-export type Receipt = CreateReceiptRequest & {
+// export type Receipt = CreateReceiptRequest & {
+//   id: string;
+//   generatedBy: string;
+//   committee: {
+//     id: string;
+//     name: string;
+//   };
+//   Commodity: {
+//     id: string;
+//     name: string;
+//   };
+//   trader: {
+//     name: string;
+//   };
+// };
+
+export interface Receipt {
   id: string;
-  generatedBy: string;
+  receiptNumber: string;
+  bookNumber: string;
+  receiptDate: string;
+  trader: {
+    name: string;
+  };
+  payeeName: string;
+  value: number;
+  natureOfReceipt: string;
+  receiptSignedBy: string;
+  // Add any other fields as needed
+}
+
+export interface DetailedReceipt extends Receipt {
   committee: {
-    id: string;
     name: string;
   };
-  Commodity: {
-    id: string;
+  commodity: {
     name: string;
   };
-};
+  quantity: number;
+  unit: string;
+  vehicleNumber: string;
+  generatedBy: string;
+}

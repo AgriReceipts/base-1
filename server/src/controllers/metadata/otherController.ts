@@ -79,3 +79,27 @@ export const getCheckPosts = async (req: Request, res: Response) => {
     return handlePrismaError(res, error);
   }
 };
+
+// @desc    Gets all traders
+// @route   GET /api/metaData/traders
+// @access  Public
+
+export const getAllTraders = async (req: Request, res: Response) => {
+  try {
+    const traders = await prisma.trader.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    const names = traders.map((item) => item.name);
+
+    return res.status(200).json({
+      message: 'Traders Fetched Successfully',
+      data: names,
+    });
+  } catch (error) {
+    return handlePrismaError(res, error);
+  }
+};

@@ -19,6 +19,7 @@ interface FormReceiptProps {
   committeeData: {id: string; name: string; code?: string} | null;
   availableCheckposts: {id: string; name: string}[];
   commodities: string[];
+  traders: string[];
   commoditySearch: string;
   setCommoditySearch: (search: string) => void;
 }
@@ -46,6 +47,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
   availableCheckposts,
   commodities,
   commoditySearch,
+  traders,
   setCommoditySearch,
 }) => {
   const filteredCommodities = commodities.filter((c) =>
@@ -196,34 +198,53 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       className='block text-sm font-normal text-gray-600 mb-1'>
                       Trader/Farmer Name<span className='text-red-600'>*</span>
                     </label>
-                    <input
-                      type='text'
-                      id='traderName'
-                      placeholder='Trader/Farmer name'
+                    <select
+                      id='trader'
                       value={formData.traderName}
                       onChange={(e) =>
                         onFormChange('traderName', e.target.value)
                       }
-                      className='w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors'
-                    />
+                      className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,...')] bg-no-repeat bg-[center_right_0.5rem]">
+                      <option value=''>Select Trader</option>
+                      {traders.map((trader) => (
+                        <option key={trader} value={trader}>
+                          {trader}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <div>
-                    <label
-                      htmlFor='traderAddress'
-                      className='block text-sm font-normal text-gray-600 mb-1'>
-                      Trader Address
-                    </label>
-                    <textarea
-                      id='traderAddress'
-                      placeholder='Trader address'
-                      value={formData.traderAddress}
-                      onChange={(e) =>
-                        onFormChange('traderAddress', e.target.value)
-                      }
-                      className='w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors'
-                      rows={3}
-                    />
-                  </div>
+                  {formData.traderName === 'New' && (
+                    <>
+                      <input
+                        type='text'
+                        id='traderName'
+                        placeholder='Enter new trader Name'
+                        value={formData.newTraderName}
+                        onChange={(e) =>
+                          onFormChange('newTraderName', e.target.value)
+                        }
+                        className='w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors'
+                      />
+
+                      <div>
+                        <label
+                          htmlFor='traderAddress'
+                          className='block text-sm font-normal text-gray-600 mb-1'>
+                          Trader Address
+                        </label>
+                        <textarea
+                          id='traderAddress'
+                          placeholder='Trader address'
+                          value={formData.traderAddress}
+                          onChange={(e) =>
+                            onFormChange('traderAddress', e.target.value)
+                          }
+                          className='w-full px-3 py-1.5 text-sm border border-blue-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 bg-white/70 transition-colors'
+                          rows={3}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 

@@ -7,6 +7,7 @@ export const CreateReceiptSchema = z.object({
   bookNumber: z.string(),
   receiptNumber: z.string(),
   traderName: z.string(),
+  newTraderName: z.string().optional(),
   traderAddress: z.string().optional(),
   payeeName: z.string(),
   payeeAddress: z.string().optional(),

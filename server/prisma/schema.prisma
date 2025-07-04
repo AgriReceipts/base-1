@@ -18,7 +18,7 @@ enum UserRole {
   deo //data entry operator
   supervisor
   secretary
-  ad //assitant director( has disctrict wide access while the above 3 only has committee wide access)
+  ad //assistant director( has district wide access while the above 3 only has committee wide access)
 }
 
 enum Unit {
@@ -63,10 +63,11 @@ model User {
 }
 
 model Committee {
-  id         String      @id @default(uuid())
-  name       String      @unique
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
   users      User[]
   checkposts Checkpost[]
@@ -87,52 +88,103 @@ model Checkpost {
   receipts  Receipt[]
 }
 
+model Trader {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  address       String
+  phone         String?
+  email         String?
+  gstNumber     String?
+  panNumber     String?
+  licenseNumber String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  receipts Receipt[]
+
+  @@index([name])
+  @@index([phone])
+  @@index([gstNumber])
+}
+
 model Commodity {
-  id          String    @id @default(uuid())
-  name        String    @unique
+  id          String  @id @default(uuid())
+  name        String  @unique
   category    String?
+  subCategory String?
   description String?
-  receipts    Receipt[]
+
+  // Relations
+  receipts Receipt[]
 
   @@index([name])
   @@index([category])
 }
 
 model Receipt {
-  id                  String             @id @default(uuid())
-  receiptDate         DateTime
-  bookNumber          String
-  receiptNumber       String
-  traderName          String
-  traderAddress       String
-  payeeName           String
-  payeeAddress        String
-  commodityId         String?
-  quantity            Decimal
-  unit                Unit
-  natureOfReceipt     NatureOfReceipt
-  natureOtherText     String?
-  value               Decimal
-  feesPaid            Decimal
-  vehicleNumber       String?
-  invoiceNumber       String?
+  id            String   @id @default(uuid())
+  receiptDate   DateTime
+  bookNumber    String
+  receiptNumber String
+
+  // Trader information (now references Trader table)
+  traderId String
+
+  // Payee information (keeping as text since it might be different from trader)
+  payeeName    String
+  payeeAddress String
+
+  // Commodity and quantity
+  commodityId String?
+  quantity    Decimal
+  unit        Unit
+
+  // For bags unit - weight handling
+  weightPerBag  Decimal? // Weight of each bag in kg (only for bags unit)
+  totalWeightKg Decimal? // Total weight in kg (computed for bags, converted for tons/quintals)
+
+  // Nature and fees
+  natureOfReceipt NatureOfReceipt
+  natureOtherText String?
+  value           Decimal
+  feesPaid        Decimal
+
+  // Vehicle and invoice
+  vehicleNumber String?
+  invoiceNumber String?
+
+  // Collection details
   collectionLocation  CollectionLocation
   officeSupervisor    String?
   checkpostId         String?
   collectionOtherText String?
-  receiptSignedBy     String
-  generatedBy         String
-  designation         String
-  committeeId         String
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+
+  // Receipt generation details
+  receiptSignedBy String
+  generatedBy     String
+  designation     String
+  committeeId     String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  committee           Committee          @relation(fields: [committeeId], references: [id])
-  checkpost           Checkpost?         @relation(fields: [checkpostId], references: [id])
-  user                User               @relation(fields: [generatedBy], references: [id])
-  Commodity           Commodity?         @relation(fields: [commodityId], references: [id])
+  committee Committee  @relation(fields: [committeeId], references: [id])
+  checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
+  user      User       @relation(fields: [generatedBy], references: [id])
+  commodity Commodity? @relation(fields: [commodityId], references: [id])
+  trader    Trader     @relation(fields: [traderId], references: [id])
 
   // Unique constraint for book_number + receipt_number per committee
   @@unique([bookNumber, receiptNumber, committeeId])
   @@index([receiptNumber])
+  @@index([receiptDate])
+  @@index([traderId])
+  @@index([commodityId])
+  @@index([natureOfReceipt])
+  @@index([value])
+  @@index([feesPaid])
+  @@index([collectionLocation])
 }

@@ -17,8 +17,9 @@ export const downloadReceipt = async (req: Request, res: Response) => {
     const receipt = await prisma.receipt.findUnique({
       where: {id},
       include: {
-        Commodity: true,
+        commodity: true,
         committee: true,
+        trader: true,
       },
     });
 
@@ -101,7 +102,7 @@ export const downloadReceipt = async (req: Request, res: Response) => {
     currentY += 15;
 
     // Parties Involved
-    drawRow('Trader Name:', receipt.traderName);
+    drawRow('Trader Name:', receipt.trader?.name);
     drawRow('Payee Name:', receipt.payeeName);
     currentY += 10; // Add small space
 
@@ -111,7 +112,7 @@ export const downloadReceipt = async (req: Request, res: Response) => {
       `₹ ${new Intl.NumberFormat('en-IN').format(receipt.value.toNumber())}`
     );
     drawRow('Nature of Receipt:', receipt.natureOfReceipt);
-    drawRow('Commodity:', receipt.Commodity?.name || 'N/A');
+    drawRow('Commodity:', receipt.commodity?.name || 'N/A');
     drawRow(
       'Quantity:',
       new Intl.NumberFormat('en-IN').format(receipt.quantity.toNumber())
