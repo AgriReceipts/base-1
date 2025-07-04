@@ -5,10 +5,29 @@ import Reports from './utils/pages/Reports';
 
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
+import usermanagement from '../../components/AdCompo/Usermanage'
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
+import {
+  FiHome,
+  FiBarChart2,
+  FiFileText,
+  FiTarget,
+  FiUsers,
+  FiBarChart,
+} from 'react-icons/fi';
+import TargetManagement from './TargetManagement';
+import Usermanage from '../../components/AdCompo/Usermanage';
+
+// Placeholder components for new pages
+const DistrictAnalysis = () => (
+  <div className='p-8 w-full text-center text-xl text-gray-600'>
+    District Analysis (Coming Soon)
+  </div>
+);
+
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -48,6 +67,11 @@ export default function SupervisorDashboard() {
       case 'viewReceipts':
         return <ViewReceipts />;
       case 'reports':
+      case 'targetManagement':
+        return <TargetManagement />;
+      case 'userManagement':
+        return <Usermanage />;
+      case 'viewReports':
         return <Reports />;
       default:
         return <Overview onNavigate={setActiveNav} />;
