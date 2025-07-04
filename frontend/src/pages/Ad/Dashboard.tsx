@@ -1,10 +1,8 @@
-import React, {useState, useEffect} from 'react';
-import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
-import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysis';
-import Reports from './utils/pages/Reports';
+import {useState, useEffect} from 'react';
 
+import Reports from '../../components/supervisorcomponents/Reports';
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
-import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
+import usermanagement from '../../components/AdCompo/Usermanage'
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
@@ -53,19 +51,28 @@ export default function SupervisorDashboard() {
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
 
+  // New navigation fields for AD with icons
+  const navItems = [
+    {key: 'overview', label: 'Overview', icon: <FiHome />},
+    {
+      key: 'districtAnalysis',
+      label: 'District Analysis',
+      icon: <FiBarChart2 />,
+    },
+    {key: 'allReceipts', label: 'All Receipts', icon: <FiFileText />},
+    {key: 'targetManagement', label: 'Target Management', icon: <FiTarget />},
+    {key: 'userManagement', label: 'User Management', icon: <FiUsers />},
+    {key: 'viewReports', label: 'View Reports', icon: <FiBarChart />},
+  ];
+
   const renderContent = () => {
     switch (activeNav) {
       case 'overview':
         return <Overview onNavigate={setActiveNav} />;
-      case 'traderAnalysis':
-        return <TraderAnalysis />;
-      case 'committeeAnalysis':
-        return <CommitteeAnalysis />;
-      case 'addReceipt':
-        return <ReceiptEntry />;
-      case 'viewReceipts':
+      case 'districtAnalysis':
+        return <DistrictAnalysis />;
+      case 'allReceipts':
         return <ViewReceipts />;
-      case 'reports':
       case 'targetManagement':
         return <TargetManagement />;
       case 'userManagement':
@@ -86,6 +93,7 @@ export default function SupervisorDashboard() {
           setSidebarVisible={setSidebarVisible}
           activeNav={activeNav}
           onNavClick={setActiveNav}
+          navItems={navItems}
         />
 
         <main
