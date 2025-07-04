@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Target, Save, Plus, Edit2 } from 'lucide-react';
-import type { Target as TargetType } from '../types';
-import { committees, months } from '../data/committees';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import type { Target as TargetType } from './utils/types';
+import { committees, months } from './utils/data/committees';
+import { useLocalStorage } from './utils/hooks/useLocalStorage';
 
 const TargetManagement: React.FC = () => {
   const [targets, setTargets] = useLocalStorage<TargetType[]>('targets', []);
