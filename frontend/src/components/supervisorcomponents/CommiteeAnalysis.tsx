@@ -1,125 +1,313 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FiSearch, FiFilter, FiPlus, FiDownload } from 'react-icons/fi';
 import PieChartComponent from '../supervisorcomponents/PieChartComponent';
+import AreaChartComponent from '../supervisorcomponents/AreaChartComponent';
+
+// Mock data for line graph (month-wise MF collected)
+const mockLineData = [
+  { date: 'Jan', mf: 120000 },
+  { date: 'Feb', mf: 95000 },
+  { date: 'Mar', mf: 143000 },
+  { date: 'Apr', mf: 110000 },
+  { date: 'May', mf: 128000 },
+  { date: 'Jun', mf: 101000 },
+];
+
+// Mock data for pie chart (market fees by location)
+const mockLocationData = [
+  { name: 'Office', value: 55 },
+  { name: 'Checkpost', value: 30 },
+  { name: 'Other', value: 15 },
+];
+
+const mockOfficeDrilldown = [
+  { name: 'Supervisor 1', value: 25 },
+  { name: 'Supervisor 2', value: 20 },
+  { name: 'Supervisor 3', value: 10 },
+];
+const mockCheckpostDrilldown = [
+  { name: 'Checkpost A', value: 12 },
+  { name: 'Checkpost B', value: 10 },
+  { name: 'Checkpost C', value: 8 },
+];
+const mockOtherDrilldown = [
+  { name: 'Survey', value: 7 },
+  { name: 'Mobile Collection', value: 5 },
+  { name: 'Misc', value: 3 },
+];
+
+// Mock data for commodity directory
+const mockCommodities = [
+  {
+    name: 'Rice',
+    receipts: 4,
+    value: 94000,
+    commodities: 1,
+    monthlyPattern: [
+      { month: 'Jan 2025', value: 20000 },
+      { month: 'Feb 2025', value: 18000 },
+      { month: 'Mar 2025', value: 22000 },
+      { month: 'Apr 2025', value: 17000 },
+      { month: 'May 2025', value: 17000 },
+    ],
+    traded: ['Rice'],
+    traders: ['Babu traders', 'katyayyani'],
+    lastTransaction: '18/06/2025',
+    highestTransaction: 22000,
+    totalQuantity: 8,
+    avgPerReceipt: 23500,
+  },
+  {
+    name: 'Wheat',
+    receipts: 2,
+    value: 30000,
+    commodities: 1,
+    monthlyPattern: [
+      { month: 'Jan 2025', value: 15000 },
+      { month: 'Feb 2025', value: 15000 },
+    ],
+    traded: ['Wheat'],
+    lastTransaction: '10/06/2025',
+    totalQuantity: 4,
+    avgPerReceipt: 15000,
+  },
+  {
+    name: 'Maize',
+    receipts: 1,
+    value: 12000,
+    commodities: 1,
+    monthlyPattern: [
+      { month: 'Mar 2025', value: 12000 },
+    ],
+    traded: ['Maize'],
+    lastTransaction: '05/03/2025',
+    totalQuantity: 2,
+    avgPerReceipt: 12000,
+  },
+  {
+    name: 'Tomato',
+    receipts: 3,
+    value: 15000,
+    commodities: 1,
+    monthlyPattern: [
+      { month: 'Apr 2025', value: 5000 },
+      { month: 'May 2025', value: 10000 },
+    ],
+    traded: ['Tomato'],
+    lastTransaction: '20/05/2025',
+    totalQuantity: 5,
+    avgPerReceipt: 5000,
+  },
+  {
+    name: 'Onion',
+    receipts: 2,
+    value: 8000,
+    commodities: 1,
+    monthlyPattern: [
+      { month: 'Jun 2025', value: 8000 },
+    ],
+    traded: ['Onion'],
+    lastTransaction: '18/06/2025',
+    totalQuantity: 3,
+    avgPerReceipt: 4000,
+  },
+];
+
+// Add color mapping for locations
+const locationColors = {
+  Office: '#3B82F6', // blue
+  Checkpost: '#F59E42', // orange
+  Other: '#6B7280', // gray
+};
+
+function formatLakh(val: number) {
+  if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
+  if (val >= 1000) return `₹${(val / 1000).toFixed(1)}K`;
+  return `₹${val}`;
+}
 
 export default function CommitteeAnalysis() {
-  const committees = [
-    { id: 'COM-001', name: 'Finance Committee', members: 12, status: 'Active', created: 'Jan 15, 2023' },
-    { id: 'COM-002', name: 'Audit Committee', members: 8, status: 'Active', created: 'Feb 2, 2023' },
-    { id: 'COM-003', name: 'Risk Committee', members: 10, status: 'Inactive', created: 'Mar 10, 2023' },
-    { id: 'COM-004', name: 'Governance Committee', members: 15, status: 'Active', created: 'Apr 5, 2023' },
-    { id: 'COM-005', name: 'Compliance Committee', members: 7, status: 'Active', created: 'May 20, 2023' },
-  ];
+  // Drilldown state for location pie chart
+  const [locationDrill, setLocationDrill] = useState<string | null>(null);
+  // Selected commodity for analytics
+  const [selectedCommodity, setSelectedCommodity] = useState<string | null>(null);
 
-  // Data for pie charts
-  const committeeStatusData = [
-    { name: 'Gold', value: 35 },
-    { name: 'Silver', value: 25 },
-    { name: 'Crude Oil', value: 20 },
-    { name: 'Natural Gas', value: 15 },
-    { name: 'Copper', value: 5 },
-  ];
+  // Pie chart data for drilldown
+  let locationPieData = mockLocationData;
+  let locationPieTitle = 'Market Fees by Location';
+  if (locationDrill === 'Office') {
+    locationPieData = mockOfficeDrilldown;
+    locationPieTitle = 'Office - Supervisor Wise';
+  } else if (locationDrill === 'Checkpost') {
+    locationPieData = mockCheckpostDrilldown;
+    locationPieTitle = 'Checkpost Wise';
+  } else if (locationDrill === 'Other') {
+    locationPieData = mockOtherDrilldown;
+    locationPieTitle = 'Other Collections';
+  }
 
-  const committeeMembersData = committees.map(committee => ({
-    name: committee.name,
-    value: committee.members
-  }));
+  // Find selected commodity details
+  const selected = mockCommodities.find(c => c.name === selectedCommodity);
 
   return (
     <div className="w-full p-4 md:p-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-        <h2 className="text-xl font-bold mb-4 md:mb-0">Committee Analysis</h2>
-        <div className="flex space-x-2">
-          <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <FiPlus className="mr-2" />
-            New Committee
-          </button>
-          <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
-            <FiDownload className="mr-2" />
-            Export
-          </button>
+      {/* Line Graph - full width, top */}
+      <div className="mb-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 w-full">
+          <div className="h-64 md:h-80 w-full flex items-center justify-center">
+            <AreaChartComponent />
+          </div>
         </div>
       </div>
 
-      {/* Pie Charts Section */}
+      {/* Main content: Pie chart and Commodity Directory */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Market Fees by Location Pie Chart */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <h3 className="text-lg font-semibold mb-4">Committee </h3>
-          <div className="h-64 md:h-80">
-            <PieChartComponent data={committeeStatusData} />
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold">{locationPieTitle}</h3>
+            {locationDrill && (
+              <button
+                className="text-xs text-blue-600 underline"
+                onClick={() => setLocationDrill(null)}
+              >
+                Back
+              </button>
+            )}
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <h3 className="text-lg font-semibold mb-4">Members by Committee</h3>
-          <div className="h-64 md:h-80">
-            <PieChartComponent data={committeeMembersData} />
-          </div>
-        </div>
-      </div>
-      
-      {/* Committees Table Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between">
-          <div className="relative mb-4 md:mb-0 md:w-64">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search committees..."
-              className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          <div className="h-64 md:h-80 cursor-pointer">
+            <PieChartComponent
+              data={locationPieData.map((d) => {
+                let color = '#8884d8';
+                if (d.name === 'Office') color = '#2563eb'; // blue
+                else if (d.name === 'Checkpost') color = '#22c55e'; // green
+                else if (d.name === 'Other') color = '#f59e42'; // orange
+                return { ...d, color };
+              })}
+              onClickData={onClickData => {
+                if (!locationDrill && ['Office', 'Checkpost', 'Other'].includes(onClickData.name)) {
+                  setLocationDrill(onClickData.name);
+                }
+              }}
             />
           </div>
-          <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
-            <FiFilter className="mr-2" />
-            Filters
-          </button>
         </div>
-        
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Committee Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {committees.map((committee) => (
-                <tr key={committee.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{committee.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{committee.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{committee.members}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      committee.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {committee.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{committee.created}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button className="text-blue-600 hover:text-blue-900 mr-3">View</button>
-                    <button className="text-gray-600 hover:text-gray-900">Edit</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        <div className="px-6 py-4 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between">
-          <div className="text-sm text-gray-700 mb-4 md:mb-0">
-            Showing <span className="font-medium">1</span> to <span className="font-medium">5</span> of <span className="font-medium">12</span> results
-          </div>
-          <div className="flex space-x-2">
-            <button className="px-3 py-1 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50">Previous</button>
-            <button className="px-3 py-1 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50">Next</button>
+
+        {/* Commodity Directory List */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col">
+          <h3 className="text-xl font-bold mb-1">Commodity Directory</h3>
+          <div className="text-gray-500 text-sm mb-4">Click on a commodity to view detailed analytics</div>
+          <div className="flex-1 flex flex-col gap-3">
+            {mockCommodities.slice(0, 4).map((c) => (
+              <button
+                key={c.name}
+                className={`flex items-center justify-between p-4 rounded-lg border transition bg-white hover:bg-blue-50 ${selectedCommodity === c.name ? 'ring-2 ring-blue-400' : ''}`}
+                onClick={() => setSelectedCommodity(c.name)}
+              >
+                <div>
+                  <div className="font-semibold text-lg text-left">{c.name}</div>
+                  <div className="text-gray-500 text-sm">{c.receipts} receipts • {c.commodities} commodities</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-xl">{formatLakh(c.value)}</div>
+                  <div className="text-xs text-gray-500">Total Value</div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>
+
+      {/* Commodity Detailed Analytics Card */}
+      {selected && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <div>
+              <div className="text-2xl font-bold flex items-center gap-2">
+                <span>📈</span> {selected.name} - Detailed Analytics
+              </div>
+              <div className="text-gray-500 text-sm mt-1">Comprehensive performance analysis for the selected commodity</div>
+            </div>
+            <button
+              className="text-xs text-blue-600 underline mt-2 md:mt-0"
+              onClick={() => setSelectedCommodity(null)}
+            >
+              Close
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-blue-50 rounded-lg p-4 flex flex-col items-center">
+              <div className="text-2xl font-bold">{selected.receipts}</div>
+              <div className="text-gray-600 text-sm mt-1">Total Receipts</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4 flex flex-col items-center">
+              <div className="text-2xl font-bold">{formatLakh(selected.value)}</div>
+              <div className="text-gray-600 text-sm mt-1">Total Value</div>
+            </div>
+            <div className="bg-yellow-50 rounded-lg p-4 flex flex-col items-center">
+              <div className="text-2xl font-bold">₹{selected.avgPerReceipt}</div>
+              <div className="text-gray-600 text-sm mt-1">Avg Market Fees Collected</div>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4 flex flex-col items-center">
+              <div className="text-2xl font-bold">{selected.commodities}</div>
+              <div className="text-gray-600 text-sm mt-1">Traders Traded</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div className="font-semibold mb-2">Monthly Trading Pattern</div>
+              <div className="bg-gray-50 rounded-lg p-4 h-56 flex items-center justify-center">
+                {/* Dotted line chart for market fees */}
+                <svg width="100%" height="100%" viewBox="0 0 300 180">
+                  <polyline
+                    fill="none"
+                    stroke="#8884d8"
+                    strokeWidth="3"
+                    strokeDasharray="6,6"
+                    points={selected.monthlyPattern.map((d, i) => `${30 + i * 50},${180 - (d.value / 35000) * 160}`).join(' ')}
+                  />
+                  {selected.monthlyPattern.map((d, i) => (
+                    <circle
+                      key={d.month}
+                      cx={30 + i * 50}
+                      cy={180 - (d.value / 35000) * 160}
+                      r="4"
+                      fill="#8884d8"
+                    />
+                  ))}
+                  {/* X axis labels */}
+                  {selected.monthlyPattern.map((d, i) => (
+                    <text
+                      key={d.month + '-label'}
+                      x={30 + i * 50}
+                      y={175}
+                      fontSize="10"
+                      textAnchor="middle"
+                      fill="#666"
+                    >
+                      {d.month.split(' ')[0]}
+                    </text>
+                  ))}
+                </svg>
+              </div>
+            </div>
+            <div>
+              <div className="font-semibold mb-2">Traders Traded</div>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {selected.traders && selected.traders.map((t) => (
+                  <span key={t} className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-700">{t}</span>
+                ))}
+              </div>
+              <div className="text-sm text-gray-700 mb-1">
+                <b>Last Transaction:</b> {selected.lastTransaction}
+              </div>
+              <div className="text-sm text-gray-700">
+                <b>Highest Single Transaction:</b> ₹{selected.highestTransaction}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
