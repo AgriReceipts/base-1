@@ -1,9 +1,9 @@
 import {Request, Response} from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import prisma from '../utils/database';
-import {handlePrismaError} from '../utils/helpers';
-import {RegisterUserInput, RegisterUserSchema} from '../types/auth';
+import prisma from '../../utils/database';
+import {handlePrismaError} from '../../utils/helpers';
+import {RegisterUserInput, RegisterUserSchema} from '../../types/auth';
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Private (only to admin)

@@ -1,7 +1,6 @@
 import {Request, Response} from 'express';
-import prisma from '../utils/database';
-import {handlePrismaError} from '../utils/helpers';
-import {da} from '@faker-js/faker/.';
+import prisma from '../../utils/database';
+import {handlePrismaError} from '../../utils/helpers';
 
 // @desc    Gets all commodities
 // @route   GET /api/metaData/commodities

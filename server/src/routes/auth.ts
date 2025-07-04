@@ -1,14 +1,14 @@
 import {Router} from 'express';
 import {authorizeRoles} from '../middleware/roleAccess';
 import {authenticateUser} from '../middleware/auth';
-import {login, registerUser} from '../controllers/authController';
+import {login, registerUser} from '../controllers/auth/authController';
 
 const authRoutes = Router();
 
 authRoutes.post(
   '/register',
-  //authenticateUser,
-  //authorizeRoles('ad'),
+  authenticateUser,
+  authorizeRoles('ad'),
   registerUser
 );
 authRoutes.post('/login', login);

@@ -278,7 +278,7 @@ const ViewReceipts = () => {
       {/* Table */}
       <div className='overflow-x-auto rounded-xl shadow-sm bg-white border border-gray-200'>
         <table className='min-w-full divide-y divide-gray-200'>
-          <thead className='bg-gray-50'>
+          <thead className='bg-blue-100'>
             <tr>
               {[
                 'Receipt/Book #',

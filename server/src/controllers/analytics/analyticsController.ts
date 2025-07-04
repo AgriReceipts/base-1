@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
-import prisma from '../utils/database';
-import {handlePrismaError} from '../utils/helpers';
+import prisma from '../../utils/database';
+import {handlePrismaError} from '../../utils/helpers';
 
 // @desc    Get analytics for the committee, i.e percentage of each commodity in the total no of receipts
 // @route   GET /api/analytics/getCommoditiesAnalytics/:committeeID

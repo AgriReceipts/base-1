@@ -3,7 +3,7 @@ import {
   getAllCommitties,
   getAllCommodities,
   getCheckPosts,
-} from '../controllers/otherController';
+} from '../controllers/metadata/otherController';
 
 const metaDataRoutes = Router();
 

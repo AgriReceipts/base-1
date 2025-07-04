@@ -1,13 +1,14 @@
 import {Router} from 'express';
+
+import {authenticateUser} from '../middleware/auth';
+import {authorizeRoles} from '../middleware/roleAccess';
+import {createReceipt} from '../controllers/receipts/createReceipts';
 import {
-  createReceipt,
-  downloadReceipt,
   getAllReceipts,
   getReceiptById,
   getReceiptByReceiptNumber,
-} from '../controllers/receiptsController';
-import {authenticateUser} from '../middleware/auth';
-import {authorizeRoles} from '../middleware/roleAccess';
+} from '../controllers/receipts/getReceipts';
+import {downloadReceipt} from '../controllers/receipts/downloadReceipt';
 
 const receiptRoutes = Router();
 
