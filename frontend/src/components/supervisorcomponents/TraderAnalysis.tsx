@@ -1,259 +1,201 @@
-import React, {useState, useCallback, useEffect, memo} from 'react';
-import {FiSearch, FiFilter, FiDownload, FiPrinter} from 'react-icons/fi';
-import AreaChartComponent from '../supervisorcomponents/AreaChartComponent';
-import PieChartComponent from '../supervisorcomponents/PieChartComponent';
-import {useAuthStore} from '@/stores/authStore';
-import api from '@/lib/axiosInstance';
+import React, { useState } from 'react';
 
-// Memoize chart components to prevent unnecessary re-renders
-const MemoizedAreaChartComponent = memo(AreaChartComponent);
-const MemoizedPieChartComponent = memo(PieChartComponent);
+// Mock data for metrics
+const metrics = [
+  { label: 'Total Traders', value: 3, color: 'bg-blue-50', text: 'text-blue-700' },
+  { label: 'Total Receipts', value: 5, color: 'bg-green-50', text: 'text-green-700' },
+  { label: 'Total Value', value: 124000, color: 'bg-yellow-50', text: 'text-yellow-700', isMoney: true },
+  { label: 'Avg Market Fees Collected', value: 41333, color: 'bg-purple-50', text: 'text-purple-700', isMoney: true },
+];
+
+// Mock data for traders
+const mockTraders = [
+  {
+    id: 1,
+    name: 'Babu traders',
+    receipts: 2,
+    commodities: 2,
+    value: 30000,
+    monthlyPattern: [
+      { month: 'Jan 2025', value: 12000 },
+      { month: 'Feb 2025', value: 18000 },
+    ],
+    traded: ['Onion', 'Urad'],
+    lastTransaction: '18/06/2025',
+    totalQuantity: 8,
+    avgPerReceipt: 16458,
+  },
+  {
+    id: 2,
+    name: 'katyayyani',
+    receipts: 1,
+    commodities: 1,
+    value: 0,
+    monthlyPattern: [
+      { month: 'Mar 2025', value: 0 },
+    ],
+    traded: ['Maize'],
+    lastTransaction: '05/03/2025',
+    totalQuantity: 2,
+    avgPerReceipt: 0,
+  },
+  {
+    id: 3,
+    name: 'srinivas traders',
+    receipts: 2,
+    commodities: 1,
+    value: 94000,
+    monthlyPattern: [
+      { month: 'Apr 2025', value: 47000 },
+      { month: 'May 2025', value: 47000 },
+    ],
+    traded: ['Rice'],
+    lastTransaction: '20/05/2025',
+    totalQuantity: 5,
+    avgPerReceipt: 47000,
+  },
+];
+
+function formatLakh(val: number) {
+  if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
+  if (val >= 1000) return `₹${(val / 1000).toFixed(1)}K`;
+  return `₹${val}`;
+}
 
 export default function TraderAnalysis() {
-  const {committee} = useAuthStore();
-  const [commoditiesData, setCommoditiesData] = useState([]);
-  const [marketFeeData, setMarketFeesData] = useState([]);
+  const [selectedTrader, setSelectedTrader] = useState<number | null>(null);
+  const selected = mockTraders.find(t => t.id === selectedTrader);
 
-  // Mock data for traders - consider fetching this from an API as well
-  const traders = [
-    {
-      id: 1,
-      name: 'John Doe',
-      volume: '$12,450',
-      compliance: '95%',
-      lastActive: '2 days ago',
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      volume: '$8,720',
-      compliance: '89%',
-      lastActive: '1 week ago',
-    },
-    {
-      id: 3,
-      name: 'Robert Johnson',
-      volume: '$15,230',
-      compliance: '92%',
-      lastActive: '3 days ago',
-    },
-    {
-      id: 4,
-      name: 'Emily Davis',
-      volume: '$6,540',
-      compliance: '87%',
-      lastActive: '5 days ago',
-    },
-    {
-      id: 5,
-      name: 'Michael Wilson',
-      volume: '$21,300',
-      compliance: '97%',
-      lastActive: '1 day ago',
-    },
-  ];
-
-  // Fetch data using useCallback to memoize the function
-  const fetchData = useCallback(async () => {
-    if (!committee?.id) {
-      console.warn('Committee ID is not available. Skipping data fetch.');
-      return;
-    }
-    try {
-      // Fetch commodities analysis and market fee analysis in parallel
-      const [commoditiesRes, mfRes] = await Promise.all([
-        api.get(`/analytics/commodityAnalysis/${committee.id}`),
-        api.get('/analytics/marketFeeAnalysis'),
-      ]);
-      setCommoditiesData(commoditiesRes.data.data || []);
-      setMarketFeesData(mfRes.data?.data || []);
-    } catch (err) {
-      console.error('Failed to fetch analytics data:', err);
-      // Implement user-friendly error notification here (e.g., a toast message)
-    }
-  }, [committee?.id]); // Dependency array ensures fetchData only changes if committee.id changes
-
-  // useEffect to call fetchData when the component mounts or fetchData changes
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // The component's JSX must be inside the return statement
   return (
-    <div className='p-6 bg-gray-50 min-h-screen w-full'>
-      <div className='flex flex-col md:flex-row md:items-center md:justify-between mb-6'>
-        <h2 className='text-3xl font-bold text-gray-800 mb-4 md:mb-0'>
-          Trader Analysis
-        </h2>
-        {/* Potentially add global actions or filters here if needed */}
+    <div className="w-full p-4 md:p-6">
+      {/* Metrics Card Section */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+        {metrics.map((m) => (
+          <div
+            key={m.label}
+            className={`${m.color} rounded-lg p-6 flex flex-col items-center shadow-sm border`}
+          >
+            <div className={`text-2xl font-bold ${m.text}`}>
+              {m.isMoney ? formatLakh(m.value) : m.value}
+            </div>
+            <div className="text-gray-600 text-sm mt-1 text-center">{m.label}</div>
+          </div>
+        ))}
       </div>
 
-      <hr className='my-6 border-gray-200' />
-
-      {/* Chart Component Section */}
-      <div className='mb-8 bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
-        <h3 className='text-xl font-semibold text-gray-800 mb-4'>
-          Overall Market Trends
-        </h3>
-        <div className='h-72 md:h-96'>
-          <MemoizedAreaChartComponent /> {/* Using memoized component */}
-        </div>
-      </div>
-
-      <hr className='my-6 border-gray-200' />
-
-      {/* Pie Charts Section */}
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>
-        <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
-          <h3 className='text-lg font-semibold text-gray-800 mb-4'>
-            Top Commodities by Volume
-          </h3>
-          <div className='h-64 md:h-80 flex items-center justify-center'>
-            {commoditiesData.length > 0 ? (
-              <MemoizedPieChartComponent data={commoditiesData} />
-            ) : (
-              <p className='text-gray-500'>No commodity data available.</p>
-            )}
-          </div>
-        </div>
-        <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
-          <h3 className='text-lg font-semibold text-gray-800 mb-4'>
-            Market Fee Analysis by Location
-          </h3>
-          <div className='h-64 md:h-80 flex items-center justify-center'>
-            {marketFeeData.length > 0 ? (
-              <MemoizedPieChartComponent data={marketFeeData} />
-            ) : (
-              <p className='text-gray-500'>No market fee data available.</p>
-            )}
-          </div>
+      {/* Trader Directory List */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col mb-6">
+        <h3 className="text-xl font-bold mb-1">Trader Directory</h3>
+        <div className="text-gray-500 text-sm mb-4">Click on a trader to view detailed analytics</div>
+        <div className="flex-1 flex flex-col gap-3">
+          {mockTraders.map((t) => (
+            <button
+              key={t.id}
+              className={`flex items-center justify-between p-4 rounded-lg border transition bg-white hover:bg-blue-50 ${selectedTrader === t.id ? 'ring-2 ring-blue-400' : ''}`}
+              onClick={() => setSelectedTrader(t.id)}
+            >
+              <div>
+                <div className="font-semibold text-lg text-left">{t.name}</div>
+                <div className="text-gray-500 text-sm">{t.receipts} receipts • {t.commodities} commodities</div>
+              </div>
+              <div className="text-right">
+                <div className="font-bold text-xl">{formatLakh(t.value)}</div>
+                <div className="text-xs text-gray-500">Total Value</div>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
-      <hr className='my-6 border-gray-200' />
-
-      {/* Traders Table Section */}
-      <div className='bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden'>
-        <div className='p-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between'>
-          <div className='relative mb-4 md:mb-0 md:w-64'>
-            <FiSearch className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400' />
-            <input
-              type='text'
-              placeholder='Search traders...'
-              className='pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-            />
-          </div>
-          <div className='flex flex-wrap gap-2'>
-            <button className='flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-150 ease-in-out'>
-              <FiDownload className='mr-2' />
-              Export
-            </button>
-            <button className='flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-150 ease-in-out'>
-              <FiPrinter className='mr-2' />
-              Print
-            </button>
-            <button className='flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-150 ease-in-out'>
-              <FiFilter className='mr-2' />
-              Filters
+      {/* Trader Detailed Analytics Card */}
+      {selected && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <div>
+              <div className="text-2xl font-bold flex items-center gap-2">
+                <span>📈</span> {selected.name} - Detailed Analytics
+              </div>
+              <div className="text-gray-500 text-sm mt-1">Comprehensive performance analysis for the selected trader</div>
+            </div>
+            <button
+              className="text-xs text-blue-600 underline mt-2 md:mt-0"
+              onClick={() => setSelectedTrader(null)}
+            >
+              Close
             </button>
           </div>
-        </div>
-
-        <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200'>
-            <thead className='bg-gray-50'>
-              <tr>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Trader
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Volume
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Compliance
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Last Active
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {traders.map((trader) => (
-                <tr key={trader.id}>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='flex items-center'>
-                      <div className='flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium'>
-                        {trader.name.charAt(0)}
-                      </div>
-                      <div className='ml-4'>
-                        <div className='text-sm font-medium text-gray-900'>
-                          {trader.name}
-                        </div>
-                        <div className='text-sm text-gray-500'>
-                          ID: {trader.id}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-                    {trader.volume}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        parseFloat(trader.compliance) > 90
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                      {trader.compliance}
-                    </span>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                    {trader.lastActive}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-                    <button className='text-blue-600 hover:text-blue-900 mr-3 transition duration-150 ease-in-out'>
-                      View
-                    </button>
-                    <button className='text-gray-600 hover:text-gray-900 transition duration-150 ease-in-out'>
-                      Audit
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className='px-6 py-4 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between'>
-          <div className='text-sm text-gray-700 mb-4 md:mb-0'>
-            Showing <span className='font-medium'>1</span> to{' '}
-            <span className='font-medium'>5</span> of{' '}
-            <span className='font-medium'>24</span> results
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-blue-50 rounded-lg p-4 flex flex-col items-center">
+              <div className="text-2xl font-bold">{selected.receipts}</div>
+              <div className="text-gray-600 text-sm mt-1">Total Receipts</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4 flex flex-col items-center">
+              <div className="text-2xl font-bold">{formatLakh(selected.value)}</div>
+              <div className="text-gray-600 text-sm mt-1">Total Value</div>
+            </div>
+            <div className="bg-yellow-50 rounded-lg p-4 flex flex-col items-center">
+              <div className="text-2xl font-bold">₹{selected.avgPerReceipt}</div>
+              <div className="text-gray-600 text-sm mt-1">Avg Market Fees Collected</div>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4 flex flex-col items-center">
+              <div className="text-2xl font-bold">{selected.commodities}</div>
+              <div className="text-gray-600 text-sm mt-1">Commodities</div>
+            </div>
           </div>
-          <div className='flex space-x-2'>
-            <button className='px-3 py-1 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition duration-150 ease-in-out'>
-              Previous
-            </button>
-            <button className='px-3 py-1 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition duration-150 ease-in-out'>
-              Next
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div className="font-semibold mb-2">Monthly Trading Pattern</div>
+              <div className="bg-gray-50 rounded-lg p-4 h-56 flex items-center justify-center">
+                {/* Simple mock line chart using SVG for now */}
+                <svg width="100%" height="100%" viewBox="0 0 300 180">
+                  <polyline
+                    fill="none"
+                    stroke="#8884d8"
+                    strokeWidth="3"
+                    points={selected.monthlyPattern.map((d, i) => `${30 + i * 50},${180 - (d.value / 35000) * 160}`).join(' ')}
+                  />
+                  {selected.monthlyPattern.map((d, i) => (
+                    <circle
+                      key={d.month}
+                      cx={30 + i * 50}
+                      cy={180 - (d.value / 35000) * 160}
+                      r="4"
+                      fill="#8884d8"
+                    />
+                  ))}
+                  {/* X axis labels */}
+                  {selected.monthlyPattern.map((d, i) => (
+                    <text
+                      key={d.month + '-label'}
+                      x={30 + i * 50}
+                      y={175}
+                      fontSize="10"
+                      textAnchor="middle"
+                      fill="#666"
+                    >
+                      {d.month.split(' ')[0]}
+                    </text>
+                  ))}
+                </svg>
+              </div>
+            </div>
+            <div>
+              <div className="font-semibold mb-2">Commodities Traded</div>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {selected.traded.map((t) => (
+                  <span key={t} className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-700">{t}</span>
+                ))}
+              </div>
+              <div className="text-sm text-gray-700 mb-1">
+                <b>Last Transaction:</b> {selected.lastTransaction}
+              </div>
+              <div className="text-sm text-gray-700">
+                <b>Total Quantity:</b> {selected.totalQuantity} units
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

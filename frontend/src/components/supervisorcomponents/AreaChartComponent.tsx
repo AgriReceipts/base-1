@@ -6,28 +6,35 @@ interface ChartData {
   visitors: number;
 }
 
-const AreaChartComponent: React.FC = () => {
-  // Sample data - replace with your actual data
-  const data: ChartData[] = [
-    { date: 'Apr 13', visitors: 4000 },
-    { date: 'Apr 28', visitors: 3000 },
-    { date: 'May 13', visitors: 5000 },
-    { date: 'May 28', visitors: 2780 },
-    { date: 'Jun 12', visitors: 1890 },
-    { date: 'Jun 30', visitors: 2390 },
-  ];
+interface AreaChartComponentProps {
+  title?: string;
+  subtitle?: string;
+  data?: ChartData[];
+}
 
+const defaultData: ChartData[] = [
+  { date: 'Apr 13', visitors: 4000 },
+  { date: 'Apr 28', visitors: 3000 },
+  { date: 'May 13', visitors: 5000 },
+  { date: 'May 28', visitors: 2780 },
+  { date: 'Jun 12', visitors: 1890 },
+  { date: 'Jun 30', visitors: 2390 },
+];
+
+const AreaChartComponent: React.FC<AreaChartComponentProps> = ({
+  title = 'Market Fee Collected (Month-wise)',
+  subtitle = '',
+  data = defaultData,
+}) => {
   return (
-    <div className="w-full bg-white rounded-lg shadow-sm p-4">
-      <div className="mb-4">
-        <h3 className="text-lg font-medium text-gray-900">Area Chart - Interactive</h3>
-        <p className="text-sm text-gray-500">Showing total visitors for the last 3 months</p>
-        <div className="mt-2">
-          <button className="text-sm font-medium text-purple-600 px-2 py-1 mr-2">Last 3 months</button>
-          {/* Add other time filters if needed */}
+    <div className="w-full">
+      <div className="mb-2">
+        <h3 className="text-xl font-bold text-gray-900 leading-tight">{title}</h3>
+        <p className="text-base text-gray-500 mt-1">{subtitle}</p>
+        <div className="mt-1">
+          <button className="text-base font-medium text-purple-600 px-0 py-0 bg-transparent border-none outline-none focus:outline-none">Last 3 months</button>
         </div>
       </div>
-      
       <div className="w-full h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
@@ -68,10 +75,6 @@ const AreaChartComponent: React.FC = () => {
             />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className="mt-2 text-sm text-gray-500">
-        2 cm of rain Today
       </div>
     </div>
   );
