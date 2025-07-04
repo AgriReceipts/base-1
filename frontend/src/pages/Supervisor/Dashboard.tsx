@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
-import TraderAnalysis from '../../components/supervisorcomponents/TraderAnalysis';
-import CommitteeAnalysis from '../../components/supervisorcomponents/CommiteeAnalysis';
+import {useState, useEffect} from 'react';
+import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
+import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysis';
 import Reports from '../../components/supervisorcomponents/Reports';
 
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';

@@ -1,13 +1,10 @@
 import {useState, useEffect} from 'react';
-import {FiSidebar, FiX, FiMenu} from 'react-icons/fi';
 import Sidebar from '../../components/common/Sidebar';
 import ViewReceipts from '../../components/common/viewReceipt/ViewReceipts';
 import Reports from '../../components/deocomponents/Reports';
 import {MetricCards} from '../../components/deocomponents/metric-cards';
 import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
-
 import Overview from '@/components/common/overview/Overview';
-import logo from '../../assets/logo-ap.png';
 import Nav from '@/components/ui/Nav';
 
 export default function DeoDashboard() {
