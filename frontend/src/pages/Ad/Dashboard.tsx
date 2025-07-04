@@ -1,20 +1,12 @@
 import React, {useState, useEffect} from 'react';
-<<<<<<< HEAD
-import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
-import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysis';
-=======
-import CommitteeAnalysis from '../../components/supervisorcomponents/CommiteeAnalysis';
-import TraderAnalysis from '../../components/supervisorcomponents/TraderAnalysis';
->>>>>>> sri
-import Reports from '../../components/supervisorcomponents/Reports';
-import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
-import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
-import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
-import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
-import { FiHome, FiBarChart2, FiFileText, FiTarget, FiUsers, FiBarChart } from 'react-icons/fi';
 import TargetManagement from './TargetManagement';
+import Reports from '../../components/supervisorcomponents/Reports';
+import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
+import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
+import Overview from '@/components/common/overview/Overview';
+import { FiHome, FiBarChart2, FiFileText, FiTarget, FiUsers, FiBarChart } from 'react-icons/fi';
 
 // Placeholder components for new pages
 const DistrictAnalysis = () => <div className="p-8 w-full text-center text-xl text-gray-600">District Analysis (Coming Soon)</div>;
