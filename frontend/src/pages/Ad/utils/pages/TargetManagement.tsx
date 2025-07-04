@@ -1,44 +1,8 @@
 import React, { useState } from 'react';
 import { Target, Save, Plus, Edit2 } from 'lucide-react';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
-
-// Define TargetType inline since it does not exist elsewhere
-type TargetType = {
-  id: string;
-  committeeId: string;
-  financialYear: '2024-25' | '2025-26';
-  yearlyTarget: number;
-  monthlyTargets: Record<string, number>;
-  checkpostTargets?: Record<string, Record<string, number>>;
-};
-
-// Inline data for months and committees
-const months = [
-  'April', 'May', 'June', 'July', 'August', 'September',
-  'October', 'November', 'December', 'January', 'February', 'March'
-];
-
-const committees = [
-  {
-    id: '1',
-    name: 'Rajahmundry',
-    hasCheckposts: true,
-    checkposts: ['Checkpost A', 'Checkpost B']
-  },
-  {
-    id: '2',
-    name: 'Kakinada',
-    hasCheckposts: false,
-    checkposts: []
-  },
-  {
-    id: '3',
-    name: 'Amalapuram',
-    hasCheckposts: true,
-    checkposts: ['Checkpost X']
-  }
-  // Add more committees as needed
-];
+import type { Target as TargetType } from '../types';
+import { committees, months } from '../data/committees';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 const TargetManagement: React.FC = () => {
   const [targets, setTargets] = useLocalStorage<TargetType[]>('targets', []);
@@ -49,8 +13,8 @@ const TargetManagement: React.FC = () => {
   const [checkpostTargets, setCheckpostTargets] = useState<Record<string, Record<string, string>>>({});
   const [editingTarget, setEditingTarget] = useState<string | null>(null);
 
-  const selectedCommitteeData = committees.find((c: typeof committees[number]) => c.id === selectedCommittee);
-  const existingTarget = targets.find((t: TargetType) => t.committeeId === selectedCommittee && t.financialYear === selectedYear);
+  const selectedCommitteeData = committees.find(c => c.id === selectedCommittee);
+  const existingTarget = targets.find(t => t.committeeId === selectedCommittee && t.financialYear === selectedYear);
 
   const handleYearlyTargetChange = (value: string) => {
     setYearlyTarget(value);
@@ -109,7 +73,7 @@ const TargetManagement: React.FC = () => {
     };
 
     if (existingTarget) {
-      setTargets(targets.map((t: TargetType) => t.id === existingTarget.id ? newTarget : t));
+      setTargets(targets.map(t => t.id === existingTarget.id ? newTarget : t));
     } else {
       setTargets([...targets, newTarget]);
     }
@@ -301,8 +265,8 @@ const TargetManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {targets.map((target: TargetType) => {
-                  const committee = committees.find((c: typeof committees[number]) => c.id === target.committeeId);
+                {targets.map((target) => {
+                  const committee = committees.find(c => c.id === target.committeeId);
                   return (
                     <tr key={target.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -335,4 +299,4 @@ const TargetManagement: React.FC = () => {
   );
 };
 
-export default TargetManagement; 
+export default TargetManagement;
