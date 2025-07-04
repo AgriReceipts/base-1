@@ -57,6 +57,7 @@ interface SidebarProps {
   setSidebarVisible: (visible: boolean) => void;
   activeNav: string;
   onNavClick: (navId: string) => void;
+  navItems?: { key: string; label: string; icon?: React.ReactNode }[];
 }
 
 // --- Sidebar Component ---
@@ -66,6 +67,7 @@ export default function Sidebar({
   setSidebarVisible,
   activeNav,
   onNavClick,
+  navItems: customNavItems,
 }: SidebarProps) {
   const logout = useAuthStore((state) => state.logout);
   const role = useAuthStore((state) => state.role);
@@ -74,10 +76,16 @@ export default function Sidebar({
 
   // Dynamically get the navigation items based on the user's role
   // useMemo ensures this is only re-calculated when the 'role' changes.
-  const navItems = useMemo(() => {
-    // Fallback to an empty array if the role is not found in our config
-    return role ? roleNavItems[role] || [] : [];
-  }, [role]);
+  const navItems = customNavItems
+    ? customNavItems.map((item) => ({
+        ...item,
+        id: item.key,
+        icon: item.icon || null,
+      }))
+    : useMemo(() => {
+        // Fallback to an empty array if the role is not found in our config
+        return role ? roleNavItems[role] || [] : [];
+      }, [role]);
 
   const handleLogout = (): void => {
     logout();
