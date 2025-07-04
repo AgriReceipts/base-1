@@ -13,9 +13,10 @@ export const CreateReceiptSchema = z
     commodity: z.string().min(1, 'Commodity is required'),
     newCommodityName: z.string().optional(),
     quantity: z.number().positive('Quantity must be greater than 0'),
-    unit: z.enum(['quintals', 'numbers', 'bags'], {
+    unit: z.enum(['quintals', 'kilograms', 'bags', 'numbers'], {
       errorMap: () => ({message: 'Please select a valid unit'}),
     }),
+    weightPerBag: z.number().optional(),
     natureOfReceipt: z.enum(['mf', 'lc', 'uc', 'others'], {
       errorMap: () => ({message: 'Please select nature of receipt'}),
     }),
@@ -96,23 +97,11 @@ export const CreateReceiptSchema = z
   );
 export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
 
-// export type Receipt = CreateReceiptRequest & {
-//   id: string;
-//   generatedBy: string;
-//   committee: {
-//     id: string;
-//     name: string;
-//   };
-//   Commodity: {
-//     id: string;
-//     name: string;
-//   };
-//   trader: {
-//     name: string;
-//   };
-// };
+export interface EditReceipt extends CreateReceiptRequest {
+  id: string;
+}
 
-export interface Receipt {
+export interface DetailedReceipt {
   id: string;
   receiptNumber: string;
   bookNumber: string;
@@ -124,10 +113,6 @@ export interface Receipt {
   value: number;
   natureOfReceipt: string;
   receiptSignedBy: string;
-  // Add any other fields as needed
-}
-
-export interface DetailedReceipt extends Receipt {
   committee: {
     name: string;
   };

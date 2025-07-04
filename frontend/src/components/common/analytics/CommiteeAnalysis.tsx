@@ -14,9 +14,18 @@ const mockLineData = [
 
 // Mock data for pie chart (market fees by location)
 const mockLocationData = [
-  {name: 'Office', value: 55},
-  {name: 'Checkpost', value: 30},
-  {name: 'Other', value: 15},
+  {
+    name: 'Office',
+    value: 42.95,
+  },
+  {
+    name: 'Checkpost',
+    value: 57.05,
+  },
+  {
+    name: 'Other',
+    value: 0,
+  },
 ];
 
 const mockOfficeDrilldown = [
@@ -107,13 +116,6 @@ const mockCommodities = [
     avgPerReceipt: 4000,
   },
 ];
-
-// Add color mapping for locations
-const locationColors = {
-  Office: '#3B82F6', // blue
-  Checkpost: '#F59E42', // orange
-  Other: '#6B7280', // gray
-};
 
 function formatLakh(val: number) {
   if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;

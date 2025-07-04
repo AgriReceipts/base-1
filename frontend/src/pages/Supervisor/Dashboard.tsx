@@ -40,9 +40,9 @@ export default function SupervisorDashboard() {
       case 'overview':
         return <Overview onNavigate={setActiveNav} />;
       case 'traderAnalysis':
-        return <CommitteeAnalysis />;
-      case 'committeeAnalysis':
         return <TraderAnalysis />;
+      case 'committeeAnalysis':
+        return <CommitteeAnalysis />;
       case 'addReceipt':
         return <ReceiptEntry />;
       case 'viewReceipts':

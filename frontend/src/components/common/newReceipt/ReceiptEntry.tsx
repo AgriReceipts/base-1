@@ -2,9 +2,9 @@ import {useState, useEffect, useCallback} from 'react';
 import {toast} from 'react-hot-toast';
 import {z} from 'zod';
 import {
-  type Receipt,
   type CreateReceiptRequest,
   CreateReceiptSchema,
+  type EditReceipt,
 } from '@/types/receipt';
 import api, {isAxiosError} from '@/lib/axiosInstance';
 import FormReceipt from './FormReceipt';
@@ -17,7 +17,7 @@ type Checkpost = {id: string; name: string};
 type Trader = string;
 
 interface ReceiptEntryProps {
-  receiptToEdit?: Receipt;
+  receiptToEdit?: EditReceipt;
 }
 
 // Helper to generate initial form data, ensuring type safety
@@ -33,7 +33,7 @@ const getInitialFormData = (committeeId?: string): FormData => ({
   newCommodityName: '',
   // @ts-ignore
   quantity: '',
-  unit: 'quintals',
+  unit: 'kgs',
   natureOfReceipt: 'mf',
   natureOtherText: '',
   // @ts-ignore

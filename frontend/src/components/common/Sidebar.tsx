@@ -57,7 +57,7 @@ interface SidebarProps {
   setSidebarVisible: (visible: boolean) => void;
   activeNav: string;
   onNavClick: (navId: string) => void;
-  navItems?: { key: string; label: string; icon?: React.ReactNode }[];
+  navItems?: {key: string; label: string; icon?: React.ReactNode}[];
 }
 
 // --- Sidebar Component ---

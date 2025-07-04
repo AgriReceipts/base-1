@@ -25,7 +25,7 @@ interface FormReceiptProps {
 }
 
 // Constants for select options
-const units = ['quintals', 'numbers', 'bags'];
+const units = ['quintals', 'kgs', 'bags', 'numbers'];
 const natureOfReceipt = [
   {value: 'mf', label: 'Market Fee (MF)'},
   {value: 'lc', label: 'License Fee (LC)'},
@@ -321,7 +321,13 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     ))}
                   </select>
                   {formData.commodity === 'Other' && (
-                    <>
+                    <div className='py-4'>
+                      <label
+                        htmlFor='unit'
+                        className='block text-sm font-normal text-gray-600 '>
+                        Weight of Each Bag(Kgs)
+                        <span className='text-red-600'>*</span>
+                      </label>
                       <input
                         type='text'
                         placeholder='Enter new commodity name'
@@ -336,14 +342,14 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                           New commodity name is required
                         </p>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
                 <div>
                   <label
                     htmlFor='quantity'
                     className='block text-sm font-normal text-gray-600 mb-2'>
-                    Quantity<span className='text-red-600'>*</span>
+                    Total Quantity<span className='text-red-600'>*</span>
                   </label>
                   <input
                     type='number'
@@ -374,6 +380,30 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       </option>
                     ))}
                   </select>
+                  {formData.unit === 'bags' && (
+                    <div className='py-4'>
+                      <label
+                        htmlFor='unit'
+                        className='block text-sm font-normal text-gray-600 '>
+                        Weight of Each Bag(Kgs)
+                        <span className='text-red-600'>*</span>
+                      </label>
+                      <input
+                        type='number'
+                        placeholder='Weight of each bag'
+                        value={formData.weightPerBag}
+                        onChange={(e) =>
+                          onFormChange('weightPerBag', Number(e.target.value))
+                        }
+                        className='w-full px-3 py-1.5 my-2 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300'></input>
+                      {!formData.weightPerBag && (
+                        <p className='text-xs text-red-600'>
+                          {' '}
+                          Weight of each bag required
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
@@ -384,7 +414,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                 id='nature-details'
                 className='text-base font-medium text-gray-700 flex items-center'>
                 <span className='bg-blue-400 w-1.5 h-4 rounded-full mr-2'></span>
-                Nature Details
+                Nature Of Receipt
               </h3>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-2'>
                 <div>
