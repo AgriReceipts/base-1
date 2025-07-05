@@ -1142,7 +1142,7 @@ async function seedSampleReceipts() {
   const commodities = await prisma.commodity.findMany();
   const traders = await prisma.trader.findMany();
 
-  const units: Unit[] = ['tons', 'kilograms', 'quintals', 'numbers', 'bags'];
+  const units: Unit[] = ['kilograms', 'quintals', 'numbers', 'bags'];
   const natures: NatureOfReceipt[] = ['mf', 'lc', 'uc', 'others'];
   const locations: CollectionLocation[] = ['office', 'checkpost', 'other'];
 
@@ -1164,10 +1164,6 @@ async function seedSampleReceipts() {
       let totalWeightKg: number | null = null;
 
       switch (unit) {
-        case 'tons':
-          quantity = getRandomNumber(1, 50);
-          totalWeightKg = quantity * 1000;
-          break;
         case 'kilograms':
           quantity = getRandomNumber(10, 1000);
           totalWeightKg = quantity;

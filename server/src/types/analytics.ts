@@ -1,4 +1,5 @@
 import {Prisma} from '@prisma/client';
+import {NatureOfReceipt, CollectionLocation} from '@prisma/client';
 
 // Analytics response types
 export interface CommitteeAnalytics {
@@ -25,12 +26,15 @@ export interface DistrictAnalytics {
   }[];
 }
 
-export type AnalyticsInput = {
+export interface AnalyticsInput {
   committeeId: string;
   traderId: string;
-  commodityId: string;
+  commodityId: string; // Commodity can be optional
   receiptDate: Date;
-  value: Prisma.Decimal;
-  feesPaid: Prisma.Decimal;
-  totalWeightKg: Prisma.Decimal;
-};
+  value: number; // or Decimal
+  feesPaid: number; // or Decimal
+  totalWeightKg: number; // or Decimal
+  natureOfReceipt: NatureOfReceipt;
+  collectionLocation: CollectionLocation;
+  checkpostId: string | null; // Can be null if not a checkpost receipt
+}

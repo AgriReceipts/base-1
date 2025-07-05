@@ -95,9 +95,12 @@ export const createReceiptWithAnalytics = async (
       traderId,
       commodityId,
       receiptDate: newReceipt.receiptDate,
-      value: new Decimal(data.value),
-      feesPaid: new Decimal(data.feesPaid),
-      totalWeightKg: new Decimal(data.totalWeightKg ?? data.quantity), // fallback
+      value: data.value,
+      feesPaid: data.feesPaid,
+      totalWeightKg: data.totalWeightKg ?? data.quantity,
+      natureOfReceipt: data.natureOfReceipt,
+      collectionLocation: data.collectionLocation,
+      checkpostId: data.checkpostId || ' ',
     });
 
     return newReceipt;

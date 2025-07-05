@@ -1,7 +1,6 @@
 import {Request, Response} from 'express';
 import prisma from '../../utils/database';
 import {handlePrismaError} from '../../utils/helpers';
-import {Decimal} from '@prisma/client/runtime/library';
 
 //@desc Get analytics for a specific committee
 //@route GET /api/analytics/committee/:committeeId
