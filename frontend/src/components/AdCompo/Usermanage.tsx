@@ -1,607 +1,319 @@
 import React, { useState } from 'react';
-import { 
-  Table, 
-  Input, 
-  Button, 
-  Select, 
-  Modal, 
-  Form, 
-  Card, 
-  Space, 
-  Tag,
-  Typography,
-  Divider,
-  Popconfirm,
-  message,
-  Row,
-  Col,
-  Badge,
-  Tooltip,
-  Switch,
-  Avatar
-} from 'antd';
-import { 
-  SearchOutlined, 
-  EditOutlined, 
-  DeleteOutlined, 
-  UserAddOutlined,
-  LockOutlined,
-  MailOutlined,
-  TeamOutlined,
-  IdcardOutlined,
-  SafetyOutlined,
-  EyeOutlined,
-  EyeInvisibleOutlined
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
+import axios from 'axios';
+import { FiUser, FiLock, FiMail, FiBriefcase, FiUsers, FiCheckCircle, FiAlertCircle, FiInfo } from 'react-icons/fi';
 
-const { Title, Text } = Typography;
-const { Option } = Select;
+const RegisterForm: React.FC = () => {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    name: '',
+    role: 'deo',
+    designation: '',
+    committeeName: '',
+  });
 
-type UserRole = 'DEO' | 'Supervisor' | 'AD';
-type Committee = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
-type UserStatus = 'Active' | 'Inactive' | 'Pending';
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: UserRole;
-  committee: Committee;
-  status: UserStatus;
-  createdAt?: Date;
-  lastLogin?: Date;
-}
-
-const UserManagement: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john@example.com',
-      role: 'AD',
-      committee: '1',
-      status: 'Active',
-      createdAt: new Date('2023-01-15'),
-      lastLogin: new Date('2023-06-20')
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      role: 'Supervisor',
-      committee: '2',
-      status: 'Active',
-      createdAt: new Date('2023-02-10'),
-      lastLogin: new Date('2023-06-18')
-    },
-    {
-      id: 3,
-      name: 'Mike Johnson',
-      email: 'mike@example.com',
-      role: 'DEO',
-      committee: '3',
-      status: 'Pending',
-      createdAt: new Date('2023-03-05'),
-      lastLogin: new Date('2023-06-15')
-    }
-  ]);
-
-  const [isEditModalVisible, setIsEditModalVisible] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [searchText, setSearchText] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const editFormRef = React.useRef<FormInstance>(null);
-
-  const roles: UserRole[] = ['DEO', 'Supervisor', 'AD'];
-  const committees: Committee[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-  const statuses: UserStatus[] = ['Active', 'Inactive', 'Pending'];
-
-  const getRoleColor = (role: UserRole) => {
-    switch(role) {
-      case 'AD': return 'red';
-      case 'Supervisor': return 'blue';
-      case 'DEO': return 'green';
-      default: return 'geekblue';
-    }
-  };
-
-  const columns: ColumnsType<User> = [
-    {
-      title: 'User',
-      dataIndex: 'name',
-      key: 'user',
-      width: 250,
-      render: (text, record) => (
-        <Space>
-          <Avatar size="large" style={{ backgroundColor: '#1890ff' }}>
-            {text.charAt(0).toUpperCase()}
-          </Avatar>
-          <div>
-            <Text strong>{text}</Text><br />
-            <Text type="secondary">{record.email}</Text>
-          </div>
-        </Space>
-      ),
-      sorter: (a, b) => a.name.localeCompare(b.name),
-    },
-    {
-      title: 'Role',
-      dataIndex: 'role',
-      key: 'role',
-      width: 150,
-      render: (role) => (
-        <Tag color={getRoleColor(role)} style={{ borderRadius: 12, padding: '0 12px' }}>
-          {role}
-        </Tag>
-      ),
-      filters: roles.map(role => ({ text: role, value: role })),
-      onFilter: (value, record) => record.role === value,
-    },
-    {
-      title: 'Committee',
-      dataIndex: 'committee',
-      key: 'committee',
-      width: 150,
-      render: (committee) => (
-        <Tag color="geekblue" style={{ borderRadius: 12 }}>
-          Committee {committee}
-        </Tag>
-      ),
-      filters: committees.map(committee => ({ text: `Committee ${committee}`, value: committee })),
-      onFilter: (value, record) => record.committee === value,
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 150,
-      render: (status) => (
-        <Badge 
-          status={status === 'Active' ? 'success' : status === 'Inactive' ? 'error' : 'warning'} 
-          text={status} 
-        />
-      ),
-      filters: statuses.map(status => ({ text: status, value: status })),
-      onFilter: (value, record) => record.status === value,
-    },
-    {
-      title: 'Last Login',
-      dataIndex: 'lastLogin',
-      key: 'lastLogin',
-      width: 200,
-      render: (date) => date ? new Date(date).toLocaleString() : 'Never',
-      sorter: (a, b) => (a.lastLogin?.getTime() || 0) - (b.lastLogin?.getTime() || 0),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      width: 120,
-      fixed: 'right',
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Edit">
-            <Button 
-              type="text" 
-              icon={<EditOutlined style={{ color: '#1890ff' }} />} 
-              onClick={() => showEditModal(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Popconfirm
-              title="Are you sure to delete this user?"
-              onConfirm={() => handleDelete(record.id)}
-              okText="Yes"
-              cancelText="No"
-              placement="left"
-            >
-              <Button 
-                type="text" 
-                danger 
-                icon={<DeleteOutlined />}
-              />
-            </Popconfirm>
-          </Tooltip>
-        </Space>
-      ),
-    },
+  const roles = [
+    { value: 'deo', label: 'Data Entry Operator' },
+    { value: 'supervisor', label: 'Supervisor' },
+    { value: 'secretary', label: 'Secretary' },
+    { value: 'ad', label: 'Administrator' },
   ];
 
-  const showEditModal = (user: User) => {
-    setCurrentUser(user);
-    setIsEditModalVisible(true);
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
   };
 
-  const handleCancel = () => {
-    setIsEditModalVisible(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddUser = (values: Omit<User, 'id' | 'status'> & { password: string }) => {
-    const newUser: User = {
-      id: users.length + 1,
-      ...values,
-      status: 'Active',
-      createdAt: new Date(),
-    };
-    setUsers([...users, newUser]);
-    message.success('User added successfully');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Authorization token missing');
+
+      const payload = { ...formData };
+      if (payload.role === 'ad') delete payload.committeeName;
+
+      await axios.post('http://localhost:3000/api/auth/register', payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setMessage({ text: 'User registered successfully!', type: 'success' });
+      setFormData({
+        username: '',
+        password: '',
+        name: '',
+        role: 'deo',
+        designation: '',
+        committeeName: '',
+      });
+      setTouched({});
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || 'Registration failed. Please try again.';
+      setMessage({ text: errorMsg, type: 'error' });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleUpdateUser = (values: Partial<User> & { newPassword?: string }) => {
-    if (!currentUser) return;
-    
-    const updatedUsers = users.map(user => 
-      user.id === currentUser.id ? { ...user, ...values } : user
+  // Form validation
+  const isFormValid = () => {
+    return (
+      formData.username.trim() !== '' &&
+      formData.password.length >= 6 &&
+      formData.name.trim() !== '' &&
+      formData.designation.trim() !== '' &&
+      (formData.role === 'ad' || formData.committeeName.trim() !== '')
     );
-    setUsers(updatedUsers);
-    setIsEditModalVisible(false);
-    message.success('User updated successfully');
   };
-
-  const handleDelete = (userId: number) => {
-    setUsers(users.filter(user => user.id !== userId));
-    message.success('User deleted successfully');
-  };
-
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchText.toLowerCase())
-  );
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
-      <Title level={2} style={{ marginBottom: 24, color: '#1d1d1d' }}>
-        <TeamOutlined style={{ marginRight: 12 }} />
-        User Management
-      </Title>
+    <div className="w-full mx-8 p-4 sm:p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-6 sm:p-8">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800">User Registration</h2>
+            <p className="text-gray-500 mt-2 text-sm">
+              Create new system accounts with appropriate permissions
+            </p>
+          </div>
 
-      {/* Create User Section */}
-      <Card 
-        title={
-          <Space>
-            <UserAddOutlined style={{ color: '#1890ff' }} />
-            <span style={{ fontWeight: 500 }}>Create New User</span>
-          </Space>
-        }
-        bordered={false}
-        style={{ marginBottom: 24, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.09)' }}
-      >
-        <Form
-          layout="vertical"
-          onFinish={handleAddUser}
-          initialValues={{ role: 'DEO', committee: '1' }}
-        >
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                label="Full Name"
-                name="name"
-                rules={[{ required: true, message: 'Please input the full name!' }]}
-              >
-                <Input 
-                  placeholder="Enter full name" 
-                  prefix={<IdcardOutlined style={{ color: '#bfbfbf' }} />}
-                  size="large"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                label="Email Address"
-                name="email"
-                rules={[
-                  { required: true, message: 'Please input the email address!' },
-                  { type: 'email', message: 'Please enter a valid email!' }
-                ]}
-              >
-                <Input 
-                  placeholder="user@example.com" 
-                  prefix={<MailOutlined style={{ color: '#bfbfbf' }} />}
-                  size="large"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                label="Select Role"
-                name="role"
-                rules={[{ required: true, message: 'Please select a role!' }]}
-              >
-                <Select placeholder="Select a role" size="large">
-                  {roles.map(role => (
-                    <Option key={role} value={role}>
-                      <Tag color={getRoleColor(role)}>{role}</Tag>
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                label="Select Committee"
-                name="committee"
-                rules={[{ required: true, message: 'Please select a committee!' }]}
-              >
-                <Select placeholder="Select committee number" size="large">
-                  {committees.map(committee => (
-                    <Option key={committee} value={committee}>
-                      <Tag color="geekblue">Committee {committee}</Tag>
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Divider orientation="left" plain style={{ color: '#8c8c8c' }}>Security Settings</Divider>
-
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                label="Password"
-                name="password"
-                rules={[
-                  { required: true, message: 'Please input the password!' },
-                  { min: 8, message: 'Password must be at least 8 characters!' }
-                ]}
-              >
-                <Input.Password 
-                  placeholder="Minimum 8 characters" 
-                  prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
-                  size="large"
-                  iconRender={(visible) => (
-                    <Tooltip title={visible ? 'Hide password' : 'Show password'}>
-                      {visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                    </Tooltip>
-                  )}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                label="Confirm Password"
-                name="confirmPassword"
-                dependencies={['password']}
-                rules={[
-                  { required: true, message: 'Please confirm the password!' },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue('password') === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject(new Error('The two passwords do not match!'));
-                    },
-                  }),
-                ]}
-              >
-                <Input.Password 
-                  placeholder="Confirm your password" 
-                  prefix={<SafetyOutlined style={{ color: '#bfbfbf' }} />}
-                  size="large"
-                  iconRender={(visible) => (
-                    <Tooltip title={visible ? 'Hide password' : 'Show password'}>
-                      {visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                    </Tooltip>
-                  )}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item style={{ marginTop: 24 }}>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              size="large"
-              style={{ width: '100%', height: 48, borderRadius: 8 }}
+          {message && (
+            <div
+              className={`mb-6 p-4 rounded-lg flex items-start ${
+                message.type === 'success' 
+                  ? 'bg-green-50 border border-green-200 text-green-800' 
+                  : 'bg-red-50 border border-red-200 text-red-800'
+              }`}
             >
-              Create User
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+              {message.type === 'success' ? (
+                <FiCheckCircle className="mt-0.5 mr-3 flex-shrink-0" />
+              ) : (
+                <FiAlertCircle className="mt-0.5 mr-3 flex-shrink-0" />
+              )}
+              <span>{message.text}</span>
+            </div>
+          )}
 
-      {/* User List Section */}
-      <Card 
-        title={
-          <Space>
-            <TeamOutlined style={{ color: '#1890ff' }} />
-            <span style={{ fontWeight: 500 }}>User List</span>
-            <Tag color="blue" style={{ borderRadius: 12 }}>{users.length} users</Tag>
-          </Space>
-        }
-        bordered={false}
-        style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.09)' }}
-        extra={
-          <Input
-            placeholder="Search users by name or email..."
-            prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-            style={{ width: 300 }}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-            size="large"
-          />
-        }
-      >
-        <Table 
-          columns={columns} 
-          dataSource={filteredUsers} 
-          rowKey="id"
-          scroll={{ x: true }}
-          pagination={{ 
-            pageSize: 10,
-            showSizeChanger: true,
-            pageSizeOptions: ['10', '20', '50', '100'],
-            showTotal: (total) => `Total ${total} users`,
-            style: { marginRight: 16 }
-          }}
-          style={{ marginTop: 16 }}
-        />
-      </Card>
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Username */}
+            <div className="space-y-2">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                <span className="flex items-center">
+                  Username
+                  <span className="text-red-500 ml-1">*</span>
+                </span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiUser className="text-gray-400" />
+                </div>
+                <input
+                  id="username"
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('username')}
+                  className="pl-10 w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                  required
+                />
+              </div>
+              {touched.username && !formData.username && (
+                <p className="text-xs text-red-600 flex items-center mt-1">
+                  <FiInfo className="mr-1" /> Username is required
+                </p>
+              )}
+            </div>
 
-      {/* Edit User Modal */}
-   <Modal
-  title={
-    <Space>
-      <EditOutlined style={{ color: '#1890ff' }} />
-      <span>Edit User: {currentUser?.name}</span>
-    </Space>
-  }
-  open={isEditModalVisible}
-  onCancel={handleCancel}
-  width={800}
-  footer={null}
-  destroyOnClose
-  styles={{
-    header: { borderBottom: '1px solid #f0f0f0', paddingBottom: 16 },
-    body: { paddingTop: 24 }
-  }}
->
-  {currentUser && (
-    <Form 
-      ref={editFormRef}
-      initialValues={currentUser}
-      onFinish={handleUpdateUser} 
-      layout="vertical"
-    >
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            label="Full Name"
-            name="name"
-            rules={[{ required: true, message: 'Please input the full name!' }]}
-          >
-            <Input size="large" />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            label="Email Address"
-            name="email"
-            rules={[
-              { required: true, message: 'Please input the email address!' },
-              { type: 'email', message: 'Please enter a valid email!' }
-            ]}
-          >
-            <Input size="large" />
-          </Form.Item>
-        </Col>
-      </Row>
+            {/* Password */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <span className="flex items-center">
+                  Password
+                  <span className="text-red-500 ml-1">*</span>
+                  <span className="text-xs text-gray-500 ml-auto">(min 6 characters)</span>
+                </span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiLock className="text-gray-400" />
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('password')}
+                  className="pl-10 w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                  minLength={6}
+                  required
+                />
+              </div>
+              {touched.password && formData.password.length < 6 && (
+                <p className="text-xs text-red-600 flex items-center mt-1">
+                  <FiInfo className="mr-1" /> Password must be at least 6 characters
+                </p>
+              )}
+            </div>
 
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            label="Role"
-            name="role"
-            rules={[{ required: true, message: 'Please select a role!' }]}
-          >
-            <Select size="large">
-              {roles.map(role => (
-                <Option key={role} value={role}>
-                  <Tag color={getRoleColor(role)}>{role}</Tag>
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            label="Status"
-            name="status"
-            rules={[{ required: true, message: 'Please select a status!' }]}
-          >
-            <Select size="large">
-              {statuses.map(status => (
-                <Option key={status} value={status}>
-                  <Badge 
-                    status={status === 'Active' ? 'success' : status === 'Inactive' ? 'error' : 'warning'} 
-                    text={status} 
+            {/* Full Name */}
+            <div className="space-y-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                <span className="flex items-center">
+                  Full Name
+                  <span className="text-red-500 ml-1">*</span>
+                </span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiUser className="text-gray-400" />
+                </div>
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('name')}
+                  className="pl-10 w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                  required
+                />
+              </div>
+              {touched.name && !formData.name && (
+                <p className="text-xs text-red-600 flex items-center mt-1">
+                  <FiInfo className="mr-1" /> Full name is required
+                </p>
+              )}
+            </div>
+
+            {/* Designation */}
+            <div className="space-y-2">
+              <label htmlFor="designation" className="block text-sm font-medium text-gray-700">
+                <span className="flex items-center">
+                  Designation
+                  <span className="text-red-500 ml-1">*</span>
+                </span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiBriefcase className="text-gray-400" />
+                </div>
+                <input
+                  id="designation"
+                  type="text"
+                  name="designation"
+                  value={formData.designation}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('designation')}
+                  className="pl-10 w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                  required
+                />
+              </div>
+              {touched.designation && !formData.designation && (
+                <p className="text-xs text-red-600 flex items-center mt-1">
+                  <FiInfo className="mr-1" /> Designation is required
+                </p>
+              )}
+            </div>
+
+            {/* Role */}
+            <div className="space-y-2">
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                <span className="flex items-center">
+                  Role
+                  <span className="text-red-500 ml-1">*</span>
+                </span>
+              </label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+              >
+                {roles.map(role => (
+                  <option key={role.value} value={role.value}>
+                    {role.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Committee Name (conditionally rendered) */}
+            {formData.role !== 'ad' && (
+              <div className="space-y-2">
+                <label htmlFor="committeeName" className="block text-sm font-medium text-gray-700">
+                  <span className="flex items-center">
+                    Committee Name
+                    <span className="text-red-500 ml-1">*</span>
+                  </span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiUsers className="text-gray-400" />
+                  </div>
+                  <input
+                    id="committeeName"
+                    type="text"
+                    name="committeeName"
+                    value={formData.committeeName}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('committeeName')}
+                    className="pl-10 w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                    required={formData.role !== 'ad'}
                   />
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-      </Row>
+                </div>
+                {touched.committeeName && !formData.committeeName && (
+                  <p className="text-xs text-red-600 flex items-center mt-1">
+                    <FiInfo className="mr-1" /> Committee name is required
+                  </p>
+                )}
+              </div>
+            )}
 
-      <Form.Item
-        label="Committee"
-        name="committee"
-        rules={[{ required: true, message: 'Please select a committee!' }]}
-      >
-        <Select size="large">
-          {committees.map(committee => (
-            <Option key={committee} value={committee}>
-              <Tag color="geekblue">Committee {committee}</Tag>
-            </Option>
-          ))}
-        </Select>
-      </Form.Item>
-
-      <Divider orientation="left" plain style={{ color: '#8c8c8c' }}>Security</Divider>
-
-      {/* Current Password (Visible) */}
-      <Form.Item
-        label="Current Password"
-      >
-        <Input
-          value="user1234" // This would be the actual password in a real implementation
-          readOnly
-          size="large"
-          suffix={
-            <Tooltip title="Current password is visible for admin purposes">
-              <SafetyOutlined style={{ color: '#52c41a' }} />
-            </Tooltip>
-          }
-          style={{ background: '#f6ffed' }}
-        />
-      </Form.Item>
-
-      {/* Reset Password */}
-      <Form.Item
-        label="Set New Password"
-        name="newPassword"
-        rules={[
-          { min: 8, message: 'Password must be at least 8 characters!' }
-        ]}
-        extra={
-          <Space style={{ marginTop: 8 }}>
-            <Switch
-              checkedChildren={<EyeOutlined />}
-              unCheckedChildren={<EyeInvisibleOutlined />}
-              checked={showPassword}
-              onChange={() => setShowPassword(!showPassword)}
-            />
-            <Text type="secondary">Show new password</Text>
-          </Space>
-        }
-      >
-        <Input.Password 
-          placeholder="Enter new password (leave blank to keep current)" 
-          size="large"
-          visibilityToggle={{ visible: showPassword }}
-        />
-      </Form.Item>
-
-      <Form.Item style={{ marginTop: 32 }}>
-        <Button 
-          type="primary" 
-          htmlType="submit" 
-          size="large"
-          style={{ width: '100%', height: 48, borderRadius: 8 }}
-        >
-          Update User
-        </Button>
-      </Form.Item>
-    </Form>
-  )}
-</Modal>
+            <div className="md:col-span-2 pt-2">
+              <button
+                type="submit"
+                disabled={loading || !isFormValid()}
+                className={`w-full max-w-md mx-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ${
+                  loading ? 'bg-blue-400' : 
+                  !isFormValid() ? 'bg-gray-400 cursor-not-allowed' : 
+                  'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Registering User...
+                  </>
+                ) : (
+                  'Register User'
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default UserManagement;
+export default RegisterForm;
