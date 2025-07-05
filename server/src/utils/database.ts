@@ -1,5 +1,6 @@
 import {PrismaClient} from '@prisma/client';
 
+
 // Create a single instance of PrismaClient
 const prisma = new PrismaClient({
   log: ['error'],
@@ -7,6 +8,15 @@ const prisma = new PrismaClient({
   // ? ['query', 'error', 'warn']
   // : ['error'],
 });
+
+// Log when the database is connected
+prisma.$connect()
+  .then(() => {
+    console.log('Prisma database connected successfully.');
+  })
+  .catch((err) => {
+    console.error('Prisma database connection failed:', err);
+  });
 
 // Export the instance
 export default prisma;

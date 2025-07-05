@@ -65,27 +65,24 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
   const [loading, setLoading] = useState(false);
   const [commoditySearch, setCommoditySearch] = useState('');
   const isEditing = !!receiptToEdit;
-const fetchInitialData = useCallback(async () => {
-  if (!committee?.id) return;
 
-  try {
-    const [commoditiesRes, checkpostsRes, traderRes] = await Promise.all([
-      api.get(`metaData/commodities`),
-      api.get(`/metaData/checkpost/${committee.id}`),
-      api.get('/metaData/traders'),
-    ]);
+  const fetchInitialData = useCallback(async () => {
+    if (!committee?.id) return;
+    try {
+      const [commoditiesRes, checkpostsRes, traderRes] = await Promise.all([
+        api.get(`metaData/commodities`),
+        api.get(`/metaData/checkpost/${committee.id}`),
+        api.get('/metaData/traders'),
+      ]);
 
-    // Sort commodities alphabetically and add "Other" at the top
-    const sortedCommodities = ['Other', ...commoditiesRes.data.data.sort((a: string, b: string) => a.localeCompare(b))];
-
-    setCommodities(sortedCommodities);
-    setAvailableCheckposts(checkpostsRes.data.data.checkposts);
-    setTraders(['New', ...traderRes.data.data]);
-  } catch (error) {
-    console.error('Failed to fetch initial data:', error);
-    toast.error('Failed to fetch initial data.');
-  }
-}, [committee?.id]);
+      setCommodities(['Other', ...commoditiesRes.data.data]);
+      setAvailableCheckposts(checkpostsRes.data.data.checkposts);
+      setTraders(['New', ...traderRes.data.data]);
+    } catch (error) {
+      console.error('Failed to fetch initial data:', error);
+      toast.error('Failed to fetch initial data.');
+    }
+  }, [committee?.id]);
 
   useEffect(() => {
     fetchInitialData();

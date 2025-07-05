@@ -25,7 +25,7 @@ interface FormReceiptProps {
 }
 
 // Constants for select options
-const units = ['quintals', 'kgs', 'bags', 'numbers'];
+const units = ['quintals', 'kilograms', 'bags', 'numbers'];
 const natureOfReceipt = [
   {value: 'mf', label: 'Market Fee (MF)'},
   {value: 'lc', label: 'License Fee (LC)'},
