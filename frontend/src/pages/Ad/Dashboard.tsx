@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
 
-import Reports from '../../components/supervisorcomponents/Reports';
+import Reports from './utils/pages/Reports';
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import usermanagement from '../../components/AdCompo/Usermanage'
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
@@ -15,7 +15,7 @@ import {
   FiUsers,
   FiBarChart,
 } from 'react-icons/fi';
-import TargetManagement from './utils/pages/TargetManagement';
+import TargetManagement from './TargetManagement';
 import Usermanage from '../../components/AdCompo/Usermanage';
 
 // Placeholder components for new pages
