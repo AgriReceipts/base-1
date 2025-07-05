@@ -50,8 +50,10 @@ export const createReceiptWithAnalytics = async (
     let totalWeight: number;
     if (data.unit === 'bags' && data.weightPerBag) {
       totalWeight = data.quantity * data.weightPerBag;
-    } else if (data.unit === 'kilograms' || data.unit === 'quintals') {
+    } else if (data.unit === 'kilograms') {
       totalWeight = data.quantity;
+    } else if (data.unit === 'quintals') {
+      totalWeight = data.quantity * 100;
     } else {
       totalWeight = 0;
     }
