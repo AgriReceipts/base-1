@@ -33,7 +33,7 @@ const getInitialFormData = (committeeId?: string): FormData => ({
   newCommodityName: '',
   // @ts-ignore
   quantity: '',
-  unit: 'kgs',
+  unit: 'kilograms',
   natureOfReceipt: 'mf',
   natureOtherText: '',
   // @ts-ignore
