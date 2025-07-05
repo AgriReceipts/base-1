@@ -15,7 +15,7 @@ import {
   FiUsers,
   FiBarChart,
 } from 'react-icons/fi';
-import TargetManagement from './utils/pages/TargetManagement';
+import TargetManagement from './TargetManagement';
 import Usermanage from '../../components/AdCompo/Usermanage';
 
 // Placeholder components for new pages
