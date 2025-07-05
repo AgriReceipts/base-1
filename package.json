@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "jspdf": "^3.0.1",
-    "jspdf-autotable": "^5.0.2"
-  }
-}
