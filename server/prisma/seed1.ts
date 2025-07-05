@@ -7,6 +7,7 @@ import {
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import {Decimal} from '@prisma/client/runtime/library';
+import {committeesData, commoditiesData} from './data';
 
 // Instantiate Prisma Client
 const prisma = new PrismaClient();

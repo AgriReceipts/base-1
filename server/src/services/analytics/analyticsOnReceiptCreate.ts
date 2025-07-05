@@ -76,13 +76,17 @@ export const updateAnalyticsOnReceiptCreate = async (
     },
   });
 
-  // 2. UPDATE TRADER ANALYTICS
-  await tx.traderAnalytics.upsert({
+  // 2. UPDATE TRADER MONTHLY & OVERALL ANALYTICS
+  // This is now split into two clear, simple updates.
+
+  // Update the monthly record
+  await tx.traderMonthlyAnalytics.upsert({
     where: {
-      traderId_committeeId_receiptDate: {
+      traderId_committeeId_year_month: {
         traderId,
         committeeId,
-        receiptDate: day,
+        year,
+        month,
       },
     },
     update: {
@@ -90,29 +94,56 @@ export const updateAnalyticsOnReceiptCreate = async (
       totalValue: {increment: value},
       totalFeesPaid: {increment: feesPaid},
       totalQuantity: {increment: totalWeightKg},
-      lastTransactionDate: receiptDate,
     },
     create: {
       traderId,
       committeeId,
-      receiptDate: day,
+      year,
+      month,
       totalReceipts: 1,
       totalValue: value,
       totalFeesPaid: feesPaid,
       totalQuantity: totalWeightKg,
-      firstTransactionDate: receiptDate,
+    },
+  });
+
+  // Update the single overall record
+  await tx.traderOverallAnalytics.upsert({
+    where: {
+      traderId_committeeId: {
+        traderId,
+        committeeId,
+      },
+    },
+    update: {
+      totalReceipts: {increment: 1},
+      totalValue: {increment: value},
+      totalFeesPaid: {increment: feesPaid},
+      totalQuantity: {increment: totalWeightKg},
+      lastTransactionDate: receiptDate, // Always update the last transaction date
+    },
+    create: {
+      traderId,
+      committeeId,
+      totalReceipts: 1,
+      totalValue: value,
+      totalFeesPaid: feesPaid,
+      totalQuantity: totalWeightKg,
+      firstTransactionDate: receiptDate, // Set on creation only
       lastTransactionDate: receiptDate,
     },
   });
 
-  // 3. UPDATE COMMODITY ANALYTICS
+  // 3. UPDATE COMMODITY MONTHLY & OVERALL ANALYTICS (if applicable)
   if (commodityId) {
-    await tx.commodityAnalytics.upsert({
+    // Update the monthly record
+    await tx.commodityMonthlyAnalytics.upsert({
       where: {
-        commodityId_committeeId_receiptDate: {
+        commodityId_committeeId_year_month: {
           commodityId,
           committeeId,
-          receiptDate: day,
+          year,
+          month,
         },
       },
       update: {
@@ -124,7 +155,32 @@ export const updateAnalyticsOnReceiptCreate = async (
       create: {
         commodityId,
         committeeId,
-        receiptDate: day,
+        year,
+        month,
+        totalReceipts: 1,
+        totalValue: value,
+        totalFeesPaid: feesPaid,
+        totalQuantity: totalWeightKg,
+      },
+    });
+
+    // Update the single overall record
+    await tx.commodityOverallAnalytics.upsert({
+      where: {
+        commodityId_committeeId: {
+          commodityId,
+          committeeId,
+        },
+      },
+      update: {
+        totalReceipts: {increment: 1},
+        totalValue: {increment: value},
+        totalFeesPaid: {increment: feesPaid},
+        totalQuantity: {increment: totalWeightKg},
+      },
+      create: {
+        commodityId,
+        committeeId,
         totalReceipts: 1,
         totalValue: value,
         totalFeesPaid: feesPaid,

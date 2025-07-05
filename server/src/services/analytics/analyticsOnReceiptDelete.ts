@@ -13,19 +13,18 @@ export const updateAnalyticsOnReceiptDelete = async (
     totalWeightKg,
     natureOfReceipt,
     collectionLocation,
-    checkpostId,
-  }: AnalyticsInput
+  }: // checkpostId is not used in the decrement logic but kept for interface consistency
+  AnalyticsInput
 ) => {
   const year = receiptDate.getFullYear();
   const month = receiptDate.getMonth() + 1;
-  // Normalize date to the start of the day for daily analytics consistency
   const day = new Date(
     receiptDate.getFullYear(),
     receiptDate.getMonth(),
     receiptDate.getDate()
   );
 
-  // 1. UPDATE DAILY ANALYTICS
+  // 1. UPDATE DAILY ANALYTICS (This part is correct)
   await tx.dailyAnalytics.update({
     where: {
       receiptDate_committeeId: {
@@ -38,19 +37,20 @@ export const updateAnalyticsOnReceiptDelete = async (
       totalValue: {decrement: value},
       totalFeesPaid: {decrement: feesPaid},
       totalQuantity: {decrement: totalWeightKg},
-      // Dynamic updates for fee nature and location breakdowns
       [`${natureOfReceipt}_fees`]: {decrement: feesPaid},
       [`${collectionLocation}Fees`]: {decrement: feesPaid},
     },
   });
 
-  // 2. UPDATE TRADER ANALYTICS
-  await tx.traderAnalytics.update({
+  // 2. UPDATE TRADER MONTHLY & OVERALL ANALYTICS (CORRECTED)
+  // Decrement from the monthly record
+  await tx.traderMonthlyAnalytics.update({
     where: {
-      traderId_committeeId_receiptDate: {
+      traderId_committeeId_year_month: {
         traderId,
         committeeId,
-        receiptDate: day,
+        year,
+        month,
       },
     },
     data: {
@@ -61,14 +61,48 @@ export const updateAnalyticsOnReceiptDelete = async (
     },
   });
 
-  // 3. UPDATE COMMODITY ANALYTICS
+  // Decrement from the overall record
+  await tx.traderOverallAnalytics.update({
+    where: {
+      traderId_committeeId: {
+        traderId,
+        committeeId,
+      },
+    },
+    data: {
+      totalReceipts: {decrement: 1},
+      totalValue: {decrement: value},
+      totalFeesPaid: {decrement: feesPaid},
+      totalQuantity: {decrement: totalWeightKg},
+    },
+  });
+
+  // 3. UPDATE COMMODITY MONTHLY & OVERALL ANALYTICS (CORRECTED)
   if (commodityId) {
-    await tx.commodityAnalytics.update({
+    // Decrement from the monthly record
+    await tx.commodityMonthlyAnalytics.update({
       where: {
-        commodityId_committeeId_receiptDate: {
+        commodityId_committeeId_year_month: {
           commodityId,
           committeeId,
-          receiptDate: day,
+          year,
+          month,
+        },
+      },
+      data: {
+        totalReceipts: {decrement: 1},
+        totalValue: {decrement: value},
+        totalFeesPaid: {decrement: feesPaid},
+        totalQuantity: {decrement: totalWeightKg},
+      },
+    });
+
+    // Decrement from the overall record
+    await tx.commodityOverallAnalytics.update({
+      where: {
+        commodityId_committeeId: {
+          commodityId,
+          committeeId,
         },
       },
       data: {
@@ -80,16 +114,14 @@ export const updateAnalyticsOnReceiptDelete = async (
     });
   }
 
-  // 4. UPDATE COMMITTEE MONTHLY ANALYTICS
+  // 4. UPDATE COMMITTEE MONTHLY ANALYTICS (This part is correct)
   const monthlyUpdatePayload: Prisma.CommitteeMonthlyAnalyticsUpdateInput = {
     totalReceipts: {decrement: 1},
     totalValue: {decrement: value},
     totalFeesPaid: {decrement: feesPaid},
-    // Dynamic location-based fee decrement
     [`${collectionLocation}Fees`]: {decrement: feesPaid},
   };
 
-  // Only decrement marketFees if the receipt was actually a market fee
   if (natureOfReceipt === 'mf') {
     monthlyUpdatePayload.marketFees = {decrement: feesPaid};
   }

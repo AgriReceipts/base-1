@@ -131,9 +131,10 @@ model Committee {
 
   CommitteeMonthlyAnalytics CommitteeMonthlyAnalytics[]
 
-  TraderAnalytics TraderAnalytics[]
-
-  CommodityAnalytics CommodityAnalytics[]
+  TraderMonthlyAnalytics    TraderMonthlyAnalytics[]
+  TraderOverallAnalytics    TraderOverallAnalytics[]
+  CommodityMonthlyAnalytics CommodityMonthlyAnalytics[]
+  CommodityOverallAnalytics CommodityOverallAnalytics[]
 
   DailyAnalytics DailyAnalytics[]
 
@@ -191,7 +192,8 @@ model Trader {
 
   receipts Receipt[]
 
-  TraderAnalytics TraderAnalytics[]
+  TraderMonthlyAnalytics TraderMonthlyAnalytics[]
+  TraderOverallAnalytics TraderOverallAnalytics[]
 
   @@index([name])
   @@index([phone])
@@ -213,7 +215,8 @@ model Commodity {
 
   receipts Receipt[]
 
-  CommodityAnalytics CommodityAnalytics[]
+  CommodityMonthlyAnalytics CommodityMonthlyAnalytics[]
+  CommodityOverallAnalytics CommodityOverallAnalytics[]
 
   Target Target[]
 
@@ -382,74 +385,92 @@ model Target {
 
 // Analytics
 
-// To store pre-calculated stats for each trader
-
-model TraderAnalytics {
-  id String @id @default(uuid())
-
-  traderId String
-
-  receiptDate DateTime
-
+// To store pre-calculated stats for each trader per month
+model TraderMonthlyAnalytics {
+  id          String @id @default(uuid())
+  traderId    String
   committeeId String
+  year        Int
+  month       Int
 
-  totalReceipts Int @default(0)
-
-  totalValue Decimal @default(0)
-
+  // Aggregated totals for the month
+  totalReceipts Int     @default(0)
+  totalValue    Decimal @default(0)
   totalFeesPaid Decimal @default(0)
+  totalQuantity Decimal @default(0) // Total weight in kg
 
-  totalQuantity Decimal @default(0) //total weight in kg
+  // Relations
+  trader    Trader    @relation(fields: [traderId], references: [id], onDelete: Cascade)
+  committee Committee @relation(fields: [committeeId], references: [id])
 
-  firstTransactionDate DateTime
-
-  lastTransactionDate DateTime
-
-  // Relation back to the original trader
-
-  trader Trader @relation(fields: [traderId], references: [id], onDelete: Cascade)
-
-  Committee Committee @relation(fields: [committeeId], references: [id])
-
-  @@unique([traderId, committeeId, receiptDate])
-  @@index([traderId, receiptDate])
-  @@index([committeeId, receiptDate])
-  @@index([receiptDate])
+  // Ensures one summary record per trader, per committee, per month
+  @@unique([traderId, committeeId, year, month])
 }
 
-// To store pre-calculated stats for each commodity
-
-model CommodityAnalytics {
-  id String @id @default(uuid())
-
-  commodityId String
-
-  receiptDate DateTime
-
+// To store overall (all-time) stats for each trader
+model TraderOverallAnalytics {
+  id          String @id @default(uuid())
+  traderId    String
   committeeId String
 
-  totalReceipts Int @default(0)
-
-  totalValue Decimal @default(0)
-
+  // Aggregated all-time totals
+  totalReceipts Int     @default(0)
+  totalValue    Decimal @default(0)
   totalFeesPaid Decimal @default(0)
+  totalQuantity Decimal @default(0) // Total weight in kg
 
-  totalQuantity Decimal @default(0) // Sum of totalWeightKg
+  // Useful metadata
+  firstTransactionDate DateTime
+  lastTransactionDate  DateTime
 
-  createdAt DateTime @default(now())
+  // Relations
+  trader    Trader    @relation(fields: [traderId], references: [id], onDelete: Cascade)
+  committee Committee @relation(fields: [committeeId], references: [id])
 
-  updatedAt DateTime @updatedAt
+  // Ensures one overall summary record per trader, per committee
+  @@unique([traderId, committeeId])
+}
 
-  // Relation back to the original commodity
+// To store pre-calculated stats for each commodity per month
+model CommodityMonthlyAnalytics {
+  id          String @id @default(uuid())
+  commodityId String
+  committeeId String
+  year        Int
+  month       Int
 
+  // Aggregated totals for the month
+  totalReceipts Int     @default(0)
+  totalValue    Decimal @default(0)
+  totalFeesPaid Decimal @default(0)
+  totalQuantity Decimal @default(0) // Total weight in kg
+
+  // Relations
   commodity Commodity @relation(fields: [commodityId], references: [id], onDelete: Cascade)
+  committee Committee @relation(fields: [committeeId], references: [id])
 
-  Committee Committee @relation(fields: [committeeId], references: [id])
+  // Ensures one summary record per commodity, per committee, per month
+  @@unique([commodityId, committeeId, year, month])
+}
 
-  @@unique([commodityId, committeeId, receiptDate])
-  @@index([commodityId, receiptDate])
-  @@index([committeeId, receiptDate])
-  @@index([receiptDate]) // For efficient date range queries
+// To store overall (all-time) stats for each commodity
+model CommodityOverallAnalytics {
+  id          String @id @default(uuid())
+  commodityId String
+  committeeId String
+
+  // Aggregated all-time totals
+  totalReceipts Int     @default(0)
+  totalValue    Decimal @default(0)
+  totalFeesPaid Decimal @default(0)
+  totalQuantity Decimal @default(0) // Total weight in kg
+
+  // Relations
+  commodity Commodity @relation(fields: [commodityId], references: [id], onDelete: Cascade)
+  committee Committee @relation(fields: [committeeId], references: [id])
+
+  // Ensures one overall summary record per commodity, per committee
+  @@unique([commodityId, committeeId])
 }
 
 model CommitteeMonthlyAnalytics {
