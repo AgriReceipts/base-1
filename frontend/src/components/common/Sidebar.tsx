@@ -37,6 +37,7 @@ const roleNavItems = {
   ad: [
     // Add navigation items for 'Assistant Director' here
     {id: 'overview', label: 'Overview', icon: <FiHome />},
+    {id: 'addReceipt', label: 'Add Receipt', icon: <FiPlusSquare />},
     {id: 'reports', label: 'Reports', icon: <FiFileText />},
     {id: 'viewReceipts', label: 'View Receipts', icon: <FiEye />},
     {id: 'traderAnalysis', label: 'Trader Analysis', icon: <FiTrendingUp />},
@@ -113,9 +114,9 @@ export default function Sidebar({
         sidebarVisible ? 'w-64 left-0' : '-left-64 w-0'
       } ${isMobile ? 'shadow-lg' : ''}`}>
       {/* Header */}
-      <div className='p-4 border-b border-gray-200'>
+      <div className='p-5 border-b border-gray-200'>
         <h2 className='text-xl font-semibold text-gray-800'>
-          {getRoleDisplay(role)} Panel
+          {getRoleDisplay(role)} 
         </h2>
       </div>
 
