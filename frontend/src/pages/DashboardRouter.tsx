@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import DeoDashboard from "./Deo/Dashboard";
 import SupervisorDashboard from "./Supervisor/Dashboard";
 import AdDashboard from "./Ad/Dashboard";
+import SecretaryDashboard from './Seceretary/Dashboard';
 import { useAuthStore } from "../stores/authStore";
 
 const DashboardRouter: React.FC = () => {
@@ -19,6 +20,9 @@ const DashboardRouter: React.FC = () => {
       return <SupervisorDashboard />;
     case "ad":
       return <AdDashboard />;
+    case "secretary":
+  return <SecretaryDashboard />;
+
     default:
       return <Navigate to="/login" replace={true} />;
   }
