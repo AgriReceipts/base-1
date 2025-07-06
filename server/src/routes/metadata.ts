@@ -9,7 +9,7 @@ import {
 const metaDataRoutes = Router();
 
 metaDataRoutes.get('/commodities', getAllCommodities);
-metaDataRoutes.get('/commities', getAllCommitties);
+metaDataRoutes.get('/committees', getAllCommitties);
 metaDataRoutes.get('/checkpost/:committeeId', getCheckPosts);
 metaDataRoutes.get('/traders', getAllTraders);
 

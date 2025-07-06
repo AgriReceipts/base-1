@@ -52,43 +52,27 @@ export const verifyReceipt = async (req: Request, res: Response) => {
         trader: {
           select: {
             name: true,
-            address: true,
           },
         },
         payeeName: true,
-        payeeAddress: true,
+
         commodity: {
           select: {
             name: true,
           },
         },
+        feesPaid: true,
+        value: true,
+        natureOfReceipt: true,
         quantity: true,
         unit: true,
-        weightPerBag: true,
-        totalWeightKg: true,
-        natureOfReceipt: true,
-        natureOtherText: true,
-        value: true,
-        feesPaid: true,
-        vehicleNumber: true,
-        invoiceNumber: true,
-        collectionLocation: true,
-        officeSupervisor: true,
-        collectionOtherText: true,
+        generatedBy: true,
         receiptSignedBy: true,
-        designation: true,
         committee: {
           select: {
             name: true,
-            id: true,
           },
         },
-        checkpost: {
-          select: {
-            name: true,
-          },
-        },
-        createdAt: true,
       },
       orderBy: {
         receiptDate: 'desc',

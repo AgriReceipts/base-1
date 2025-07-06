@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+
 import {Card, CardContent} from '../../components/ui/Card';
 import LoginForm from '../../components/Authcompo/LoginForm';
 import {FiShield, FiUsers, FiBarChart, FiFileText} from 'react-icons/fi';
@@ -63,6 +66,24 @@ const LoginPage = () => {
               </div>
             ))}
           </div>
+
+          {/* Verify Receipt Quick Link Card */}
+          <a
+            href='/verifyReceipt'
+            className='flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm border border-primary-300 hover:shadow-md transition cursor-pointer'>
+            <div className='flex items-center justify-center w-10 h-10 bg-primary-100 rounded-lg flex-shrink-0'>
+              <FiFileText className='text-primary-600' size={20} />
+            </div>
+            <div className='space-y-1'>
+              <h3 className='font-semibold text-primary-800 text-sm'>
+                Verify Receipt
+              </h3>
+              <p className='text-primary-700 text-sm leading-relaxed'>
+                Instantly validate a receipt number and book number from any
+                device.
+              </p>
+            </div>
+          </a>
 
           {/* Demo credentials */}
           <Card className='bg-primary-50 border-primary-200'>

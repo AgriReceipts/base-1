@@ -5,6 +5,7 @@ import DashboardRouter from '../pages/DashboardRouter';
 import {useAuthStore} from '../stores/authStore';
 import {LoadingScreen} from '../components/ui/LoadingScreen';
 import {Toaster} from 'react-hot-toast';
+import VerifyReceipt from '../components/global/verifyReceipt';
 
 export const AppRouter: React.FC = () => {
   const {role, isInitialized, initialize} = useAuthStore();
@@ -43,6 +44,7 @@ export const AppRouter: React.FC = () => {
           path='/supervisor'
           element={<Navigate to='/dashboard' replace={true} />}
         />
+        <Route path='/verifyReceipt' element={<VerifyReceipt />} />
       </Routes>
     </div>
   );
