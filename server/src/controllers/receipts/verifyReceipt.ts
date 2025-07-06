@@ -16,17 +16,21 @@ export const verifyReceipt = async (req: Request, res: Response) => {
     const {receiptNumber, bookNumber, committeeId} = req.query;
 
     // Validate required parameters
-    if (!receiptNumber) {
+    if (!receiptNumber && !(bookNumber && committeeId)) {
       return res.status(400).json({
-        message: 'receiptNumber is required',
+        message:
+          'Provide either receiptNumber or both bookNumber and committeeId for verification.',
       });
     }
 
     // Build the where clause
     const where: Prisma.ReceiptWhereInput = {
-      receiptNumber: receiptNumber as string,
       cancelled: false, // Only non-cancelled receipts
     };
+
+    if (receiptNumber) {
+      where.receiptNumber = receiptNumber as string;
+    }
 
     // If bookNumber is provided, filter by specific bookNumber
     if (bookNumber) {
@@ -109,7 +113,6 @@ export const verifyReceipt = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error verifying receipt:', error);
-    // Use your existing error handler
     handlePrismaError(res, error);
   }
 };
