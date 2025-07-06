@@ -146,8 +146,7 @@ export const getReceiptById = async (req: Request, res: Response) => {
     if (!id) {
       return res.status(404).json({message: 'Receipt Id required'});
     }
-    // @ts-ignore
-    const user = req.user;
+
     const receipt = await prisma.receipt.findUnique({
       where: {id},
       select: {
@@ -188,13 +187,6 @@ export const getReceiptById = async (req: Request, res: Response) => {
 
     if (!receipt) {
       return res.status(404).json({message: 'Receipt not found'});
-    }
-
-    // Security Check: Ensure user is an admin or belongs to the receipt's committee
-    if (user?.role !== 'ad' && receipt.committeeId !== user?.committee.id) {
-      return res
-        .status(403)
-        .json({message: 'Forbidden: You do not have access to this receipt'});
     }
 
     res.status(200).json({data: receipt});
