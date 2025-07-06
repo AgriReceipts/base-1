@@ -15,44 +15,20 @@ export async function seedUsersAndTraders(
 
   // ==================== CREATE USERS ====================
   const users = [];
-  const usedUsernames = new Set<string>();
 
-  // Helper function to generate unique username
-  const generateUniqueUsername = (baseName: string, role: UserRole): string => {
-    let username: string;
-    let attempts = 0;
-
-    do {
-      const suffix = attempts > 0 ? `_${attempts}` : '';
-      username = `${baseName
-        .toLowerCase()
-        .replace(/\s+/g, '_')}_${role}${suffix}`;
-      attempts++;
-    } while (usedUsernames.has(username) && attempts < 100);
-
-    if (usedUsernames.has(username)) {
-      // Fallback to UUID-based username if we can't generate unique one
-      username = `${role}_${faker.string.uuid().substring(0, 8)}`;
-    }
-
-    usedUsernames.add(username);
-    return username;
-  };
-
-  // Create Assistant Directors (district-wide access)
+  // ----------------- Assistant Directors -----------------
   console.log('     Creating Assistant Directors...');
-  for (let i = 0; i < config.users.assistantDirectors; i++) {
-    const name = faker.person.fullName();
-    const username = generateUniqueUsername(name, UserRole.ad);
+  for (let i = 1; i <= config.users.assistantDirectors; i++) {
+    const username = `ad_user${i}`;
 
     const user = await prisma.user.create({
       data: {
         username,
         passwordHash: hashedPassword,
-        name,
+        name: `Assistant Director ${i}`,
         role: UserRole.ad,
         designation: 'Assistant Director',
-        committeeId: null, // AD has district-wide access
+        committeeId: null,
         isActive: true,
       },
     });
@@ -60,59 +36,55 @@ export async function seedUsersAndTraders(
     users.push(user);
   }
 
-  // Create committee-specific users
+  // ----------------- Committee-Specific Users -----------------
   console.log('     Creating committee-specific users...');
   for (const committee of committees) {
-    const usersPerCommittee = faker.number.int({
-      min: config.users.perCommittee.min,
-      max: config.users.perCommittee.max,
+    const committeeName = committee.name.toLowerCase().replace(/\s+/g, '');
+
+    // 1 DEO
+    const deoUsername = `deo_${committeeName}`;
+    const deoUser = await prisma.user.create({
+      data: {
+        username: deoUsername,
+        passwordHash: hashedPassword,
+        name: `DEO ${committee.name}`,
+        role: UserRole.deo,
+        designation: 'Data Entry Operator',
+        committeeId: committee.id,
+        isActive: true,
+      },
     });
+    users.push(deoUser);
 
-    // Define role distribution for each committee
-    const roleDistribution = [
-      {role: UserRole.deo, count: Math.ceil(usersPerCommittee * 0.6)}, // 60% DEO
-      {role: UserRole.supervisor, count: Math.ceil(usersPerCommittee * 0.3)}, // 30% Supervisor
-      {role: UserRole.secretary, count: Math.ceil(usersPerCommittee * 0.1)}, // 10% Secretary
-    ];
+    // 1 Supervisor
+    const supervisorUsername = `supervisor_${committeeName}`;
+    const supervisorUser = await prisma.user.create({
+      data: {
+        username: supervisorUsername,
+        passwordHash: hashedPassword,
+        name: `Supervisor ${committee.name}`,
+        role: UserRole.supervisor,
+        designation: 'Supervisor',
+        committeeId: committee.id,
+        isActive: true,
+      },
+    });
+    users.push(supervisorUser);
 
-    for (const {role, count} of roleDistribution) {
-      for (let i = 0; i < count; i++) {
-        const name = faker.person.fullName();
-        const username = generateUniqueUsername(
-          `${committee.name}_${name}`,
-          role
-        );
-
-        let designation: string;
-        switch (role) {
-          case UserRole.deo:
-            designation = 'Data Entry Operator';
-            break;
-          case UserRole.supervisor:
-            designation = 'Supervisor';
-            break;
-          case UserRole.secretary:
-            designation = 'Secretary';
-            break;
-          default:
-            designation = 'Staff';
-        }
-
-        const user = await prisma.user.create({
-          data: {
-            username,
-            passwordHash: hashedPassword,
-            name,
-            role,
-            designation,
-            committeeId: committee.id,
-            isActive: true,
-          },
-        });
-
-        users.push(user);
-      }
-    }
+    // 1 Secretary
+    const secretaryUsername = `secretary_${committeeName}`;
+    const secretaryUser = await prisma.user.create({
+      data: {
+        username: secretaryUsername,
+        passwordHash: hashedPassword,
+        name: `Secretary ${committee.name}`,
+        role: UserRole.secretary,
+        designation: 'Secretary',
+        committeeId: committee.id,
+        isActive: true,
+      },
+    });
+    users.push(secretaryUser);
   }
 
   // ==================== CREATE TRADERS ====================
