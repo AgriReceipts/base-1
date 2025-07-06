@@ -62,20 +62,6 @@ enum CollectionLocation {
   other
 }
 
-enum TargetType {
-  annual
-
-  monthly
-
-  quarterly
-}
-
-enum TargetLevel {
-  district
-
-  committee
-}
-
 // Models
 
 model User {
@@ -299,7 +285,10 @@ model Receipt {
 
   updatedAt DateTime @updatedAt
 
-  cancelled Boolean @default(false)
+  //soft delete instead of wiping completely
+
+  cancelled Boolean   @default(false)
+  deletedAt DateTime?
 
   // Relations
 
@@ -330,57 +319,36 @@ model Receipt {
 model Target {
   id String @id @default(uuid())
 
-  year Int
+  year  Int
+  month Int
 
-  month Int? // null for annual targets
-
-  quarter Int? // null for non-quarterly targets
-
-  targetType TargetType
-
-  targetLevel TargetLevel
-
-  // Reference IDs (nullable based on level)
-
-  committeeId String?
+  committeeId String
+  checkpostId String? // Optional: for checkpost-specific targets
 
   // Target amounts
-
-  marketFeeTarget Decimal
-
+  marketFeeTarget  Decimal
   totalValueTarget Decimal? // Optional: target for total trade value
 
-  quantityTarget Decimal? // Optional: target for quantity
-
   // Metadata
-
-  setBy String // User who set the target
-
-  approvedBy String? // Supervisor who approved
-
-  isActive Boolean @default(true)
-
-  notes String?
+  setBy      String // User who set the target (AD)
+  approvedBy String? // Optional approval
+  isActive   Boolean @default(true)
+  notes      String?
 
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
 
   // Relations
-
-  committee Committee? @relation(fields: [committeeId], references: [id])
-
-  Checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
-
-  checkpostId String?
-
-  Commodity Commodity? @relation(fields: [commodityId], references: [id])
-
+  committee   Committee  @relation(fields: [committeeId], references: [id])
+  checkpost   Checkpost? @relation(fields: [checkpostId], references: [id])
+  Commodity   Commodity? @relation(fields: [commodityId], references: [id])
   commodityId String?
 
-  @@unique([year, month, targetType, targetLevel, committeeId])
-  @@index([year, month, targetLevel])
+  // One target per committee/checkpost per month
+  @@unique([year, month, committeeId, checkpostId])
   @@index([committeeId, year])
+  @@index([checkpostId, year])
+  @@index([year, month])
 }
 
 // Analytics
@@ -517,7 +485,7 @@ model DailyAnalytics {
 
   receiptDate DateTime // Use receiptDate instead of db.Date for consistency
 
-  committeeId String?
+  committeeId String
 
   checkpostId String?
 
@@ -575,7 +543,7 @@ model DailyAnalytics {
 
   // Relations
 
-  committee Committee? @relation(fields: [committeeId], references: [id])
+  committee Committee @relation(fields: [committeeId], references: [id])
 
   checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
 
@@ -588,7 +556,9 @@ model DailyAnalytics {
 //Reports
 
 model MonthlyReport {
-  id String @id
+  id String @id @default(uuid())
+
+  reportSlug String @unique
 
   year Int
 
