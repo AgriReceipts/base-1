@@ -58,6 +58,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
     const newDate = e.target.value ? new Date(e.target.value) : undefined;
     onDateChange(newDate);
   };
+  
 
   return (
     <div className='min-h-screen w-full bg-gray-50'>
@@ -198,20 +199,42 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       className='block text-sm font-normal text-gray-600 mb-1'>
                       Trader/Farmer Name<span className='text-red-600'>*</span>
                     </label>
-                    <select
-                      id='trader'
-                      value={formData.traderName}
-                      onChange={(e) =>
-                        onFormChange('traderName', e.target.value)
-                      }
-                      className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,...')] bg-no-repeat bg-[center_right_0.5rem]">
-                      <option value=''>Select Trader</option>
-                      {traders.map((trader) => (
-                        <option key={trader} value={trader}>
-                          {trader}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative w-full group focus-within:z-10">
+  <input
+    type="text"
+    id="trader"
+    value={formData.traderName}
+    onChange={(e) => onFormChange('traderName', e.target.value)}
+    placeholder="Search and select trader"
+    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300"
+  />
+
+  <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto hidden group-focus-within:block">
+    {traders
+      .filter((trader) =>
+        trader.toLowerCase().includes(formData.traderName.toLowerCase())
+      )
+      .map((trader) => (
+        <div
+          key={trader}
+          onMouseDown={() => {
+            onFormChange('traderName', trader);
+          }}
+          className={`px-3 py-1.5 text-sm cursor-pointer hover:bg-blue-50 ${
+            formData.traderName === trader ? 'bg-blue-100' : ''
+          }`}
+        >
+          {trader}
+        </div>
+      ))}
+    {traders.filter((t) =>
+      t.toLowerCase().includes(formData.traderName.toLowerCase())
+    ).length === 0 && (
+      <div className="px-3 py-2 text-sm text-gray-500">No results found</div>
+    )}
+  </div>
+</div>
+
                   </div>
                   {formData.traderName === 'New' && (
                     <>
@@ -308,18 +331,45 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     className='block text-sm font-normal text-gray-600 mb-2'>
                     Commodity<span className='text-red-600'>*</span>
                   </label>
-                  <select
-                    id='commodity'
-                    value={formData.commodity}
-                    onChange={(e) => onFormChange('commodity', e.target.value)}
-                    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,...')] bg-no-repeat bg-[center_right_0.5rem]">
-                    <option value=''>Select commodity</option>
-                    {filteredCommodities.map((commodity) => (
-                      <option key={commodity} value={commodity}>
-                        {commodity}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative w-full group focus-within:z-10">
+                    <input
+                      type="text"
+                      id="commodity"
+                      value={commoditySearch}
+                      onChange={(e) => setCommoditySearch(e.target.value)}
+                      placeholder="Search and select commodity"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300"
+                    />
+
+                    {/* Dropdown shows ONLY when input is focused (or child is active) */}
+                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto hidden group-focus-within:block">
+                      {commodities
+                        .filter((commodity) =>
+                          commodity.toLowerCase().includes(commoditySearch.toLowerCase())
+                        )
+                        .map((commodity) => (
+                          <div
+                            key={commodity}
+                            onMouseDown={() => {
+                              onFormChange('commodity', commodity);
+                              setCommoditySearch(commodity);
+                            }}
+                            className={`px-3 py-1.5 text-sm cursor-pointer hover:bg-blue-50 ${
+                              formData.commodity === commodity ? 'bg-blue-100' : ''
+                            }`}
+                          >
+                            {commodity}
+                          </div>
+                        ))}
+                      {commodities.filter((c) =>
+                        c.toLowerCase().includes(commoditySearch.toLowerCase())
+                      ).length === 0 && (
+                        <div className="px-3 py-2 text-sm text-gray-500">No results found</div>
+                      )}
+                    </div>
+                  </div>
+
+
                   {formData.commodity === 'Other' && (
                     <div className='py-4'>
                       <label
