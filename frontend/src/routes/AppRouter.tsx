@@ -44,7 +44,15 @@ export const AppRouter: React.FC = () => {
           path='/supervisor'
           element={<Navigate to='/dashboard' replace={true} />}
         />
+<<<<<<< HEAD
         <Route path='/verifyReceipt' element={<VerifyReceipt />} />
+=======
+         <Route
+          path='/secretary'
+          element={<Navigate to='/dashboard' replace={true} />}
+        />
+
+>>>>>>> 3217131669b1ef70623a99d0cd4df065e27237c5
       </Routes>
     </div>
   );

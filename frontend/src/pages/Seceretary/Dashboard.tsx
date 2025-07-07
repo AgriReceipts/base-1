@@ -1,33 +1,15 @@
 import {useState, useEffect} from 'react';
-
+import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
+import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysis';
 import Reports from '../../components/supervisorcomponents/Reports';
+import TargetManagement from '../Ad/TargetManagement';
+
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
-import usermanagement from '../../components/AdCompo/Usermanage'
+import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
-import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry.tsx'
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
-import {
-  FiHome,
-  FiBarChart2,
-  FiFileText,
-  FiPlusSquare,
-  FiTarget,
-  FiUsers,
-  FiBarChart,
-} from 'react-icons/fi';
-import TargetManagement from './utils/pages/TargetManagement';
-import Usermanage from '../../components/AdCompo/Usermanage';
-import type { Key } from 'lucide-react';
-
-// Placeholder components for new pages
-const DistrictAnalysis = () => (
-  <div className='p-8 w-full text-center text-xl text-gray-600'>
-    District Analysis (Coming Soon)
-  </div>
-);
-
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -54,37 +36,21 @@ export default function SupervisorDashboard() {
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
 
-  // New navigation fields for AD with icons
-  const navItems = [
-    {key: 'overview', label: 'Overview', icon: <FiHome />},
-    {key: 'addReceipt', label: 'Add Receipt', icon: <FiPlusSquare />},
-    {key: 'allReceipts', label: 'All Receipts', icon: <FiFileText />},
-    {
-      key: 'districtAnalysis',
-      label: 'District Analysis',
-      icon: <FiBarChart2 />,
-    },
-    {key: 'targetManagement', label: 'Target Management', icon: <FiTarget />},
-
-    {key: 'userManagement', label: 'User Management', icon: <FiUsers />},
-    {key: 'viewReports', label: 'View Reports', icon: <FiBarChart />},
-  ];
-
   const renderContent = () => {
     switch (activeNav) {
       case 'overview':
         return <Overview onNavigate={setActiveNav} />;
-      case 'districtAnalysis':
-        return <DistrictAnalysis />;
+      case 'traderAnalysis':
+        return <TraderAnalysis />;
+      case 'committeeAnalysis':
+        return <CommitteeAnalysis />;
       case 'addReceipt':
-        return <ReceiptEntry/>;
-      case 'allReceipts':
+        return <ReceiptEntry />;
+      case 'viewReceipts':
         return <ViewReceipts />;
-      case 'targetManagement':
+       case 'targetManagement':
         return <TargetManagement />;
-      case 'userManagement':
-        return <Usermanage />;
-      case 'viewReports':
+      case 'reports':
         return <Reports />;
       default:
         return <Overview onNavigate={setActiveNav} />;
@@ -100,7 +66,6 @@ export default function SupervisorDashboard() {
           setSidebarVisible={setSidebarVisible}
           activeNav={activeNav}
           onNavClick={setActiveNav}
-          navItems={navItems}
         />
 
         <main

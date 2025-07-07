@@ -46,8 +46,12 @@ const LoginForm = () => {
           navigate('/supervisor');
           break;
         case 'ad':
-          navigate('/ad');
+          navigate('/ad');        
           break;
+       case 'secretary':
+          navigate('/secretary');        
+           break;
+
         default:
           navigate('/');
           break;
