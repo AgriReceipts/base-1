@@ -2,7 +2,6 @@ import {useState, useEffect} from 'react';
 
 import Reports from '../../components/supervisorcomponents/Reports';
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
-import usermanagement from '../../components/AdCompo/Usermanage'
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
@@ -15,8 +14,9 @@ import {
   FiUsers,
   FiBarChart,
 } from 'react-icons/fi';
-import TargetManagement from './utils/pages/TargetManagement';
+
 import Usermanage from '../../components/AdCompo/Usermanage';
+import TargetManagement from './TargetManagement';
 
 // Placeholder components for new pages
 const DistrictAnalysis = () => (
@@ -24,7 +24,6 @@ const DistrictAnalysis = () => (
     District Analysis (Coming Soon)
   </div>
 );
-
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);

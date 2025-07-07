@@ -1,75 +1,208 @@
-// Mock data for metrics
-const metrics = [
-  {
-    label: 'Total Traders',
-    value: 3,
-    color: 'bg-blue-50',
-    text: 'text-blue-700',
-  },
-  {
-    label: 'Total Receipts',
-    value: 5,
-    color: 'bg-green-50',
-    text: 'text-green-700',
-  },
-  {
-    label: 'Total Value',
-    value: 124000,
-    color: 'bg-yellow-50',
-    text: 'text-yellow-700',
-    isMoney: true,
-  },
-  {
-    label: 'Avg Market Fees Collected',
-    value: 41333,
-    color: 'bg-purple-50',
-    text: 'text-purple-700',
-    isMoney: true,
-  },
-];
+import {useState, useEffect, useCallback} from 'react';
+import axios from 'axios';
+import api from '@/lib/axiosInstance';
 
-// Mock data for traders
-const mockTraders = [
-  {
-    id: 1,
-    name: 'Babu traders',
-    receipts: 2,
-    commodities: 2,
-    value: 30000,
-    monthlyPattern: [
-      {month: 'Jan 2025', value: 12000},
-      {month: 'Feb 2025', value: 18000},
-    ],
-    traded: ['Onion', 'Urad'],
-    lastTransaction: '18/06/2025',
-    totalQuantity: 8,
-    avgPerReceipt: 16458,
-  },
-  {
-    id: 2,
-    name: 'katyayyani',
-    receipts: 1,
-    commodities: 1,
-    value: 0,
-    monthlyPattern: [{month: 'Mar 2025', value: 0}],
-    traded: ['Maize'],
-    lastTransaction: '05/03/2025',
-    totalQuantity: 2,
-    avgPerReceipt: 0,
-  },
-  {
-    id: 3,
-    name: 'srinivas traders',
-    receipts: 2,
-    commodities: 1,
-    value: 94000,
-    monthlyPattern: [
-      {month: 'Apr 2025', value: 47000},
-      {month: 'May 2025', value: 47000},
-    ],
-    traded: ['Rice'],
-    lastTransaction: '20/05/2025',
-    totalQuantity: 5,
-    avgPerReceipt: 47000,
-  },
-];
+interface TraderData {
+  traderId: string;
+  trader: {
+    id: string;
+    name: string;
+  };
+  totalReceipts: number;
+  totalValue: number;
+  totalFeesPaid: number;
+  totalQuantity: number;
+}
+
+interface TraderAnalyticsResponse {
+  success: boolean;
+  data: {
+    period: string;
+    topTradersMonthly: TraderData[];
+    topTradersOverall: TraderData[];
+    limit: number;
+  };
+}
+
+interface DetailedTraderAnalytics {
+  trader: {
+    id: string;
+    name: string;
+  };
+  monthlyAnalytics: Array<{
+    year: number;
+    month: number;
+    totalReceipts: number;
+    totalValue: number;
+    totalFeesPaid: number;
+    totalQuantity: number;
+  }>;
+  overallAnalytics: {
+    totalReceipts: number;
+    totalValue: number;
+    totalFeesPaid: number;
+    totalQuantity: number;
+  } | null;
+  trends: {
+    valueGrowth: number;
+    quantityGrowth: number;
+    receiptsGrowth: number;
+    trend: string;
+  };
+  insights: string[];
+}
+
+interface UseTraderAnalyticsProps {
+  committeeId: string;
+  year?: number;
+  month?: number;
+  limit?: number;
+}
+
+interface UseTraderAnalyticsReturn {
+  data: TraderAnalyticsResponse['data'] | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+export const useTraderAnalytics = ({
+  committeeId,
+  year,
+  month,
+  limit = 5,
+}: UseTraderAnalyticsProps): UseTraderAnalyticsReturn => {
+  const [data, setData] = useState<TraderAnalyticsResponse['data'] | null>(
+    null
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!committeeId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const params = new URLSearchParams({
+        limit: limit.toString(),
+        ...(year && {year: year.toString()}),
+        ...(month && {month: month.toString()}),
+      });
+
+      const response = await api.get(
+        `analytics/traderAnalytics/${committeeId}?${params}`
+      );
+
+      if (response.data.success) {
+        setData(response.data.data);
+        console.log('trader top analytics', response.data);
+      } else {
+        setError('Failed to fetch trader analytics');
+      }
+    } catch (err) {
+      console.error('Error fetching trader analytics:', err);
+      setError(
+        axios.isAxiosError(err) && err.response?.data?.message
+          ? err.response.data.message
+          : 'An error occurred while fetching trader analytics'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [committeeId, year, month, limit]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const refetch = useCallback(async () => {
+    await fetchData();
+  }, [fetchData]);
+
+  return {
+    data,
+    loading,
+    error,
+    refetch,
+  };
+};
+
+// Hook for detailed commodity analytics
+interface UseTraderDetailedAnalyticsProps {
+  committeeId: string;
+  traderId: string;
+  year?: number;
+  month?: number;
+}
+
+interface UseTraderDetailedAnalyticsReturn {
+  data: DetailedTraderAnalytics | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+export const useTraderDetailedAnalytics = ({
+  committeeId,
+  traderId,
+  year,
+  month,
+}: UseTraderDetailedAnalyticsProps): UseTraderDetailedAnalyticsReturn => {
+  const [data, setData] = useState<DetailedTraderAnalytics | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!committeeId || !traderId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const params = new URLSearchParams({
+        ...(year && {year: year.toString()}),
+        ...(month && {month: month.toString()}),
+      });
+
+      const response = await api.get<{
+        success: boolean;
+        data: DetailedTraderAnalytics;
+      }>(
+        `analytics/traderDetailedAnalytics/${committeeId}/${traderId}?${params}`
+      );
+
+      if (response.data.success) {
+        setData(response.data.data);
+        console.log('trader detailed analytics', response.data);
+      } else {
+        setError('Failed to fetch detailed commodity analytics');
+      }
+    } catch (err) {
+      console.error('Error fetching detailed commodity analytics:', err);
+      setError(
+        axios.isAxiosError(err) && err.response?.data?.message
+          ? err.response.data.message
+          : 'An error occurred while fetching detailed commodity analytics'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [committeeId, traderId, year, month]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const refetch = useCallback(async () => {
+    await fetchData();
+  }, [fetchData]);
+
+  return {
+    data,
+    loading,
+    error,
+    refetch,
+  };
+};

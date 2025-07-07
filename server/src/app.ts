@@ -9,6 +9,7 @@ import authRoutes from './routes/auth';
 import metaDataRoutes from './routes/metadata';
 import analyticsRoutes from './routes/analytics';
 import {swaggerDocs} from './utils/swagger';
+import targetRoutes from './routes/target';
 
 // Load environment variables
 dotenv.config();
@@ -78,6 +79,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/metaData', metaDataRoutes);
+app.use('/api/target', targetRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

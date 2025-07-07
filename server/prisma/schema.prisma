@@ -345,7 +345,7 @@ model Target {
   commodityId String?
 
   // One target per committee/checkpost per month
-  @@unique([year, month, committeeId, checkpostId])
+  @@unique([year, month, committeeId])
   @@index([committeeId, year])
   @@index([checkpostId, year])
   @@index([year, month])

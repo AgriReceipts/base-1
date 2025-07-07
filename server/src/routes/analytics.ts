@@ -40,7 +40,7 @@ analyticsRoutes.get(
 
 analyticsRoutes.get('/traderAnalytics/:committeeId', getTopTradersAnalytics);
 analyticsRoutes.get(
-  '/traderDetailedAnalytics/:committeId/:traderId',
+  '/traderDetailedAnalytics/:committeeId/:traderId',
   getTraderDetailedAnalytics
 );
 

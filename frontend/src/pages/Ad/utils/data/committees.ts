@@ -1,4 +1,4 @@
-import type { Committee } from '../types';
+import type {Committee} from '../types/target';
 
 export const committees: Committee[] = [
   {
@@ -6,73 +6,77 @@ export const committees: Committee[] = [
     name: 'Karapa Agricultural Market Committee',
     code: 'KRP-AMC',
     hasCheckposts: true,
-    checkposts: ['Penuguduru']
+    checkposts: ['Penuguduru'],
   },
   {
     id: 'amc-002',
     name: 'Kakinada Rural Agricultural Market Committee',
     code: 'KKDR-AMC',
     hasCheckposts: true,
-    checkposts: ['Atchempeta', 'Turangi Bypass']
+    checkposts: ['Atchempeta', 'Turangi Bypass'],
   },
   {
     id: 'amc-003',
     name: 'Pithapuram Agricultural Market Committee',
     code: 'PTM-AMC',
     hasCheckposts: true,
-    checkposts: ['Pithapuram', 'Chebrolu']
+    checkposts: ['Pithapuram', 'Chebrolu'],
   },
   {
     id: 'amc-004',
     name: 'Tuni Agricultural Market Committee',
     code: 'TUNI-AMC',
     hasCheckposts: true,
-    checkposts: ['Tuni', 'K/P/Puram', 'Rekavanipalem']
+    checkposts: ['Tuni', 'K/P/Puram', 'Rekavanipalem'],
   },
   {
     id: 'amc-005',
     name: 'Prathipadu Agricultural Market Committee',
     code: 'PTD-AMC',
     hasCheckposts: true,
-    checkposts: ['Kathipudi', 'Prathipadu', 'Yerravaram']
+    checkposts: ['Kathipudi', 'Prathipadu', 'Yerravaram'],
   },
   {
     id: 'amc-006',
     name: 'Jaggampeta Agricultural Market Committee',
     code: 'JPT-AMC',
     hasCheckposts: true,
-    checkposts: ['Jaggampeta', 'Rajupalem']
+    checkposts: ['Jaggampeta', 'Rajupalem'],
   },
   {
     id: 'amc-007',
     name: 'Peddapuram Agricultural Market Committee',
     code: 'PDM-AMC',
     hasCheckposts: true,
-    checkposts: ['Peddapuram']
+    checkposts: ['Peddapuram'],
   },
   {
     id: 'amc-008',
     name: 'Samalkota Agricultural Market Committee',
     code: 'SMLK-AMC',
     hasCheckposts: false,
-    checkposts: []
+    checkposts: [],
   },
   {
     id: 'amc-009',
     name: 'Kakinada Agricultural Market Committee',
     code: 'KKD-AMC',
     hasCheckposts: false,
-    checkposts: []
-  }
+    checkposts: [],
+  },
 ];
 
 export const months = [
-  'May', 'June', 'July', 'August', 'September', 'October',
-  'November', 'December', 'January', 'February', 'March', 'April'
-];
-
-export const commodities = [
-  'Rice', 'Wheat', 'Paddy', 'Maize', 'Sugarcane', 'Cotton',
-  'Groundnut', 'Sunflower', 'Chili', 'Turmeric', 'Coconut',
-  'Vegetables', 'Fruits', 'Others'
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
