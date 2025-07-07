@@ -20,61 +20,10 @@ interface AreaChartComponentProps {
   data?: ChartData[];
 }
 
-const defaultData: ChartData[] = [
-  {
-    date: 'Aug 2024',
-    mf: 3918,
-  },
-  {
-    date: 'Sep 2024',
-    mf: 1124,
-  },
-  {
-    date: 'Oct 2024',
-    mf: 0,
-  },
-  {
-    date: 'Nov 2024',
-    mf: 0,
-  },
-  {
-    date: 'Dec 2024',
-    mf: 0,
-  },
-  {
-    date: 'Jan 2025',
-    mf: 0,
-  },
-  {
-    date: 'Feb 2025',
-    mf: 0,
-  },
-  {
-    date: 'Mar 2025',
-    mf: 0,
-  },
-  {
-    date: 'Apr 2025',
-    mf: 0,
-  },
-  {
-    date: 'May 2025',
-    mf: 0,
-  },
-  {
-    date: 'Jun 2025',
-    mf: 0,
-  },
-  {
-    date: 'Jul 2025',
-    mf: 0,
-  },
-];
-
 const AreaChartComponent: React.FC<AreaChartComponentProps> = ({
   title = 'Market Fee Collected (Month-wise)',
   subtitle = '',
-  data = defaultData,
+  data,
 }) => {
   return (
     <div className='w-full'>
@@ -85,7 +34,7 @@ const AreaChartComponent: React.FC<AreaChartComponentProps> = ({
         <p className='text-base text-gray-500 mt-1'>{subtitle}</p>
         <div className='mt-1'>
           <button className='text-base font-medium text-purple-600 px-0 py-0 bg-transparent border-none outline-none focus:outline-none'>
-            Last 12 months
+            Last {data?.length} months
           </button>
         </div>
       </div>

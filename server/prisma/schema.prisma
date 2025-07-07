@@ -476,6 +476,7 @@ model CommitteeMonthlyAnalytics {
 
   @@unique([committeeId, year, month]) // Ensure only one row per month
   @@index([committeeId, year, month])
+  @@index([committeeId])
 }
 
 // Daily analytics for real-time "today" queries
@@ -483,7 +484,7 @@ model CommitteeMonthlyAnalytics {
 model DailyAnalytics {
   id String @id @default(uuid())
 
-  receiptDate DateTime // Use receiptDate instead of db.Date for consistency
+  receiptDate DateTime
 
   committeeId String
 

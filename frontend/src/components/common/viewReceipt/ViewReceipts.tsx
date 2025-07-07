@@ -4,7 +4,7 @@ import {ChevronLeft, ChevronRight, Eye, Loader2, Search} from 'lucide-react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import ReceiptModal from './ReceiptModal';
-import type {Receipt} from '@/types/receipt';
+import type {DetailedReceipt} from '@/types/receipt';
 
 interface commitie {
   id: string;
@@ -33,7 +33,7 @@ const ViewReceipts = () => {
   const {user, committee} = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [receipts, setReceipts] = useState<DetailedReceipt[]>([]);
   const [committees, setCommittees] = useState<commitie[]>([]);
 
   const [pagination, setPagination] = useState<Pagination | null>(null);

@@ -2,174 +2,111 @@ import {Request, Response} from 'express';
 import prisma from '../../utils/database';
 import {handlePrismaError} from '../../utils/helpers';
 
-//@desc Get analytics for a specific committee
-//@route GET /api/analytics/committee/:committeeId
-//@access Public
+interface ChartData {
+  date: string;
+  mf: number;
+}
+
+//@desc Get Monthly analytics for a specific committee for a specific month + 12 months chart data
+//@route GET /api/analytics/committee/:committeeId/:year/:month
+//@access Private
 export const getCommitteAnalytics = async (req: Request, res: Response) => {
-  const {committeeId} = req.params;
+  const {committeeId, year, month} = req.params;
+
+  const yearNum = parseInt(year, 10);
+  const monthNum = parseInt(month, 10);
 
   if (!committeeId) {
     return res.status(400).json({message: 'Committee ID is required.'});
   }
 
-  try {
-    // 1. Define the date range for the last 12 months
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setFullYear(endDate.getFullYear() - 1);
-    startDate.setDate(1);
-    startDate.setHours(0, 0, 0, 0);
+  if (isNaN(yearNum) || isNaN(monthNum)) {
+    return res.status(400).json({error: 'Invalid year or month'});
+  }
 
-    // 2. Fetch all relevant market fee receipts for the committee in the date range
-    const receipts = await prisma.receipt.findMany({
+  try {
+    // Get current month data
+    const currentData = await prisma.committeeMonthlyAnalytics.findUnique({
       where: {
-        committeeId,
-        natureOfReceipt: 'mf', // Market Fees
-        receiptDate: {
-          gte: startDate,
-          lte: endDate,
+        committeeId_year_month: {
+          committeeId: committeeId,
+          year: yearNum,
+          month: monthNum,
         },
       },
       select: {
-        feesPaid: true,
-        receiptDate: true,
-        collectionLocation: true,
-        officeSupervisor: true,
-        checkpostId: true,
-        collectionOtherText: true,
-        checkpost: {
-          select: {
-            name: true,
+        totalFeesPaid: true,
+        totalReceipts: true,
+        totalValue: true,
+        marketFees: true,
+        officeFees: true,
+        checkpostFees: true,
+        otherFees: true,
+        uniqueCommodities: true,
+        uniqueTraders: true,
+      },
+    });
+
+    // Calculate date range for last 12 months from current month
+    const endDate = new Date(yearNum, monthNum - 1); // monthNum - 1 because Date month is 0-indexed
+    const startDate = new Date(endDate);
+    startDate.setMonth(startDate.getMonth() - 11); // 11 months back + current month = 12 months
+
+    // Get 12 months of market fees data
+    const chartData = await prisma.committeeMonthlyAnalytics.findMany({
+      where: {
+        committeeId: committeeId,
+        OR: [
+          {
+            year: {gte: startDate.getFullYear()},
+            month: {gte: startDate.getMonth() + 1},
           },
-        },
+          {
+            year: {lte: endDate.getFullYear()},
+            month: {lte: endDate.getMonth() + 1},
+          },
+        ],
       },
+      select: {
+        year: true,
+        month: true,
+        marketFees: true,
+      },
+      orderBy: [{year: 'asc'}, {month: 'asc'}],
     });
 
-    // 3. Calculate total market fees
-    const totalMarketFees = receipts.reduce(
-      (sum, receipt) => sum + receipt.feesPaid.toNumber(),
-      0
-    );
-
-    // Handle case with no receipts to avoid division by zero
-    if (totalMarketFees === 0) {
-      return res.status(200).json({
-        totalMarketFees: 0,
-        marketFeesByMonth: [],
-        marketFeesByLocation: [],
-        locationDrilldown: {
-          office: [],
-          checkpost: [],
-          other: [],
-        },
-      });
-    }
-
-    // 4. Calculate market fees by month (for the line chart)
-    const monthlyData: {[key: string]: number} = {};
-    const monthFormatter = new Intl.DateTimeFormat('en-US', {month: 'short'});
-
-    // Initialize the last 12 months with 0 fees
-    for (let i = 0; i < 12; i++) {
-      const month = new Date(endDate.getFullYear(), endDate.getMonth() - i, 1);
-      const monthKey = `${monthFormatter.format(month)} ${month.getFullYear()}`;
-      monthlyData[monthKey] = 0;
-    }
-
-    receipts.forEach((receipt) => {
-      const monthKey = `${monthFormatter.format(
-        receipt.receiptDate
-      )} ${receipt.receiptDate.getFullYear()}`;
-      if (monthlyData[monthKey] !== undefined) {
-        monthlyData[monthKey] += receipt.feesPaid.toNumber();
-      }
-    });
-
-    const marketFeesByMonth = Object.entries(monthlyData)
-      .map(([date, mf]) => ({date, mf}))
-      .reverse(); // Reverse to have the oldest month first
-
-    // 5. Calculate market fees by location and their drilldowns
-    const locationTotals = {
-      office: 0,
-      checkpost: 0,
-      other: 0,
-    };
-
-    const officeDrilldown: {[key: string]: number} = {};
-    const checkpostDrilldown: {[key: string]: number} = {};
-    const otherDrilldown: {[key: string]: number} = {};
-
-    receipts.forEach((receipt) => {
-      const fees = receipt.feesPaid.toNumber();
-      switch (receipt.collectionLocation) {
-        case 'office':
-          locationTotals.office += fees;
-          const supervisor = receipt.officeSupervisor || 'Unknown Supervisor';
-          officeDrilldown[supervisor] =
-            (officeDrilldown[supervisor] || 0) + fees;
-          break;
-        case 'checkpost':
-          locationTotals.checkpost += fees;
-          const checkpostName =
-            receipt.checkpost?.name ||
-            receipt.checkpostId ||
-            'Unknown Checkpost';
-          checkpostDrilldown[checkpostName] =
-            (checkpostDrilldown[checkpostName] || 0) + fees;
-          break;
-        case 'other':
-          locationTotals.other += fees;
-          const otherReason = receipt.collectionOtherText || 'Unspecified';
-          otherDrilldown[otherReason] =
-            (otherDrilldown[otherReason] || 0) + fees;
-          break;
-      }
-    });
-
-    // 6. Format the location and drilldown data as percentages
-    const marketFeesByLocation = [
-      {
-        name: 'Office',
-        value: parseFloat(
-          ((locationTotals.office / totalMarketFees) * 100).toFixed(2)
-        ),
-      },
-      {
-        name: 'Checkpost',
-        value: parseFloat(
-          ((locationTotals.checkpost / totalMarketFees) * 100).toFixed(2)
-        ),
-      },
-      {
-        name: 'Other',
-        value: parseFloat(
-          ((locationTotals.other / totalMarketFees) * 100).toFixed(2)
-        ),
-      },
+    // Format chart data
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
 
-    const formatDrilldown = (drilldownData: {[key: string]: number}) =>
-      Object.entries(drilldownData).map(([name, value]) => ({
-        name,
-        value: parseFloat(((value / totalMarketFees) * 100).toFixed(2)),
-      }));
+    const formattedChartData: ChartData[] = chartData.map((item) => ({
+      date: `${monthNames[item.month - 1]} ${item.year}`,
+      mf: Number(item.marketFees) || 0,
+    }));
 
-    const locationDrilldown = {
-      office: formatDrilldown(officeDrilldown),
-      checkpost: formatDrilldown(checkpostDrilldown),
-      other: formatDrilldown(otherDrilldown),
+    const response = {
+      currentMonth: currentData,
+      chartData: formattedChartData,
     };
 
-    // 7. Send the final response
-    return res.status(200).json({
-      totalMarketFees,
-      marketFeesByMonth,
-      marketFeesByLocation,
-      locationDrilldown,
-    });
+    return res.status(200).json(response);
   } catch (error) {
     console.error('Error fetching committee analytics:', error);
     return handlePrismaError(res, error);
   }
 };
+
+//Todo
+// /api/analytics/committee/:id/:year/:month/drilldown that does basic aggregation from receipts table. Return only the essential fields you need.
