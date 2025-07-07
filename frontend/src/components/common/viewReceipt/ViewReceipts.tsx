@@ -5,6 +5,7 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import ReceiptModal from './ReceiptModal';
 import type {DetailedReceipt} from '@/types/receipt';
+import toast from 'react-hot-toast';
 
 interface commitie {
   id: string;
@@ -70,7 +71,7 @@ const ViewReceipts = () => {
 
   const fetchAllCommittees = async () => {
     try {
-      const response = await api.get('/metaData/commities');
+      const response = await api.get('/metaData/committees');
       return response.data.data;
     } catch (err) {
       console.error(err);
@@ -86,13 +87,14 @@ const ViewReceipts = () => {
         const response = await api.get(
           `/receipts/getAllReceipts?${queryParams.toString()}`
         );
-        setReceipts(response.data.data);
-        setPagination(response.data.pagination);
+        setReceipts(response.data.data || []);
+        setPagination(response.data.pagination || null);
       } catch (err) {
+        setReceipts([]);
+        setPagination(null);
         setError(
           'Failed to fetch receipts. Please check your connection and try again.'
         );
-        console.error(err);
       } finally {
         setIsLoading(false);
       }
@@ -142,9 +144,22 @@ const ViewReceipts = () => {
       link.parentNode?.removeChild(link);
     } catch (err) {
       console.error('Download failed:', err);
-      alert('Could not download the receipt.');
+      toast('Cannot download the receipt');
     }
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center h-full'>
+        <Loader2 className='animate-spin' />
+        <span className='ml-2'>Loading receipts...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className='text-red-600 text-center p-4'>{error}</div>;
+  }
 
   return (
     <div className='p-4 md:p-8 bg-gray-50 min-h-screen w-full font-sans text-gray-800'>
