@@ -1,25 +1,28 @@
 import {Router} from 'express';
+
+import {authenticateUser} from '../middleware/auth';
+import {authorizeRoles} from '../middleware/roleAccess';
+import {createReceipt} from '../controllers/receipts/createReceipts';
 import {
-  createReceipt,
   getAllReceipts,
   getReceiptById,
   getReceiptByReceiptNumber,
-} from '../controllers/receiptsController';
-import {authenticateUser} from '../middleware/auth';
-import {authorizeRoles} from '../middleware/roleAccess';
+} from '../controllers/receipts/getReceipts';
+import {downloadReceipt} from '../controllers/receipts/downloadReceipt';
+import {verifyReceipt} from '../controllers/receipts/verifyReceipt';
 
 const receiptRoutes = Router();
 
-//middleware
-receiptRoutes.use(authenticateUser);
-
 receiptRoutes.post(
   '/createReceipt',
-  authorizeRoles('deo,superviser,secretary'),
+  authenticateUser,
+  authorizeRoles('deo', 'supervisor', 'secretary'),
   createReceipt
 );
-receiptRoutes.get('/getAllReceipts', getAllReceipts);
+receiptRoutes.get('/getAllReceipts', authenticateUser, getAllReceipts);
 receiptRoutes.get('/getReceipt/:id', getReceiptById);
 receiptRoutes.get('/getReceiptByRn/:receiptNumber', getReceiptByReceiptNumber);
+receiptRoutes.get('/download/:id', downloadReceipt);
+receiptRoutes.get('/verifyReceipt', verifyReceipt);
 
 export default receiptRoutes;

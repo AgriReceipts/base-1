@@ -6,6 +6,10 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import receiptRoutes from './routes/receipts';
 import authRoutes from './routes/auth';
+import metaDataRoutes from './routes/metadata';
+import analyticsRoutes from './routes/analytics';
+import {swaggerDocs} from './utils/swagger';
+import targetRoutes from './routes/target';
 
 // Load environment variables
 dotenv.config();
@@ -21,20 +25,45 @@ app.use(
   })
 );
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-});
-app.use('/api', limiter);
-
 // Logging
 app.use(morgan('dev'));
 
 // Body parsing middleware
 app.use(express.json({limit: '10mb'}));
 app.use(express.urlencoded({extended: true}));
+
+//swaggerHub
+swaggerDocs(app);
+
+// 👇 Stricter limiter for auth
+const authLimiter = rateLimit({
+  windowMs: 900 * 1000, // 1 minute
+  max: 10, // Only 3 requests per minute for auth
+  message: 'Too many login attempts. Please try again in a minute.',
+  handler: (req, res) => {
+    console.warn(`Auth rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      message: 'Too many login attempts. Please try again later.',
+    });
+  },
+});
+
+// 👇 General limiter for other API routes
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 50, // Higher limit for general API
+  message: 'Too many requests. Please slow down.',
+  handler: (req, res) => {
+    console.warn(`General rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      message: 'Too many requests from this IP, please try again later.',
+    });
+  },
+});
+
+app.use('/api/auth', authLimiter);
+app.use('/api/receipts/createReceipt', authLimiter);
+app.use('/api', generalLimiter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -48,8 +77,9 @@ app.get('/api/health', (req, res) => {
 // Routes will be added here
 app.use('/api/auth', authRoutes);
 app.use('/api/receipts', receiptRoutes);
-// app.use('/api/analytics', analyticsRoutes);
-// app.use('/api/metadata', metadataRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/metaData', metaDataRoutes);
+app.use('/api/target', targetRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

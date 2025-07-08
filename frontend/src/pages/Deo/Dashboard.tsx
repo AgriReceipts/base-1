@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
-import NavBar from '../../components/ui/NavBar';
-import Sidebar from '../../components/deocomponents/Sidebar';
-import Overview from '../../components/deocomponents/Overview';
-import AddReceipt from '../../components/deocomponents/AddReceipt';
-import ViewReceipts from '../../components/deocomponents/ViewReceipts';
+import {useState, useEffect} from 'react';
+import Sidebar from '../../components/common/Sidebar';
+import ViewReceipts from '../../components/common/viewReceipt/ViewReceipts';
 import Reports from '../../components/deocomponents/Reports';
-import { MetricCards } from '../../components/deocomponents/metric-cards';
-import Button from '../../components/ui/Button';
+import {MetricCards} from '../../components/deocomponents/metric-cards';
+import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
+import Overview from '@/components/common/overview/Overview';
+import Nav from '@/components/ui/Nav';
 
 export default function DeoDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -39,7 +37,7 @@ export default function DeoDashboard() {
       case 'overview':
         return <Overview onNavigate={setActiveNav} />;
       case 'addReceipt':
-        return <AddReceipt />;
+        return <ReceiptEntry />;
       case 'viewReceipts':
         return <ViewReceipts />;
       case 'reports':
@@ -51,19 +49,22 @@ export default function DeoDashboard() {
 
   const getPageTitle = () => {
     switch (activeNav) {
-      case 'overview': return 'Dashboard Overview';
-      case 'addReceipt': return 'Add New Receipt';
-      case 'viewReceipts': return 'Receipt Management';
-      case 'reports': return 'Reports & Analytics';
-      default: return 'Dashboard';
+      case 'overview':
+        return 'Dashboard Overview';
+      case 'addReceipt':
+        return 'Add New Receipt';
+      case 'viewReceipts':
+        return 'Receipt Management';
+      case 'reports':
+        return 'Reports & Analytics';
+      default:
+        return 'Dashboard';
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-neutral-50 overflow-hidden">
-      <NavBar />
-
-      <div className="flex flex-1 overflow-hidden relative">
+    <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
+      <div className='flex flex-1 overflow-hidden relative'>
         <Sidebar
           sidebarVisible={sidebarVisible}
           isMobile={isMobile}
@@ -72,47 +73,31 @@ export default function DeoDashboard() {
           onNavClick={setActiveNav}
         />
 
-        <main className="flex flex-col flex-1 overflow-auto h-full">
-          {/* Header bar */}
-          <div className="bg-white border-b border-neutral-200 px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleSidebar}
-                className="md:hidden"
-              >
-                {sidebarVisible ? <HiOutlineX size={20} /> : <HiOutlineMenu size={20} />}
-              </Button>
-              <h1 className="text-xl font-semibold text-neutral-900">
-                {getPageTitle()}
-              </h1>
-            </div>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              className="hidden md:flex"
-            >
-              <HiOutlineMenu size={20} />
-            </Button>
+        <main
+          className={`flex flex-col flex-1 overflow-auto h-full transition-all duration-300 ${
+            isMobile && sidebarVisible ? 'ml-0 opacity-50' : 'ml-0'
+          }`}>
+          <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
+            <Nav onToggleSidebar={toggleSidebar} />
           </div>
-
           {/* Metrics for overview page */}
           {activeNav === 'overview' && (
-            <div className="bg-white border-b border-neutral-200 px-6 py-6">
+            <div className='p-4'>
               <MetricCards />
             </div>
           )}
 
-          {/* Main content */}
-          <div className="flex-1 overflow-auto">
-            <div className="h-full bg-white">
-              {renderContent()}
-            </div>
+          <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
+            {renderContent()}
           </div>
         </main>
+
+        {isMobile && sidebarVisible && (
+          <div
+            className='fixed inset-0 bg-black/10 z-40 md:hidden'
+            onClick={toggleSidebar}
+          />
+        )}
       </div>
     </div>
   );

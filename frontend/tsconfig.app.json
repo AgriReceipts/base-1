@@ -7,11 +7,9 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "jsx": "react-jsx",
-     "baseUrl": ".",
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
 
     /* Bundler mode */

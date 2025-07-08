@@ -1,38 +1,45 @@
-// Receipt creation request body
-export interface CreateReceiptRequest {
-  receiptDate: string;
-  bookNumber: string;
-  receiptNumber: string;
-  traderName: string;
-  traderAddress?: string;
-  payeeName: string;
-  payeeAddress?: string;
-  commodity: string;
-  quantity: number;
-  unit: 'quintals' | 'numbers' | 'bags';
-  natureOfReceipt: 'mf' | 'lc' | 'uc' | 'others';
-  natureOtherText?: string;
-  value: number;
-  feesPaid: number;
-  vehicleNumber?: string;
-  invoiceNumber?: string;
-  collectionLocation: 'office' | 'checkpost' | 'other';
-  officeSupervisor?: string;
-  checkpostId?: string;
-  collectionOtherText?: string;
-  generatedBy: string;
-  designation: string;
-  committeeId: string;
-}
+import {NatureOfReceipt} from '@prisma/client';
+import {z} from 'zod';
+
+export const CreateReceiptSchema = z.object({
+  receiptDate: z.string(),
+  bookNumber: z.string(),
+  receiptNumber: z.string(),
+  traderName: z.string(),
+  newTraderName: z.string().optional(),
+  traderAddress: z.string().optional(),
+  payeeName: z.string(),
+  payeeAddress: z.string().optional(),
+  commodity: z.string(),
+  newCommodityName: z.string().optional(),
+  quantity: z.number(),
+  unit: z.enum(['quintals', 'kilograms', 'bags', 'numbers']),
+  weightPerBag: z.number().optional(),
+  totalWeightKg: z.number().optional(),
+  natureOfReceipt: z.enum(['mf', 'lc', 'uc', 'others']),
+  natureOtherText: z.string().optional(),
+  value: z.number(),
+  feesPaid: z.number(),
+  vehicleNumber: z.string().optional(),
+  invoiceNumber: z.string().optional(),
+  collectionLocation: z.enum(['office', 'checkpost', 'other']),
+  officeSupervisor: z.string().optional(),
+  checkpostId: z.string().optional(),
+  collectionOtherText: z.string().optional(),
+  receiptSignedBy: z.string(),
+  designation: z.string(),
+  committeeId: z.string(),
+});
+
+export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
 
 // Query parameters for listing receipts
 export interface ReceiptQueryParams {
-  page?: number;
-  limit?: number;
-  committeeId?: string;
+  page?: string;
+  limit?: string;
+  search?: string;
+  natureOfReceipt?: NatureOfReceipt;
+  committeeId?: string; // For AD role to filter by committee
   startDate?: string;
   endDate?: string;
-  traderName?: string;
-  commodity?: string;
-  natureOfReceipt?: string;
 }

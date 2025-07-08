@@ -16,7 +16,7 @@ const server = app.listen(PORT, () => {
 
 // Graceful shutdown logic
 const shutdown = (signal: string) => {
-  console.log(`\n${signal} received. Shutting down gracefully...`);
+  console.log(`\n${signal} received. Shutting down...`);
   server.close(async () => {
     console.log('HTTP server closed.');
     try {
