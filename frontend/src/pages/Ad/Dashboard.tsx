@@ -17,7 +17,7 @@ import {
 
 import Usermanage from '../../components/AdCompo/Usermanage';
 import {TargetManager} from '@/components/AdCompo/TargetManager';
-import useInitialData from '@/hooks/useMetadata';
+import useInitialData from '@/hooks/useInititalData';
 import {useAuthStore} from '@/stores/authStore';
 
 // Placeholder components for new pages
