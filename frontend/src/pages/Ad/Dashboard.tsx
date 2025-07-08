@@ -16,7 +16,9 @@ import {
 } from 'react-icons/fi';
 
 import Usermanage from '../../components/AdCompo/Usermanage';
-import TargetManagement from './TargetManagement';
+import {TargetManager} from '@/components/AdCompo/TargetManager';
+import useInitialData from '@/hooks/useMetadata';
+import {useAuthStore} from '@/stores/authStore';
 
 // Placeholder components for new pages
 const DistrictAnalysis = () => (
@@ -27,6 +29,7 @@ const DistrictAnalysis = () => (
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const {user} = useAuthStore();
   const [isMobile, setIsMobile] = useState(false);
   const [activeNav, setActiveNav] = useState(() => {
     return localStorage.getItem('activeNav') || 'overview';
@@ -63,6 +66,7 @@ export default function SupervisorDashboard() {
     {key: 'userManagement', label: 'User Management', icon: <FiUsers />},
     {key: 'viewReports', label: 'View Reports', icon: <FiBarChart />},
   ];
+  const {detailedCommittee} = useInitialData();
 
   const renderContent = () => {
     switch (activeNav) {
@@ -73,7 +77,12 @@ export default function SupervisorDashboard() {
       case 'allReceipts':
         return <ViewReceipts />;
       case 'targetManagement':
-        return <TargetManagement />;
+        return (
+          <TargetManager
+            committees={detailedCommittee}
+            currentUser={user?.name || 'ad'}
+          />
+        );
       case 'userManagement':
         return <Usermanage />;
       case 'viewReports':

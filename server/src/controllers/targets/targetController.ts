@@ -1,73 +1,88 @@
-// controllers/targetController.ts
 import {Request, Response} from 'express';
-import {PrismaClient} from '@prisma/client';
 import {handlePrismaError} from '../../utils/helpers';
 
 import {z} from 'zod';
 import {getTargetsSchema, setTargetSchema} from '../../types/schemas';
-
-const prisma = new PrismaClient();
+import prisma from '../../utils/database';
+import {Prisma} from '@prisma/client';
 
 // Set Target(s) - Can handle single target or array of targets
 export const setTarget = async (req: Request, res: Response) => {
   try {
     const body = req.body;
-
-    // Check if it's an array of targets or single target
     const isArray = Array.isArray(body);
     const targetsData = isArray ? body : [body];
 
-    // Validate each target
+    // // The validation logic using .map
     const validatedTargets = targetsData.map((target, index) => {
       try {
         return setTargetSchema.parse(target);
       } catch (error) {
-        throw new Error(`Validation error at index ${index}`);
+        // Provide more context on validation failure
+        if (error instanceof z.ZodError) {
+          throw new Error(
+            `Validation failed for target at index ${index}: ${error.issues
+              .map((e) => e.message)
+              .join(', ')}`
+          );
+        }
+        throw error;
       }
     });
 
-    // Use Prisma transaction for multiple targets
     const result = await prisma.$transaction(async (tx) => {
       const createdTargets = [];
 
       for (const targetData of validatedTargets) {
-        const target = await tx.target.upsert({
+        // Find existing target
+        const existingTarget = await tx.target.findFirst({
           where: {
-            year_month_committeeId: {
-              year: targetData.year,
-              month: targetData.month,
-              committeeId: targetData.committeeId,
-            },
-          },
-          update: {
-            marketFeeTarget: targetData.marketFeeTarget,
-            totalValueTarget: targetData.totalValueTarget,
-            setBy: targetData.setBy,
-            approvedBy: targetData.approvedBy,
-            notes: targetData.notes,
-            commodityId: targetData.commodityId,
-            isActive: true,
-            updatedAt: new Date(),
-          },
-          create: {
             year: targetData.year,
             month: targetData.month,
             committeeId: targetData.committeeId,
-            checkpostId: targetData.checkpostId,
-            marketFeeTarget: targetData.marketFeeTarget,
-            totalValueTarget: targetData.totalValueTarget,
-            setBy: targetData.setBy,
-            approvedBy: targetData.approvedBy,
-            notes: targetData.notes,
-            commodityId: targetData.commodityId,
-            isActive: true,
-          },
-          include: {
-            committee: true,
-            checkpost: true,
-            Commodity: true,
+            checkpostId: targetData.checkpostId || null,
           },
         });
+
+        let target;
+
+        if (existingTarget) {
+          // Update existing target
+          target = await tx.target.update({
+            where: {id: existingTarget.id},
+            data: {
+              marketFeeTarget: targetData.marketFeeTarget,
+              totalValueTarget: targetData.totalValueTarget,
+              setBy: targetData.setBy,
+              approvedBy: targetData.approvedBy,
+              notes: targetData.notes,
+              commodityId: targetData.commodityId,
+              isActive: true,
+            },
+            include: {
+              committee: true,
+              checkpost: true,
+              Commodity: true,
+            },
+          });
+        } else {
+          // Create new target
+          target = await tx.target.create({
+            data: {
+              ...targetData,
+              checkpostId: targetData.checkpostId || null,
+              totalValueTarget: targetData.totalValueTarget || null,
+              approvedBy: targetData.approvedBy || null,
+              notes: targetData.notes || null,
+              commodityId: targetData.commodityId || null,
+            },
+            include: {
+              committee: true,
+              checkpost: true,
+              Commodity: true,
+            },
+          });
+        }
 
         createdTargets.push(target);
       }
@@ -76,18 +91,19 @@ export const setTarget = async (req: Request, res: Response) => {
     });
 
     res.status(200).json({
-      message: `Target${isArray ? 's' : ''} set successfully`,
-      data: result,
+      message: `Successfully set ${result.length} target${
+        result.length > 1 ? 's' : ''
+      }.`,
+      data: isArray ? result : result[0], // Return single object if input was single
     });
   } catch (error) {
     console.error('Error setting target:', error);
-
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        message: 'Validation error',
-        errors: error.errors,
-      });
+      return res
+        .status(400)
+        .json({message: 'Validation error', errors: error.errors});
     }
+    // Assuming you have a standard Prisma error handler
     return handlePrismaError(res, error);
   }
 };
@@ -95,7 +111,7 @@ export const setTarget = async (req: Request, res: Response) => {
 // Get Targets with filtering
 export const getTargets = async (req: Request, res: Response) => {
   try {
-    const validatedData = getTargetsSchema.parse(req.body);
+    const validatedData = getTargetsSchema.parse(req.query);
 
     const whereClause: any = {
       year: validatedData.year,
@@ -104,6 +120,7 @@ export const getTargets = async (req: Request, res: Response) => {
 
     if (validatedData.committeeId) {
       whereClause.committeeId = validatedData.committeeId;
+      whereClause.checkpostId = validatedData.checkPostId;
     }
 
     const targets = await prisma.target.findMany({
@@ -136,13 +153,7 @@ export const getTargets = async (req: Request, res: Response) => {
       ],
     });
 
-    // Transform the data to include checkpost name directly
-    const transformedTargets = targets.map((target) => ({
-      ...target,
-      checkpost: target.checkpost?.name || null,
-    }));
-
-    res.status(200).json(transformedTargets);
+    res.status(200).json(targets);
   } catch (error) {
     console.error('Error fetching targets:', error);
 
@@ -201,7 +212,13 @@ export const updateTarget = async (req: Request, res: Response) => {
 export const deleteTarget = async (req: Request, res: Response) => {
   try {
     const {id} = req.params;
+    console.log('the id is', id);
 
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({
+        message: 'Please send a valid target ID',
+      });
+    }
     // Validate that the target exists
     const existingTarget = await prisma.target.findUnique({
       where: {id},
