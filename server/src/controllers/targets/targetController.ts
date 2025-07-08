@@ -1,41 +1,50 @@
 import {Request, Response} from 'express';
-import {PrismaClient} from '@prisma/client';
 import {handlePrismaError} from '../../utils/helpers';
 
 import {z} from 'zod';
 import {getTargetsSchema, setTargetSchema} from '../../types/schemas';
-
-const prisma = new PrismaClient();
+import prisma from '../../utils/database';
+import {Prisma} from '@prisma/client';
 
 // Set Target(s) - Can handle single target or array of targets
 export const setTarget = async (req: Request, res: Response) => {
   try {
     const body = req.body;
-
-    // Check if it's an array of targets or single target
     const isArray = Array.isArray(body);
     const targetsData = isArray ? body : [body];
 
-    // Validate each target
+    // The validation logic using .map was good, no changes needed here
     const validatedTargets = targetsData.map((target, index) => {
       try {
         return setTargetSchema.parse(target);
       } catch (error) {
-        throw new Error(`Validation error at index ${index}`);
+        // Provide more context on validation failure
+        if (error instanceof z.ZodError) {
+          throw new Error(
+            `Validation failed for target at index ${index}: ${error.issues
+              .map((e) => e.message)
+              .join(', ')}`
+          );
+        }
+        throw error;
       }
     });
 
-    // Use Prisma transaction for multiple targets
     const result = await prisma.$transaction(async (tx) => {
       const createdTargets = [];
 
       for (const targetData of validatedTargets) {
+        // 👇 --- KEY CHANGE ---
+        // The 'where' clause now uses the correct composite unique key
+        // and handles the optional 'checkpostId'.
         const target = await tx.target.upsert({
           where: {
-            year_month_committeeId: {
+            year_month_committeeId_checkpostId: {
               year: targetData.year,
               month: targetData.month,
               committeeId: targetData.committeeId,
+              //@ts-ignore
+              checkpostId: targetData.checkpostId ?? null, // Ensures null is used when undefined
             },
           },
           update: {
@@ -45,22 +54,18 @@ export const setTarget = async (req: Request, res: Response) => {
             approvedBy: targetData.approvedBy,
             notes: targetData.notes,
             commodityId: targetData.commodityId,
-            isActive: true,
-            updatedAt: new Date(),
+            isActive: true, // Ensure target is active on update
           },
           create: {
-            year: targetData.year,
-            month: targetData.month,
-            committeeId: targetData.committeeId,
-            checkpostId: targetData.checkpostId,
-            marketFeeTarget: targetData.marketFeeTarget,
-            totalValueTarget: targetData.totalValueTarget,
-            setBy: targetData.setBy,
-            approvedBy: targetData.approvedBy,
-            notes: targetData.notes,
-            commodityId: targetData.commodityId,
-            isActive: true,
-          },
+            ...targetData,
+            // Explicitly override checkpostId to ensure null when undefined from Zod
+            checkpostId: targetData.checkpostId ?? null,
+            // Add other nullable/optional fields from targetData explicitly if Prisma still complains
+            totalValueTarget: targetData.totalValueTarget ?? null,
+            approvedBy: targetData.approvedBy ?? null,
+            notes: targetData.notes ?? null,
+            commodityId: targetData.commodityId ?? null,
+          } as Prisma.TargetUncheckedCreateInput, // <--- EXPLICITLY CAST HERE
           include: {
             committee: true,
             checkpost: true,
@@ -75,18 +80,19 @@ export const setTarget = async (req: Request, res: Response) => {
     });
 
     res.status(200).json({
-      message: `Target${isArray ? 's' : ''} set successfully`,
-      data: result,
+      message: `Successfully set ${result.length} target${
+        result.length > 1 ? 's' : ''
+      }.`,
+      data: isArray ? result : result[0], // Return single object if input was single
     });
   } catch (error) {
     console.error('Error setting target:', error);
-
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        message: 'Validation error',
-        errors: error.errors,
-      });
+      return res
+        .status(400)
+        .json({message: 'Validation error', errors: error.errors});
     }
+    // Assuming you have a standard Prisma error handler
     return handlePrismaError(res, error);
   }
 };
@@ -94,18 +100,19 @@ export const setTarget = async (req: Request, res: Response) => {
 // Get Targets with filtering
 export const getTargets = async (req: Request, res: Response) => {
   try {
-    // const validatedData = getTargetsSchema.parse(req.body);
+    const validatedData = getTargetsSchema.parse(req.query);
 
-    // const whereClause: any = {
-    //   year: validatedData.year,
-    //   isActive: true,
-    // };
+    const whereClause: any = {
+      year: validatedData.year,
+      isActive: true,
+    };
 
-    // if (validatedData.committeeId) {
-    //   whereClause.committeeId = validatedData.committeeId;
-    // }
+    if (validatedData.committeeId) {
+      whereClause.committeeId = validatedData.committeeId;
+    }
 
     const targets = await prisma.target.findMany({
+      where: whereClause,
       include: {
         committee: {
           select: {

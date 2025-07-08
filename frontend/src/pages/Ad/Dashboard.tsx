@@ -19,6 +19,7 @@ import Usermanage from '../../components/AdCompo/Usermanage';
 import TargetManagement from './TargetManagement';
 import {TargetManager} from '@/components/AdCompo/TargetManager';
 import {committees} from './utils/data/committees';
+import useInitialData from '@/hooks/useMetadata';
 
 // Placeholder components for new pages
 const DistrictAnalysis = () => (
@@ -65,6 +66,7 @@ export default function SupervisorDashboard() {
     {key: 'userManagement', label: 'User Management', icon: <FiUsers />},
     {key: 'viewReports', label: 'View Reports', icon: <FiBarChart />},
   ];
+  const {detailedCommittee} = useInitialData();
 
   const renderContent = () => {
     switch (activeNav) {
@@ -75,7 +77,9 @@ export default function SupervisorDashboard() {
       case 'allReceipts':
         return <ViewReceipts />;
       case 'targetManagement':
-        return <TargetManager committees={committees} currentUser='ad' />;
+        return (
+          <TargetManager committees={detailedCommittee} currentUser='ad' />
+        );
       case 'userManagement':
         return <Usermanage />;
       case 'viewReports':

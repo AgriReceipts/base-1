@@ -1,11 +1,13 @@
 export interface Committee {
   id: string;
   name: string;
-  code: string;
-  hasCheckposts: boolean;
-  checkposts: string[];
+  checkposts: Checkpost[];
 }
 
+type Checkpost = {
+  id: string;
+  name: string;
+};
 export interface Target {
   id?: string;
   year: number;

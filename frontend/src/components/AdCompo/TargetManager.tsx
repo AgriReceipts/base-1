@@ -9,21 +9,6 @@ interface TargetManagerProps {
   currentUser: string;
 }
 
-const MONTHS = [
-  {value: 1, label: 'January'},
-  {value: 2, label: 'February'},
-  {value: 3, label: 'March'},
-  {value: 4, label: 'April'},
-  {value: 5, label: 'May'},
-  {value: 6, label: 'June'},
-  {value: 7, label: 'July'},
-  {value: 8, label: 'August'},
-  {value: 9, label: 'September'},
-  {value: 10, label: 'October'},
-  {value: 11, label: 'November'},
-  {value: 12, label: 'December'},
-];
-
 export const TargetManager: React.FC<TargetManagerProps> = ({
   committees,
   currentUser,
@@ -57,7 +42,7 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
   };
 
   return (
-    <div className='max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-lg'>
+    <div className='w-full mx-auto px-3 bg-white rounded-lg shadow-lg'>
       <div className='mb-6'>
         <h1 className='text-2xl font-bold text-gray-800 mb-4'>
           Target Management
@@ -76,7 +61,7 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
               <option value=''>Select a committee</option>
               {committees.map((committee) => (
                 <option key={committee.id} value={committee.id}>
-                  {committee.name} ({committee.code})
+                  {committee.name}
                 </option>
               ))}
             </select>

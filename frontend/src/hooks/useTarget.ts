@@ -7,15 +7,20 @@ export const useTargets = (year: number, committeeId?: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTargets = async () => {
+  const fetchTargets = async ({
+    year,
+    committeeId,
+  }: {
+    year: number;
+    committeeId?: string;
+  }) => {
     if (!year) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const data = await targetService.getTargets();
-      console.log('the respone', data);
+      const data = await targetService.getTargets({year, committeeId});
       setTargets(data);
     } catch (err) {
       setError('Failed to fetch targets');
@@ -26,7 +31,7 @@ export const useTargets = (year: number, committeeId?: string) => {
   };
 
   useEffect(() => {
-    fetchTargets();
+    fetchTargets({year, committeeId});
   }, [year, committeeId]);
 
   const saveTargets = async (newTargets: Omit<Target, 'id'>[]) => {
@@ -35,7 +40,7 @@ export const useTargets = (year: number, committeeId?: string) => {
 
     try {
       await targetService.setTargets(newTargets);
-      await fetchTargets(); // Refresh data
+      await fetchTargets({year, committeeId}); // Refresh data
       return true;
     } catch (err) {
       setError('Failed to save targets');

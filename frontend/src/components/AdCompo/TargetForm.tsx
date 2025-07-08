@@ -42,25 +42,15 @@ export const TargetForm: React.FC<TargetFormProps> = ({
   const [notes, setNotes] = useState<string>('');
 
   useEffect(() => {
-    // Initialize monthly targets from existing data or defaults
-    const initialTargets = MONTHS.map((month) => {
-      const existingTarget = existingTargets.find(
-        (t) =>
-          t.month === month.value &&
-          t.committeeId === committee.id &&
-          (!selectedCheckpost || t.checkpostId === selectedCheckpost)
-      );
+    const zeroTargets = MONTHS.map((month) => ({
+      month: month.value,
+      marketFeeTarget: 0,
+      totalValueTarget: 0,
+    }));
 
-      return {
-        month: month.value,
-        marketFeeTarget: existingTarget?.marketFeeTarget || 0,
-        totalValueTarget: existingTarget?.totalValueTarget || 0,
-      };
-    });
-
-    setMonthlyTargets(initialTargets);
-    updateTotals(initialTargets);
-  }, [existingTargets, committee.id, selectedCheckpost]);
+    setMonthlyTargets(zeroTargets);
+    updateTotals(zeroTargets);
+  }, [committee.id]);
 
   const updateTotals = (targets: MonthlyTarget[]) => {
     const marketFeeSum = targets.reduce(
@@ -124,6 +114,16 @@ export const TargetForm: React.FC<TargetFormProps> = ({
     await onSave(targets);
   };
 
+  // Helper function to format value for display
+  const formatInputValue = (value: number): string => {
+    return value === 0 ? '' : value.toString();
+  };
+
+  // Helper function to handle input focus
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
+  };
+
   return (
     <div className='bg-gray-50 p-6 rounded-lg mb-6'>
       <h2 className='text-xl font-semibold mb-4'>
@@ -131,7 +131,7 @@ export const TargetForm: React.FC<TargetFormProps> = ({
       </h2>
 
       {/* Checkpost Selection */}
-      {committee.hasCheckposts && (
+      {committee.checkposts?.length > 0 && (
         <div className='mb-4'>
           <label className='block text-sm font-medium text-gray-700 mb-2'>
             Checkpost (Optional)
@@ -142,8 +142,8 @@ export const TargetForm: React.FC<TargetFormProps> = ({
             className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'>
             <option value=''>Committee Level (All Checkposts)</option>
             {committee.checkposts.map((checkpost) => (
-              <option key={checkpost} value={checkpost}>
-                {checkpost}
+              <option key={checkpost.id} value={checkpost.id}>
+                {checkpost.name}
               </option>
             ))}
           </select>
@@ -159,10 +159,12 @@ export const TargetForm: React.FC<TargetFormProps> = ({
           <input
             type='number'
             step='0.01'
-            value={totalMarketFee}
+            value={formatInputValue(totalMarketFee)}
             onChange={(e) =>
               handleTotalMarketFeeChange(parseFloat(e.target.value) || 0)
             }
+            onFocus={handleInputFocus}
+            placeholder='0'
             className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
           />
         </div>
@@ -173,10 +175,12 @@ export const TargetForm: React.FC<TargetFormProps> = ({
           <input
             type='number'
             step='0.01'
-            value={totalValueTarget}
+            value={formatInputValue(totalValueTarget)}
             onChange={(e) =>
               handleTotalValueTargetChange(parseFloat(e.target.value) || 0)
             }
+            onFocus={handleInputFocus}
+            placeholder='0'
             className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
           />
         </div>
@@ -205,7 +209,9 @@ export const TargetForm: React.FC<TargetFormProps> = ({
                     <input
                       type='number'
                       step='0.01'
-                      value={monthlyTarget?.marketFeeTarget || 0}
+                      value={formatInputValue(
+                        monthlyTarget?.marketFeeTarget || 0
+                      )}
                       onChange={(e) =>
                         handleMonthlyTargetChange(
                           month.value,
@@ -213,6 +219,8 @@ export const TargetForm: React.FC<TargetFormProps> = ({
                           parseFloat(e.target.value) || 0
                         )
                       }
+                      onFocus={handleInputFocus}
+                      placeholder='0'
                       className='w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500'
                     />
                   </div>
@@ -223,7 +231,9 @@ export const TargetForm: React.FC<TargetFormProps> = ({
                     <input
                       type='number'
                       step='0.01'
-                      value={monthlyTarget?.totalValueTarget || 0}
+                      value={formatInputValue(
+                        monthlyTarget?.totalValueTarget || 0
+                      )}
                       onChange={(e) =>
                         handleMonthlyTargetChange(
                           month.value,
@@ -231,6 +241,8 @@ export const TargetForm: React.FC<TargetFormProps> = ({
                           parseFloat(e.target.value) || 0
                         )
                       }
+                      onFocus={handleInputFocus}
+                      placeholder='0'
                       className='w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500'
                     />
                   </div>

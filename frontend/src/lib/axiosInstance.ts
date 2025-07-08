@@ -35,11 +35,18 @@ api.interceptors.response.use(
 
 export const targetService = {
   // Get targets for a specific year and committee
-  async getTargets(): Promise<Target[]> {
-    const response = await api.get('/targets/getTargets');
+  async getTargets({
+    year,
+    committeeId,
+  }: {
+    year: number;
+    committeeId?: string;
+  }): Promise<Target[]> {
+    const response = await api.get('/targets/getTargets', {
+      params: {year, committeeId},
+    });
     return response.data;
   },
-
   // Set targets (can handle single or multiple targets)
   async setTargets(targets: Omit<Target, 'id'>[]): Promise<Target[]> {
     const response = await api.post(`/targets/setTarget`, targets);
