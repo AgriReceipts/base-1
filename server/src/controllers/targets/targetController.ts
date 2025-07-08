@@ -1,4 +1,3 @@
-// controllers/targetController.ts
 import {Request, Response} from 'express';
 import {PrismaClient} from '@prisma/client';
 import {handlePrismaError} from '../../utils/helpers';
@@ -95,19 +94,18 @@ export const setTarget = async (req: Request, res: Response) => {
 // Get Targets with filtering
 export const getTargets = async (req: Request, res: Response) => {
   try {
-    const validatedData = getTargetsSchema.parse(req.body);
+    // const validatedData = getTargetsSchema.parse(req.body);
 
-    const whereClause: any = {
-      year: validatedData.year,
-      isActive: true,
-    };
+    // const whereClause: any = {
+    //   year: validatedData.year,
+    //   isActive: true,
+    // };
 
-    if (validatedData.committeeId) {
-      whereClause.committeeId = validatedData.committeeId;
-    }
+    // if (validatedData.committeeId) {
+    //   whereClause.committeeId = validatedData.committeeId;
+    // }
 
     const targets = await prisma.target.findMany({
-      where: whereClause,
       include: {
         committee: {
           select: {

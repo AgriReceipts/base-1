@@ -1,4 +1,10 @@
-import type {Committee} from '../types/target';
+interface Committee {
+  id: string;
+  name: string;
+  code: string;
+  hasCheckposts: boolean;
+  checkposts: string[];
+}
 
 export const committees: Committee[] = [
   {

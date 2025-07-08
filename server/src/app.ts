@@ -74,12 +74,12 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Routes will be added here
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/metaData', metaDataRoutes);
-app.use('/api/target', targetRoutes);
+app.use('/api/targets', targetRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

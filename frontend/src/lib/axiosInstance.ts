@@ -1,6 +1,7 @@
 import axios, {isAxiosError} from 'axios';
 import {useAuthStore} from '@/stores/authStore';
 import {toast} from 'react-hot-toast';
+import type {Target} from '@/types/targets';
 
 //this automatically sets the jwt in the auth header for each request, and also checks for session expiration in each response and logsout the user if the session is expired
 
@@ -32,5 +33,29 @@ api.interceptors.response.use(
   }
 );
 
+export const targetService = {
+  // Get targets for a specific year and committee
+  async getTargets(): Promise<Target[]> {
+    const response = await api.get('/targets/getTargets');
+    return response.data;
+  },
+
+  // Set targets (can handle single or multiple targets)
+  async setTargets(targets: Omit<Target, 'id'>[]): Promise<Target[]> {
+    const response = await api.post(`/targets/setTarget`, targets);
+    return response.data.data;
+  },
+
+  // Update a specific target
+  async updateTarget(id: string, updateData: Partial<Target>): Promise<Target> {
+    const response = await api.put(`/targets/updateTarget/${id}`, updateData);
+    return response.data.data;
+  },
+
+  // Delete a target
+  async deleteTarget(id: string): Promise<void> {
+    await api.delete(`/targets/deleteTarget/${id}`);
+  },
+};
 export default api;
 export {isAxiosError};
