@@ -1,0 +1,25 @@
+{
+  "name": "receipt-management-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "build:server": "cd server && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "install:all": "cd frontend && npm install && cd ../server && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:server": "cd server && npm install",
+    "start": "cd server && npm start",
+    "db:generate": "cd server && npm run db:generate",
+    "db:migrate": "cd server && npm run db:migrate",
+    "db:studio": "cd server && npm run db:studio",
+    "db:seed": "cd server && npm run db:seed"
+  },
+  "description": "Receipt Management System - Monorepo with frontend and server",
+  "keywords": ["receipt", "management", "system", "monorepo"],
+  "author": "",
+  "license": "ISC"
+}
