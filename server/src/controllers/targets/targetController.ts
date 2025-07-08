@@ -13,7 +13,7 @@ export const setTarget = async (req: Request, res: Response) => {
     const isArray = Array.isArray(body);
     const targetsData = isArray ? body : [body];
 
-    // The validation logic using .map was good, no changes needed here
+    // // The validation logic using .map
     const validatedTargets = targetsData.map((target, index) => {
       try {
         return setTargetSchema.parse(target);
@@ -34,44 +34,55 @@ export const setTarget = async (req: Request, res: Response) => {
       const createdTargets = [];
 
       for (const targetData of validatedTargets) {
-        // 👇 --- KEY CHANGE ---
-        // The 'where' clause now uses the correct composite unique key
-        // and handles the optional 'checkpostId'.
-        const target = await tx.target.upsert({
+        // Find existing target
+        const existingTarget = await tx.target.findFirst({
           where: {
-            year_month_committeeId_checkpostId: {
-              year: targetData.year,
-              month: targetData.month,
-              committeeId: targetData.committeeId,
-              //@ts-ignore
-              checkpostId: targetData.checkpostId ?? null, // Ensures null is used when undefined
-            },
-          },
-          update: {
-            marketFeeTarget: targetData.marketFeeTarget,
-            totalValueTarget: targetData.totalValueTarget,
-            setBy: targetData.setBy,
-            approvedBy: targetData.approvedBy,
-            notes: targetData.notes,
-            commodityId: targetData.commodityId,
-            isActive: true, // Ensure target is active on update
-          },
-          create: {
-            ...targetData,
-            // Explicitly override checkpostId to ensure null when undefined from Zod
-            checkpostId: targetData.checkpostId ?? null,
-            // Add other nullable/optional fields from targetData explicitly if Prisma still complains
-            totalValueTarget: targetData.totalValueTarget ?? null,
-            approvedBy: targetData.approvedBy ?? null,
-            notes: targetData.notes ?? null,
-            commodityId: targetData.commodityId ?? null,
-          } as Prisma.TargetUncheckedCreateInput, // <--- EXPLICITLY CAST HERE
-          include: {
-            committee: true,
-            checkpost: true,
-            Commodity: true,
+            year: targetData.year,
+            month: targetData.month,
+            committeeId: targetData.committeeId,
+            checkpostId: targetData.checkpostId || null,
           },
         });
+
+        let target;
+
+        if (existingTarget) {
+          // Update existing target
+          target = await tx.target.update({
+            where: {id: existingTarget.id},
+            data: {
+              marketFeeTarget: targetData.marketFeeTarget,
+              totalValueTarget: targetData.totalValueTarget,
+              setBy: targetData.setBy,
+              approvedBy: targetData.approvedBy,
+              notes: targetData.notes,
+              commodityId: targetData.commodityId,
+              isActive: true,
+            },
+            include: {
+              committee: true,
+              checkpost: true,
+              Commodity: true,
+            },
+          });
+        } else {
+          // Create new target
+          target = await tx.target.create({
+            data: {
+              ...targetData,
+              checkpostId: targetData.checkpostId || null,
+              totalValueTarget: targetData.totalValueTarget || null,
+              approvedBy: targetData.approvedBy || null,
+              notes: targetData.notes || null,
+              commodityId: targetData.commodityId || null,
+            },
+            include: {
+              committee: true,
+              checkpost: true,
+              Commodity: true,
+            },
+          });
+        }
 
         createdTargets.push(target);
       }
@@ -109,6 +120,7 @@ export const getTargets = async (req: Request, res: Response) => {
 
     if (validatedData.committeeId) {
       whereClause.committeeId = validatedData.committeeId;
+      whereClause.checkpostId = validatedData.checkPostId;
     }
 
     const targets = await prisma.target.findMany({
@@ -141,13 +153,7 @@ export const getTargets = async (req: Request, res: Response) => {
       ],
     });
 
-    // Transform the data to include checkpost name directly
-    const transformedTargets = targets.map((target) => ({
-      ...target,
-      checkpost: target.checkpost?.name || null,
-    }));
-
-    res.status(200).json(transformedTargets);
+    res.status(200).json(targets);
   } catch (error) {
     console.error('Error fetching targets:', error);
 
@@ -206,7 +212,13 @@ export const updateTarget = async (req: Request, res: Response) => {
 export const deleteTarget = async (req: Request, res: Response) => {
   try {
     const {id} = req.params;
+    console.log('the id is', id);
 
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({
+        message: 'Please send a valid target ID',
+      });
+    }
     // Validate that the target exists
     const existingTarget = await prisma.target.findUnique({
       where: {id},

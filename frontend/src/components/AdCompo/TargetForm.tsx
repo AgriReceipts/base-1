@@ -5,7 +5,7 @@ interface TargetFormProps {
   committee: Committee;
   year: number;
   currentUser: string;
-  existingTargets: Target[];
+  existingTarget: Target;
   onSave: (targets: Omit<Target, 'id'>[]) => Promise<void>;
   onCancel: () => void;
   loading: boolean;
@@ -30,7 +30,7 @@ export const TargetForm: React.FC<TargetFormProps> = ({
   committee,
   year,
   currentUser,
-  existingTargets,
+  existingTarget,
   onSave,
   onCancel,
   loading,

@@ -51,11 +51,29 @@ export const useTargets = (year: number, committeeId?: string) => {
     }
   };
 
+  const deleteTarget = async (id: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await targetService.deleteTarget(id);
+      await fetchTargets({year, committeeId});
+      return true;
+    } catch (err) {
+      setError('Failed to save targets');
+      console.error('Error saving targets:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     targets,
     loading,
     error,
     fetchTargets,
     saveTargets,
+    deleteTarget,
   };
 };

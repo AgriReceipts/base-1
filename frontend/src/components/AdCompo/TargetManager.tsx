@@ -3,6 +3,7 @@ import type {Committee, Target} from '@/types/targets';
 import React, {useState} from 'react';
 import {TargetForm} from './TargetForm';
 import {TargetList} from './TargetList';
+import toast from 'react-hot-toast';
 
 interface TargetManagerProps {
   committees: Committee[];
@@ -14,18 +15,20 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
   currentUser,
 }) => {
   const [selectedCommittee, setSelectedCommittee] = useState<string>('');
+  const [selectedCheckpost, setSelectedCheckpost] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   );
   const [showForm, setShowForm] = useState(false);
 
-  const {targets, loading, error, saveTargets} = useTargets(
+  const {targets, loading, error, saveTargets, deleteTarget} = useTargets(
     selectedYear,
     selectedCommittee
   );
 
   const handleCommitteeChange = (committeeId: string) => {
     setSelectedCommittee(committeeId);
+    setSelectedCheckpost('');
     setShowForm(false);
   };
 
@@ -41,6 +44,17 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
     }
   };
 
+  const handleDeleteTarget = async (id: string) => {
+    const deleted = await deleteTarget(id);
+    if (deleted) {
+      toast('Target deleted');
+    }
+  };
+
+  const selectedCommitteeData = committees.find(
+    (c) => c.id === selectedCommittee
+  );
+
   return (
     <div className='w-full mx-auto px-3 bg-white rounded-lg shadow-lg'>
       <div className='mb-6'>
@@ -49,8 +63,8 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
         </h1>
 
         {/* Committee and Year Selection */}
-        <div className='flex gap-4 mb-4'>
-          <div className='flex-1'>
+        <div className='flex gap-4 mb-4 flex-wrap'>
+          <div className='flex-1 min-w-[250px]'>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
               Select Committee
             </label>
@@ -67,7 +81,27 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
             </select>
           </div>
 
-          <div className='flex-1'>
+          {/* ✅ Conditional Checkpost Dropdown */}
+          {selectedCommitteeData?.checkposts?.length > 0 && (
+            <div className='flex-1 min-w-[250px]'>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Select Checkpost
+              </label>
+              <select
+                value={selectedCheckpost}
+                onChange={(e) => setSelectedCheckpost(e.target.value)}
+                className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'>
+                <option value=''>All Checkposts</option>
+                {selectedCommitteeData.checkposts.map((checkpost) => (
+                  <option key={checkpost.id} value={checkpost.id}>
+                    {checkpost.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className='flex-1 min-w-[250px]'>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
               Financial Year
             </label>
@@ -108,10 +142,10 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
       {/* Target Form */}
       {showForm && selectedCommittee && (
         <TargetForm
-          committee={committees.find((c) => c.id === selectedCommittee)!}
+          committee={selectedCommitteeData!}
           year={selectedYear}
           currentUser={currentUser}
-          existingTargets={targets}
+          existingTarget={targets[0]} //pass the target to edit here instead
           onSave={handleSaveTargets}
           onCancel={() => setShowForm(false)}
           loading={loading}
@@ -123,8 +157,10 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
         <TargetList
           targets={targets}
           loading={loading}
-          committee={committees.find((c) => c.id === selectedCommittee)}
+          committee={selectedCommitteeData}
+          selectedCheckpost={selectedCheckpost}
           year={selectedYear}
+          deleteTarget={handleDeleteTarget}
         />
       )}
     </div>

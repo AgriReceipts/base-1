@@ -37,8 +37,8 @@ swaggerDocs(app);
 
 // 👇 Stricter limiter for auth
 const authLimiter = rateLimit({
-  windowMs: 900 * 1000, // 1 minute
-  max: 10, // Only 3 requests per minute for auth
+  windowMs: 900 * 1000, // 15 minute
+  max: 10,
   message: 'Too many login attempts. Please try again in a minute.',
   handler: (req, res) => {
     console.warn(`Auth rate limit exceeded for IP: ${req.ip}`);
@@ -51,7 +51,7 @@ const authLimiter = rateLimit({
 // 👇 General limiter for other API routes
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 50, // Higher limit for general API
+  max: 100, // Higher limit for general API
   message: 'Too many requests. Please slow down.',
   handler: (req, res) => {
     console.warn(`General rate limit exceeded for IP: ${req.ip}`);

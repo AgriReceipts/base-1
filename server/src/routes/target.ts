@@ -14,6 +14,6 @@ targetRoutes.use(authorizeRoles('ad'));
 targetRoutes.post('/setTarget', setTarget);
 targetRoutes.get('/getTargets', getTargets);
 targetRoutes.put('/updateTarget/:targetId', updateTarget);
-targetRoutes.delete('/target/deleteTarget/:targetId', deleteTarget);
+targetRoutes.delete('/deleteTarget/:id', deleteTarget);
 
 export default targetRoutes;
