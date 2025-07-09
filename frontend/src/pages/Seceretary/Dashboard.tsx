@@ -2,7 +2,6 @@ import {useState, useEffect} from 'react';
 import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
 import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysis';
 import Reports from '../../components/supervisorcomponents/Reports';
-import TargetManagement from '../Ad/TargetManagement';
 
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
@@ -48,8 +47,6 @@ export default function SupervisorDashboard() {
         return <ReceiptEntry />;
       case 'viewReceipts':
         return <ViewReceipts />;
-       case 'targetManagement':
-        return <TargetManagement />;
       case 'reports':
         return <Reports />;
       default:
