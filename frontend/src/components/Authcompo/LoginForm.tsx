@@ -25,14 +25,13 @@ const LoginForm = () => {
     setError(null);
 
     try {
-      const res = await api.post('/auth/login', {
+      const res = await api.post('auth/login', {
         username,
         password,
       });
       const result = handleJwtLogin(res.data.token);
       if (result.success) {
         // Login successful
-        console.log('Logged in:', result.decoded);
       } else {
         // Handle login error
         console.error('Login failed:', result.error);
@@ -46,11 +45,11 @@ const LoginForm = () => {
           navigate('/supervisor');
           break;
         case 'ad':
-          navigate('/ad');        
+          navigate('/ad');
           break;
-       case 'secretary':
-          navigate('/secretary');        
-           break;
+        case 'secretary':
+          navigate('/secretary');
+          break;
 
         default:
           navigate('/');
