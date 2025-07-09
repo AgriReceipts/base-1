@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Card } from './Card';
+// Removed import { Card } from './Card';
 
 interface MetricCardProps {
   title: string;
@@ -53,7 +53,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <Card className={cn('hover:shadow-md transition-shadow duration-200', className)}>
+    <div className={cn('bg-white rounded-xl shadow border border-neutral-200 p-5 hover:shadow-md transition-shadow duration-200', className)}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-neutral-600 mb-1">{title}</p>
@@ -83,7 +83,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 };
 

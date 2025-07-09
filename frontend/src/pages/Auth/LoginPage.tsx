@@ -1,5 +1,9 @@
 import React from 'react';
+<<<<<<< Updated upstream
 import {Card, CardContent} from '../../components/ui/Card';
+=======
+
+>>>>>>> Stashed changes
 import LoginForm from '../../components/Authcompo/LoginForm';
 import {FiShield, FiUsers, FiBarChart, FiFileText} from 'react-icons/fi';
 
@@ -64,6 +68,7 @@ const LoginPage = () => {
             ))}
           </div>
 
+<<<<<<< Updated upstream
           {/* Demo credentials */}
           <Card className='bg-primary-50 border-primary-200'>
             <CardContent className='space-y-3'>
@@ -114,6 +119,56 @@ const LoginPage = () => {
               </div>
             </CardContent>
           </Card>
+=======
+          {/* Verify Receipt Quick Link Card */}
+          <a
+            href='/verifyReceipt'
+            className='flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm border border-primary-300 hover:shadow-md transition cursor-pointer'>
+            <div className='flex items-center justify-center w-10 h-10 bg-primary-100 rounded-lg flex-shrink-0'>
+              <FiFileText className='text-primary-600' size={20} />
+            </div>
+            <div className='space-y-1'>
+              <h3 className='font-semibold text-primary-800 text-sm'>
+                Verify Receipt
+              </h3>
+              <p className='text-primary-700 text-sm leading-relaxed'>
+                Instantly validate a receipt number and book number from any
+                device.
+              </p>
+            </div>
+          </a>
+
+          {/* Demo credentials - replaced Card with styled div */}
+          <div className='bg-primary-50 border border-primary-200 rounded-lg shadow p-4'>
+            <div className='bg-blue-50 p-4 rounded-lg border border-blue-100'>
+              <h3 className='font-bold text-gray-800 mb-3'>
+                Demo Login Credentials
+              </h3>
+              <ul className='space-y-2 text-sm'>
+                <li className='flex items-center'>
+                  <span className='font-medium w-40'>DEO (Tuni Committee):</span>
+                  <span className='font-mono bg-blue-100 px-2 py-1 rounded'>deo_tuni</span>
+                </li>
+                <li className='flex items-center'>
+                  <span className='font-medium w-40'>Supervisor (Kakinada Rural):</span>
+                  <span className='font-mono bg-blue-100 px-2 py-1 rounded'>supervisor_kakinadarural</span>
+                </li>
+                <li className='flex items-center'>
+                  <span className='font-medium w-40'>Secretary (Pithapuram):</span>
+                  <span className='font-mono bg-blue-100 px-2 py-1 rounded'>secretary_pithapuram</span>
+                </li>
+                <li className='flex items-center'>
+                  <span className='font-medium w-40'>Assistant Director:</span>
+                  <span className='font-mono bg-blue-100 px-2 py-1 rounded'>ad_user1</span>
+                </li>
+              </ul>
+              <p className='mt-3 text-xs text-gray-500'>
+                Password for all users:{' '}
+                <span className='font-mono bg-blue-100 px-2 py-1 rounded'>password123</span>
+              </p>
+            </div>
+          </div>
+>>>>>>> Stashed changes
         </div>
 
         {/* Right side - Login form */}

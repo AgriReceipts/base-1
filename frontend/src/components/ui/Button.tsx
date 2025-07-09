@@ -1,4 +1,5 @@
 import React from 'react';
+<<<<<<< Updated upstream
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -79,3 +80,36 @@ const Button: React.FC<ButtonProps> = ({
 };
 
 export default Button;
+=======
+
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'primary' | 'secondary';
+  children: React.ReactNode;
+};
+
+const baseStyles =
+  'px-6 py-2 rounded font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400';
+
+const variantStyles = {
+  primary:
+    'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-md',
+  secondary:
+    'bg-white text-blue-700 border border-blue-600 hover:bg-blue-50 active:bg-blue-100',
+};
+
+const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  children,
+  className = '',
+  ...props
+}) => (
+  <button
+    className={`${baseStyles} ${variantStyles[variant]} ${className}`}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+export default Button; 
+>>>>>>> Stashed changes
