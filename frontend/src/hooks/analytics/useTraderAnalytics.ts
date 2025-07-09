@@ -20,6 +20,10 @@ interface TraderAnalyticsResponse {
     period: string;
     topTradersMonthly: TraderData[];
     topTradersOverall: TraderData[];
+    totalMonthlyTraders: number;
+    totalMonthyFees: number;
+    totalMonthlyReceipts: number;
+    avgMonthlyFees: number;
     limit: number;
   };
 }
@@ -97,7 +101,6 @@ export const useTraderAnalytics = ({
 
       if (response.data.success) {
         setData(response.data.data);
-        console.log('trader top analytics', response.data);
       } else {
         setError('Failed to fetch trader analytics');
       }

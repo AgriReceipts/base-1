@@ -7,12 +7,7 @@ import {
   useCommodityAnalytics,
   useCommodityDetailedAnalytics,
 } from '@/hooks/analytics/useCommodityAnalytics';
-
-function formatLakh(val: number) {
-  if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
-  if (val >= 1000) return `₹${(val / 1000).toFixed(1)}K`;
-  return `₹${val}`;
-}
+import {formatMoney} from '@/lib/helpers';
 
 export default function CommitteeAnalysis() {
   const [locationTimeFrame, setLocationTimeFrame] = useState<'month' | 'all'>(
@@ -51,8 +46,8 @@ export default function CommitteeAnalysis() {
     error: committeeError,
   } = useCommitteeAnalytics({
     committeeId,
-    year: locationTimeFrame === 'month' ? currentYear : undefined,
-    month: locationTimeFrame === 'month' ? currentMonth : undefined,
+    year: currentYear,
+    month: currentMonth,
   });
 
   const {
@@ -88,12 +83,35 @@ export default function CommitteeAnalysis() {
       name: item.commodity.name,
       category: item.commodity.category,
       receipts: item.totalReceipts,
-      value: item.totalValue,
-      feesPaid: item.totalFeesPaid,
+      value: formatMoney(item.totalValue),
+      feesPaid: formatMoney(item.totalFeesPaid),
       quantity: item.totalQuantity,
-      avgPerReceipt: item.averageValuePerReceipt,
+      avgPerReceipt: formatMoney(item.averageValuePerReceipt),
     }));
   }, [commodityData, commodityTimeFrame]);
+
+  // Get current data for location pie chart based on timeframe
+  const currentLocationData = useMemo(() => {
+    if (!committeeData) return [];
+
+    const dataSource =
+      locationTimeFrame === 'month'
+        ? committeeData.locationData
+        : committeeData.allTimeLocationData;
+
+    return dataSource || [];
+  }, [committeeData, locationTimeFrame]);
+
+  // Get total fees based on timeframe
+  const totalFees = useMemo(() => {
+    if (!committeeData) return 0;
+
+    if (locationTimeFrame === 'month') {
+      return committeeData.currentMonth?.totalFeesPaid || 0;
+    } else {
+      return committeeData.allTime?.totalFees || 0;
+    }
+  }, [committeeData, locationTimeFrame]);
 
   if (committeeLoading && commodityLoading) {
     return (
@@ -167,14 +185,22 @@ export default function CommitteeAnalysis() {
               </button>
             </div>
           </div>
+
+          <div className='mb-4'>
+            <div className='text-sm text-gray-500'>Total Fees Collected</div>
+            <div className='text-2xl font-bold text-gray-900'>
+              {formatMoney(totalFees)}
+            </div>
+          </div>
+
           <div className='h-64 md:h-80'>
             {committeeLoading ? (
               <div className='flex items-center justify-center h-full'>
                 <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
               </div>
-            ) : committeeData?.locationData ? (
+            ) : currentLocationData.length > 0 ? (
               <PieChartComponent
-                data={committeeData.locationData.map((d) => {
+                data={currentLocationData.map((d) => {
                   let color = '#8884d8';
                   if (d.name === 'Office') color = '#2563eb';
                   else if (d.name === 'Checkpost') color = '#22c55e';
@@ -242,9 +268,7 @@ export default function CommitteeAnalysis() {
                     </div>
                   </div>
                   <div className='text-right'>
-                    <div className='font-bold text-xl'>
-                      {formatLakh(c.value)}
-                    </div>
+                    <div className='font-bold text-xl'>{c.value}</div>
                     <div className='text-xs text-gray-500'>Total Value</div>
                   </div>
                 </button>
@@ -333,7 +357,7 @@ export default function CommitteeAnalysis() {
                     </div>
                     <div className='bg-green-50 rounded-lg p-4 flex flex-col items-center justify-center'>
                       <div className='text-2xl font-bold'>
-                        {formatLakh(displayAnalytics?.totalValue || 0)}
+                        {formatMoney(displayAnalytics?.totalValue || 0)}
                       </div>
                       <div className='text-gray-600 text-sm mt-1'>
                         Total Value
@@ -341,7 +365,7 @@ export default function CommitteeAnalysis() {
                     </div>
                     <div className='bg-yellow-50 rounded-lg p-4 flex flex-col items-center justify-center'>
                       <div className='text-2xl font-bold'>
-                        {formatLakh(displayAnalytics?.totalFeesPaid || 0)}
+                        {formatMoney(displayAnalytics?.totalFeesPaid || 0)}
                       </div>
                       <div className='text-gray-600 text-sm mt-1'>
                         Total Fees
@@ -393,7 +417,7 @@ export default function CommitteeAnalysis() {
                                       y={y + 4}
                                       fontSize='10'
                                       fill='#666'>
-                                      {formatLakh(value)}
+                                      {formatMoney(value)}
                                     </text>
                                     <line
                                       x1='28'

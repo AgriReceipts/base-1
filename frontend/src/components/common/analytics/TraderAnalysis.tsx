@@ -4,43 +4,7 @@ import {
   useTraderAnalytics,
   useTraderDetailedAnalytics,
 } from '@/hooks/analytics/useTraderAnalytics';
-
-// Helper function to format large numbers
-function formatLakh(val: number) {
-  if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
-  if (val >= 1000) return `₹${(val / 1000).toFixed(1)}K`;
-  return `₹${val}`;
-}
-
-// Mock data for the top metric cards as requested
-const mockMetrics = [
-  {
-    label: 'Total Trading Value',
-    value: 12500000,
-    color: 'bg-green-50',
-    text: 'text-green-600',
-    isMoney: true,
-  },
-  {
-    label: 'Total Receipts Generated',
-    value: 8420,
-    color: 'bg-blue-50',
-    text: 'text-blue-600',
-  },
-  {
-    label: 'Active Traders This Month',
-    value: 152,
-    color: 'bg-purple-50',
-    text: 'text-purple-600',
-  },
-  {
-    label: 'Total Market Fees',
-    value: 625000,
-    color: 'bg-yellow-50',
-    text: 'text-yellow-600',
-    isMoney: true,
-  },
-];
+import {formatMoney} from '@/lib/helpers';
 
 export default function TraderAnalysis() {
   const [traderTimeFrame, setTraderTimeFrame] = useState<'month' | 'all'>(
@@ -97,6 +61,36 @@ export default function TraderAnalysis() {
     }));
   }, [traderData, traderTimeFrame]);
 
+  // Metric Cards
+  const mockMetrics = [
+    {
+      label: 'Total Unique Traders this month',
+      value: traderData?.totalMonthlyTraders,
+      color: 'bg-green-50',
+      text: 'text-green-600',
+    },
+    {
+      label: 'Total Receipts this month',
+      value: traderData?.totalMonthlyReceipts,
+      color: 'bg-blue-50',
+      text: 'text-blue-600',
+    },
+    {
+      label: 'Total Market Fees paid this month',
+      value: traderData?.totalMonthyFees,
+      color: 'bg-purple-50',
+      text: 'text-purple-600',
+      isMoney: true,
+    },
+    {
+      label: 'Average Market Fees paid by trader',
+      value: traderData?.avgMonthlyFees,
+      color: 'bg-yellow-50',
+      text: 'text-yellow-600',
+      isMoney: true,
+    },
+  ];
+
   if (!committeeId) {
     return (
       <div className='w-full p-4 md:p-6 flex items-center justify-center min-h-64'>
@@ -138,7 +132,7 @@ export default function TraderAnalysis() {
             key={m.label}
             className={`${m.color} rounded-lg p-6 flex flex-col items-center justify-center shadow-sm border`}>
             <div className={`text-3xl font-bold ${m.text}`}>
-              {m.isMoney ? formatLakh(m.value) : m.value}
+              {m.isMoney ? formatMoney(m.value) : m.value}
             </div>
             <div className='text-gray-600 text-sm mt-2 text-center'>
               {m.label}
@@ -199,7 +193,9 @@ export default function TraderAnalysis() {
                   </div>
                 </div>
                 <div className='text-right'>
-                  <div className='font-bold text-xl'>{formatLakh(t.value)}</div>
+                  <div className='font-bold text-xl'>
+                    {formatMoney(t.value)}
+                  </div>
                   <div className='text-xs text-gray-500'>Total Value</div>
                 </div>
               </button>
@@ -272,7 +268,7 @@ export default function TraderAnalysis() {
                     </div>
                     <div className='bg-green-50 rounded-lg p-4 flex flex-col items-center justify-center'>
                       <div className='text-2xl font-bold'>
-                        {formatLakh(displayAnalytics?.totalValue ?? 0)}
+                        {formatMoney(displayAnalytics?.totalValue ?? 0)}
                       </div>
                       <div className='text-gray-600 text-sm mt-1'>
                         Total Value
@@ -280,7 +276,7 @@ export default function TraderAnalysis() {
                     </div>
                     <div className='bg-yellow-50 rounded-lg p-4 flex flex-col items-center justify-center'>
                       <div className='text-2xl font-bold'>
-                        {formatLakh(displayAnalytics?.totalFeesPaid ?? 0)}
+                        {formatMoney(displayAnalytics?.totalFeesPaid ?? 0)}
                       </div>
                       <div className='text-gray-600 text-sm mt-1'>
                         Total Fees
@@ -321,7 +317,7 @@ export default function TraderAnalysis() {
                                       fontSize='10'
                                       textAnchor='end'
                                       fill='#666'>
-                                      {formatLakh(value)}
+                                      {formatMoney(value)}
                                     </text>
                                     <line
                                       x1='50'
@@ -385,7 +381,7 @@ export default function TraderAnalysis() {
                                   <g key={`${d.year}-${d.month}-point`}>
                                     <circle cx={x} cy={y} r='4' fill='#8884d8'>
                                       {/* Simple tooltip on hover */}
-                                      <title>{`Value: ${formatLakh(
+                                      <title>{`Value: ${formatMoney(
                                         d.totalValue
                                       )}`}</title>
                                     </circle>

@@ -1,3 +1,4 @@
+import {formatMoney} from '@/lib/helpers';
 import React from 'react';
 import {
   PieChart,
@@ -17,13 +18,12 @@ const COLORS = [
   '#82CA9D',
 ];
 
-// Add onClickData prop
 type PieChartComponentProps = {
-  data: any[];
+  data: {name: string; value: number}[];
   onClickData?: (entry: any) => void;
 };
 
-const PieChartComponent = ({ data, onClickData }: PieChartComponentProps) => {
+const PieChartComponent = ({data, onClickData}: PieChartComponentProps) => {
   return (
     <ResponsiveContainer width='100%' height='100%'>
       <PieChart>
@@ -35,21 +35,26 @@ const PieChartComponent = ({ data, onClickData }: PieChartComponentProps) => {
           outerRadius={80}
           fill='#8884d8'
           dataKey='value'
-          label={({ name, percent }) =>
-            `${name}: ${(percent * 100).toFixed(0)}%`
+          animationDuration={400}
+          label={({name, value, percent}) =>
+            `${name}: ${formatMoney(value)} (${(percent * 100).toFixed(0)}%)`
           }
-          onClick={onClickData ? (_, index) => onClickData(data[index]) : undefined}
-        >
+          onClick={
+            onClickData ? (_, index) => onClickData(data[index]) : undefined
+          }>
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
         <Tooltip
-          formatter={(value, name, props) => [
-            value,
-            `${name}: ${(props.payload.percent * 100).toFixed(2)}%`,
-          ]}
+          formatter={(value: number, name: string) => {
+            const total = data.reduce((sum, entry) => sum + entry.value, 0);
+            const percent =
+              total > 0 ? ((value / total) * 100).toFixed(2) : '0.00';
+            return [formatMoney(value), `${name} (${percent}%)`];
+          }}
         />
+
         <Legend />
       </PieChart>
     </ResponsiveContainer>

@@ -57,6 +57,8 @@ export const getTopTradersAnalytics = async (req: Request, res: Response) => {
       take: limitNum,
     });
 
+    //Get total active traders for the month
+
     // Get trader details for the top traders
     const traderIds = topTradersMonthly.map((item) => item.traderId);
     const traderDetails = await prisma.trader.findMany({
@@ -105,6 +107,31 @@ export const getTopTradersAnalytics = async (req: Request, res: Response) => {
       };
     });
 
+    const traderMonthlyStats = await prisma.traderMonthlyAnalytics.findMany({
+      where: whereClause,
+      select: {
+        traderId: true,
+        totalFeesPaid: true,
+        totalReceipts: true,
+      },
+    });
+
+    const uniqueTraderCount = new Set(traderMonthlyStats.map((t) => t.traderId))
+      .size;
+
+    const totalFeesPaid = traderMonthlyStats.reduce(
+      (sum, t) => sum + Number(t.totalFeesPaid),
+      0
+    );
+
+    const totalReceipts = traderMonthlyStats.reduce(
+      (sum, t) => sum + t.totalReceipts,
+      0
+    );
+
+    const avgFeesPerTrader =
+      uniqueTraderCount > 0 ? totalFeesPaid / uniqueTraderCount : 0;
+
     return res.status(200).json({
       success: true,
       data: {
@@ -116,6 +143,10 @@ export const getTopTradersAnalytics = async (req: Request, res: Response) => {
             : 'All time',
         topTradersMonthly: monthlyData,
         topTradersOverall: overallData,
+        totalMonthlyTraders: uniqueTraderCount,
+        totalMonthyFees: totalFeesPaid,
+        totalMonthlyReceipts: totalReceipts,
+        avgMonthlyFees: avgFeesPerTrader,
         limit: limitNum,
       },
     });
