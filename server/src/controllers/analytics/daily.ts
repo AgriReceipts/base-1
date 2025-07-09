@@ -2,78 +2,56 @@ import {Request, Response} from 'express';
 import prisma from '../../utils/database';
 import {handlePrismaError} from '../../utils/helpers';
 
-// @desc    Get analytics for the committee, i.e percentage of each commodity in the total no of receipts
-// @route   GET /api/analytics/getCommoditiesAnalytics/:committeeID
+// @desc    Get Daily analytics for the committee
+// @route   GET /api/analytics/dailyAnalytics/:committeeId/:date
 // @access  Private
-export const getCommoditiesAnalytics = async (req: Request, res: Response) => {
+export const getDailyAnalytics = async (req: Request, res: Response) => {
   try {
-    const committeeId = req.params.committeeId as string; // Assuming committeeId is passed as a query parameter
+    const {committeeId, date} = req.params;
 
-    if (!committeeId) {
+    if (!committeeId || !date) {
       return res
         .status(400)
-        .json({message: 'Committee ID is required for commodity analytics.'});
+        .json({
+          message: 'Committee ID and date is required for daily analytics.',
+        });
     }
 
-    // Get total number of receipts for the committee
-    const totalReceipts = await prisma.receipt.count({
+    const dailyAnalyticsData = await prisma.dailyAnalytics.findUnique({
       where: {
-        committeeId: committeeId,
-      },
-    });
-
-    if (totalReceipts === 0) {
-      return res
-        .status(200)
-        .json({message: 'No receipts found for this committee.', data: []});
-    }
-
-    // Group receipts by commodity and count them
-    const commodityCounts = await prisma.receipt.groupBy({
-      by: ['commodityId'],
-      where: {
-        committeeId: committeeId,
-        commodityId: {
-          not: null, // Only consider receipts with a commodity
-        },
-      },
-      _count: {
-        commodityId: true,
-      },
-    });
-
-    // Fetch commodity names
-    const commodityIds = commodityCounts
-      .map((c) => c.commodityId)
-      .filter((id): id is string => id !== null);
-    const commodities = await prisma.commodity.findMany({
-      where: {
-        id: {
-          in: commodityIds,
+        receiptDate_committeeId: {
+          receiptDate: date,
+          committeeId: committeeId,
         },
       },
       select: {
-        id: true,
-        name: true,
+        totalReceipts: true,
+        totalValue: true,
+        totalFeesPaid: true,
+        totalQuantity: true,
+        mf_fees: true,
+        officeFees: true,
+        checkpostFees: true,
+        otherFees: true,
+        uniqueTraders: true,
+        uniqueCommodities: true,
+        monthToDateFees: true,
+        monthToDateReceipts: true,
+        monthToDateValue: true,
+        yearToDateFees: true,
+        yearToDateReceipts: true,
+        yearToDateValue: true,
+        checkpost: true,
       },
     });
 
-    const commodityNameMap = new Map(commodities.map((c) => [c.id, c.name]));
-
-    // Calculate percentage for each commodity
-    const commoditiesData = commodityCounts.map((item) => ({
-      name: commodityNameMap.get(item.commodityId!) || 'Unknown Commodity',
-      value: parseFloat(
-        ((item._count.commodityId / totalReceipts) * 100).toFixed(2)
-      ),
-    }));
-
-    return res.status(200).json({data: commoditiesData});
+    return res.status(200).json({data: dailyAnalyticsData});
   } catch (error) {
     return handlePrismaError(res, error);
   }
 };
 
+//Todo:change this later to get all committes aggregated daily analytics
 // @desc    Get analytics for the Market, i.e percentage of each committee's contribution in the total mf
 // @route   GET /api/analytics/getMfAnalytics
 // @access  Private

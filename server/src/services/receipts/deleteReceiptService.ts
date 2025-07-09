@@ -10,8 +10,11 @@ export const deleteReceiptWithAnalytics = async (receiptId: string) => {
     if (!existing) throw new Error('Receipt not found');
 
     // Delete receipt
-    await tx.receipt.delete({
+    await tx.receipt.update({
       where: {id: receiptId},
+      data: {
+        cancelled: true,
+      },
     });
 
     // Update analytics after deletion

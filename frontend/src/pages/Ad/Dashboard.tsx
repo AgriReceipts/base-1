@@ -2,7 +2,6 @@ import {useState, useEffect} from 'react';
 
 import Reports from '../../components/supervisorcomponents/Reports';
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
-import usermanagement from '../../components/AdCompo/Usermanage'
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry.tsx'
 import DistrictAnalysis from '../../components/Adcompo/Districtanalysis';
@@ -18,15 +17,21 @@ import {
   FiUsers,
   FiBarChart,
 } from 'react-icons/fi';
-import TargetManagement from './utils/pages/TargetManagement';
+
 import Usermanage from '../../components/AdCompo/Usermanage';
+
 import type { Key } from 'lucide-react';
 
+
+import {TargetManager} from '@/components/AdCompo/TargetManager';
+import useInitialData from '@/hooks/useMetadata';
+import {useAuthStore} from '@/stores/authStore';
 
 
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const {user} = useAuthStore();
   const [isMobile, setIsMobile] = useState(false);
   const [activeNav, setActiveNav] = useState(() => {
     return localStorage.getItem('activeNav') || 'overview';
@@ -65,6 +70,7 @@ export default function SupervisorDashboard() {
     {key: 'userManagement', label: 'User Management', icon: <FiUsers />},
     {key: 'viewReports', label: 'View Reports', icon: <FiBarChart />},
   ];
+  const {detailedCommittee} = useInitialData();
 
   const renderContent = () => {
     switch (activeNav) {
@@ -77,7 +83,12 @@ export default function SupervisorDashboard() {
       case 'allReceipts':
         return <ViewReceipts />;
       case 'targetManagement':
-        return <TargetManagement />;
+        return (
+          <TargetManager
+            committees={detailedCommittee}
+            currentUser={user?.name || 'ad'}
+          />
+        );
       case 'userManagement':
         return <Usermanage />;
       case 'viewReports':

@@ -58,7 +58,6 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
     const newDate = e.target.value ? new Date(e.target.value) : undefined;
     onDateChange(newDate);
   };
-  
 
   return (
     <div className='min-h-screen w-full bg-gray-50'>
@@ -199,42 +198,50 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       className='block text-sm font-normal text-gray-600 mb-1'>
                       Trader/Farmer Name<span className='text-red-600'>*</span>
                     </label>
-                    <div className="relative w-full group focus-within:z-10">
-  <input
-    type="text"
-    id="trader"
-    value={formData.traderName}
-    onChange={(e) => onFormChange('traderName', e.target.value)}
-    placeholder="Search and select trader"
-    className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300"
-  />
+                    <div className='relative w-full group focus-within:z-10'>
+                      <input
+                        type='text'
+                        id='trader'
+                        value={formData.traderName}
+                        onChange={(e) =>
+                          onFormChange('traderName', e.target.value)
+                        }
+                        placeholder='Search and select trader'
+                        className='w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300'
+                      />
 
-  <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto hidden group-focus-within:block">
-    {traders
-      .filter((trader) =>
-        trader.toLowerCase().includes(formData.traderName.toLowerCase())
-      )
-      .map((trader) => (
-        <div
-          key={trader}
-          onMouseDown={() => {
-            onFormChange('traderName', trader);
-          }}
-          className={`px-3 py-1.5 text-sm cursor-pointer hover:bg-blue-50 ${
-            formData.traderName === trader ? 'bg-blue-100' : ''
-          }`}
-        >
-          {trader}
-        </div>
-      ))}
-    {traders.filter((t) =>
-      t.toLowerCase().includes(formData.traderName.toLowerCase())
-    ).length === 0 && (
-      <div className="px-3 py-2 text-sm text-gray-500">No results found</div>
-    )}
-  </div>
-</div>
-
+                      <div className='absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto hidden group-focus-within:block'>
+                        {traders
+                          .filter((trader) =>
+                            trader
+                              .toLowerCase()
+                              .includes(formData.traderName.toLowerCase())
+                          )
+                          .map((trader) => (
+                            <div
+                              key={trader}
+                              onMouseDown={() => {
+                                onFormChange('traderName', trader);
+                              }}
+                              className={`px-3 py-1.5 text-sm cursor-pointer hover:bg-blue-50 ${
+                                formData.traderName === trader
+                                  ? 'bg-blue-100'
+                                  : ''
+                              }`}>
+                              {trader}
+                            </div>
+                          ))}
+                        {traders.filter((t) =>
+                          t
+                            .toLowerCase()
+                            .includes(formData.traderName.toLowerCase())
+                        ).length === 0 && (
+                          <div className='px-3 py-2 text-sm text-gray-500'>
+                            No results found
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   {formData.traderName === 'New' && (
                     <>
@@ -331,21 +338,23 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     className='block text-sm font-normal text-gray-600 mb-2'>
                     Commodity<span className='text-red-600'>*</span>
                   </label>
-                  <div className="relative w-full group focus-within:z-10">
+                  <div className='relative w-full group focus-within:z-10'>
                     <input
-                      type="text"
-                      id="commodity"
+                      type='text'
+                      id='commodity'
                       value={commoditySearch}
                       onChange={(e) => setCommoditySearch(e.target.value)}
-                      placeholder="Search and select commodity"
-                      className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300"
+                      placeholder='Search and select commodity'
+                      className='w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-100 focus:border-blue-300'
                     />
 
                     {/* Dropdown shows ONLY when input is focused (or child is active) */}
-                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto hidden group-focus-within:block">
+                    <div className='absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto hidden group-focus-within:block'>
                       {commodities
                         .filter((commodity) =>
-                          commodity.toLowerCase().includes(commoditySearch.toLowerCase())
+                          commodity
+                            .toLowerCase()
+                            .includes(commoditySearch.toLowerCase())
                         )
                         .map((commodity) => (
                           <div
@@ -355,27 +364,29 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                               setCommoditySearch(commodity);
                             }}
                             className={`px-3 py-1.5 text-sm cursor-pointer hover:bg-blue-50 ${
-                              formData.commodity === commodity ? 'bg-blue-100' : ''
-                            }`}
-                          >
+                              formData.commodity === commodity
+                                ? 'bg-blue-100'
+                                : ''
+                            }`}>
                             {commodity}
                           </div>
                         ))}
                       {commodities.filter((c) =>
                         c.toLowerCase().includes(commoditySearch.toLowerCase())
                       ).length === 0 && (
-                        <div className="px-3 py-2 text-sm text-gray-500">No results found</div>
+                        <div className='px-3 py-2 text-sm text-gray-500'>
+                          No results found
+                        </div>
                       )}
                     </div>
                   </div>
-
 
                   {formData.commodity === 'Other' && (
                     <div className='py-4'>
                       <label
                         htmlFor='unit'
                         className='block text-sm font-normal text-gray-600 '>
-                        Weight of Each Bag(Kgs)
+                        New commodity Name
                         <span className='text-red-600'>*</span>
                       </label>
                       <input

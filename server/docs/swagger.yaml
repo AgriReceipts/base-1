@@ -2,51 +2,1010 @@ openapi: 3.0.0
 info:
   title: ACM Receipts API
   version: 1.0.0
-  description: API documentation for your backend
+  description: |
+    API documentation for ACM (Agricultural Market Committee) Receipts Management System.
+    
+    ## Authentication
+    Most endpoints require authentication via JWT token. Include the token in the Authorization header:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+    
+    ## User Roles
+    - **ad**: Administrator - Full access to all committees and data
+    - **deo**: Data Entry Operator - Can create receipts for their committee
+    - **supervisor**: Supervisor - Can create receipts for their committee
+    - **secretary**: Secretary - Can create receipts for their committee
 
 servers:
   - url: http://localhost:3000/api
     description: Local development server
 
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login endpoint
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        errors:
+          type: object
+          description: Validation errors (if applicable)
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: User's username
+        password:
+          type: string
+          description: User's password
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Login successful"
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            username:
+              type: string
+            name:
+              type: string
+            role:
+              type: string
+              enum: [deo, supervisor, secretary, ad]
+            designation:
+              type: string
+            committeeId:
+              type: string
+              nullable: true
+            committee:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+        token:
+          type: string
+          description: JWT token for authentication
+
+    RegisterUserRequest:
+      type: object
+      required:
+        - username
+        - password
+        - name
+        - role
+        - designation
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Username for the new user
+        password:
+          type: string
+          minLength: 6
+          description: Password (minimum 6 characters)
+        name:
+          type: string
+          minLength: 1
+          description: Full name of the user
+        role:
+          type: string
+          enum: [deo, supervisor, secretary, ad]
+          description: User role
+        designation:
+          type: string
+          minLength: 1
+          description: User's designation
+        committeeName:
+          type: string
+          description: Committee name (required for non-AD users)
+
+    CreateReceiptRequest:
+      type: object
+      required:
+        - receiptDate
+        - bookNumber
+        - receiptNumber
+        - traderName
+        - payeeName
+        - commodity
+        - quantity
+        - unit
+        - natureOfReceipt
+        - value
+        - feesPaid
+        - collectionLocation
+        - receiptSignedBy
+        - designation
+        - committeeId
+      properties:
+        receiptDate:
+          type: string
+          format: date
+          description: Date of receipt
+        bookNumber:
+          type: string
+          description: Book number
+        receiptNumber:
+          type: string
+          description: Receipt number
+        traderName:
+          type: string
+          description: Name of the trader
+        newTraderName:
+          type: string
+          description: New trader name (if creating new trader)
+        traderAddress:
+          type: string
+          description: Trader's address
+        payeeName:
+          type: string
+          description: Name of the payee
+        payeeAddress:
+          type: string
+          description: Payee's address
+        commodity:
+          type: string
+          description: Commodity name
+        newCommodityName:
+          type: string
+          description: New commodity name (if creating new commodity)
+        quantity:
+          type: number
+          description: Quantity of commodity
+        unit:
+          type: string
+          enum: [quintals, kilograms, bags, numbers]
+          description: Unit of measurement
+        weightPerBag:
+          type: number
+          description: Weight per bag (if applicable)
+        totalWeightKg:
+          type: number
+          description: Total weight in kilograms
+        natureOfReceipt:
+          type: string
+          enum: [mf, lc, uc, others]
+          description: Nature of receipt
+        natureOtherText:
+          type: string
+          description: Description for 'others' nature
+        value:
+          type: number
+          description: Total value in INR
+        feesPaid:
+          type: number
+          description: Fees paid in INR
+        vehicleNumber:
+          type: string
+          description: Vehicle number
+        invoiceNumber:
+          type: string
+          description: Invoice number
+        collectionLocation:
+          type: string
+          enum: [office, checkpost, other]
+          description: Location where collection was made
+        officeSupervisor:
+          type: string
+          description: Office supervisor name
+        checkpostId:
+          type: string
+          description: Checkpost ID (if collection at checkpost)
+        collectionOtherText:
+          type: string
+          description: Other location description
+        receiptSignedBy:
+          type: string
+          description: Name of person who signed the receipt
+        designation:
+          type: string
+          description: Designation of the signer
+        committeeId:
+          type: string
+          description: Committee ID
+
+    Receipt:
+      type: object
+      properties:
+        id:
+          type: string
+        receiptNumber:
+          type: string
+        bookNumber:
+          type: string
+        receiptDate:
+          type: string
+          format: date-time
+        payeeName:
+          type: string
+        value:
+          type: number
+        natureOfReceipt:
+          type: string
+          enum: [mf, lc, uc, others]
+        quantity:
+          type: number
+        unit:
+          type: string
+        vehicleNumber:
+          type: string
+          nullable: true
+        receiptSignedBy:
+          type: string
+        committeeId:
+          type: string
+        commodity:
+          type: object
+          properties:
+            name:
+              type: string
+        checkpost:
+          type: object
+          properties:
+            name:
+              type: string
+        committee:
+          type: object
+          properties:
+            name:
+              type: string
+        trader:
+          type: object
+          properties:
+            name:
+              type: string
+        generatedBy:
+          type: string
+
+    ReceiptListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Receipt'
+        pagination:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            limit:
+              type: integer
+            totalPages:
+              type: integer
+
+    CommodityAnalytics:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            topCommodities:
+              type: array
+              items:
+                type: object
+                properties:
+                  commodityName:
+                    type: string
+                  totalWeightKg:
+                    type: number
+            monthlyTrends:
+              type: array
+              items:
+                type: object
+                properties:
+                  month:
+                    type: string
+                  totalWeightKg:
+                    type: number
+
+    TraderAnalytics:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            summary:
+              type: object
+              properties:
+                totalTraders:
+                  type: integer
+                totalReceipts:
+                  type: integer
+                totalValue:
+                  type: number
+                totalMfValue:
+                  type: number
+                avgMfOfReceipt:
+                  type: number
+            topTraders:
+              type: array
+              items:
+                type: object
+                properties:
+                  traderName:
+                    type: string
+                  totalValue:
+                    type: number
+                  totalFeesPaid:
+                    type: number
+                  totalWeightKg:
+                    type: number
+                  receiptCount:
+                    type: integer
+                  lastTransactionDate:
+                    type: string
+                    format: date-time
+
+    CommitteeAnalytics:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            summary:
+              type: object
+              properties:
+                totalReceipts:
+                  type: integer
+                totalValue:
+                  type: number
+                totalFeesPaid:
+                  type: number
+            monthlyTrends:
+              type: array
+              items:
+                type: object
+                properties:
+                  month:
+                    type: string
+                  totalReceipts:
+                    type: integer
+                  totalValue:
+                    type: number
+
+    CommodityList:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: string
+
+    CommitteeList:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+
+    TraderList:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: string
+
+    CheckpostList:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            checkposts:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "OK"
+        timestamp:
+          type: string
+          format: date-time
+        environment:
+          type: string
+          example: "development"
+
 paths:
-  /receipts/getAllReceipts:
+  /health:
     get:
-      summary: Get all receipts
+      summary: Health check endpoint
+      tags:
+        - System
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
+  /auth/login:
+    post:
+      summary: Login user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Missing username or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Account deactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/register:
+    post:
+      summary: Register a new user (Admin only)
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+                  user:
+                    type: string
+                  password:
+                    type: string
+                  token:
+                    type: string
+        '400':
+          description: Validation error or missing committee for non-AD users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Only admins can register users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Username already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /receipts/createReceipt:
+    post:
+      summary: Create a new receipt
       tags:
         - Receipts
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReceiptRequest'
+      responses:
+        '201':
+          description: Receipt created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Receipt created successfully"
+                  receiptNumber:
+                    type: string
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /receipts/getAllReceipts:
+    get:
+      summary: Get all receipts with filtering and pagination
+      tags:
+        - Receipts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number (default: 1)
+          required: false
+          schema:
+            type: string
+            default: "1"
+        - name: limit
+          in: query
+          description: Number of items per page (default: 10)
+          required: false
+          schema:
+            type: string
+            default: "10"
+        - name: search
+          in: query
+          description: Search by receipt number or book number
+          required: false
+          schema:
+            type: string
+        - name: natureOfReceipt
+          in: query
+          description: Filter by nature of receipt
+          required: false
+          schema:
+            type: string
+            enum: [mf, lc, uc, others]
+        - name: committeeId
+          in: query
+          description: Filter by committee ID (Admin only)
+          required: false
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          description: Start date for filtering (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date for filtering (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: List of receipts
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                    amount:
-                      type: number
+                $ref: '#/components/schemas/ReceiptListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /auth/login:
-    post:
-      summary: Login user
+  /receipts/getReceipt/{id}:
+    get:
+      summary: Get a single receipt by ID
       tags:
-        - Auth
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
+        - Receipts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Receipt ID
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: Login success
+          description: Receipt details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Receipt'
         '401':
-          description: Invalid credentials
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Access denied to this receipt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Receipt not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /receipts/getReceiptByRn/{receiptNumber}:
+    get:
+      summary: Get receipts by receipt number
+      tags:
+        - Receipts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: receiptNumber
+          in: path
+          description: Receipt number
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Receipts with matching receipt number
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Receipt'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Receipt not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /receipts/download/{id}:
+    get:
+      summary: Download receipt as PDF
+      tags:
+        - Receipts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Receipt ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Access denied to this receipt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Receipt not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analytics/commodity:
+    get:
+      summary: Get commodity analytics
+      tags:
+        - Analytics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Commodity analytics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommodityAnalytics'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analytics/traders:
+    get:
+      summary: Get trader analytics
+      tags:
+        - Analytics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Trader analytics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraderAnalytics'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analytics/committee/{committeeId}:
+    get:
+      summary: Get committee analytics
+      tags:
+        - Analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: committeeId
+          in: path
+          description: Committee ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Committee analytics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommitteeAnalytics'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Committee not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analytics/commodityAnalysis/{committeeId}:
+    get:
+      summary: Get commodity analysis for specific committee
+      tags:
+        - Analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: committeeId
+          in: path
+          description: Committee ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Commodity analysis for committee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommodityAnalytics'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Committee not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /metaData/commodities:
+    get:
+      summary: Get all commodities
+      tags:
+        - Metadata
+      responses:
+        '200':
+          description: List of all commodities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommodityList'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /metaData/commities:
+    get:
+      summary: Get all committees
+      tags:
+        - Metadata
+      responses:
+        '200':
+          description: List of all committees
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommitteeList'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /metaData/traders:
+    get:
+      summary: Get all traders
+      tags:
+        - Metadata
+      responses:
+        '200':
+          description: List of all traders
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraderList'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /metaData/checkpost/{committeeId}:
+    get:
+      summary: Get checkposts for a committee
+      tags:
+        - Metadata
+      parameters:
+        - name: committeeId
+          in: path
+          description: Committee ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of checkposts for the committee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckpostList'
+        '404':
+          description: Committee not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+tags:
+  - name: Authentication
+    description: User authentication and registration
+  - name: Receipts
+    description: Receipt management operations
+  - name: Analytics
+    description: Data analytics and reporting
+  - name: Metadata
+    description: Reference data (commodities, committees, traders, etc.)
+  - name: System
+    description: System health and status endpoints

@@ -2,96 +2,293 @@ import {Request, Response} from 'express';
 import prisma from '../../utils/database';
 import {handlePrismaError} from '../../utils/helpers';
 
-//@desc Get analytics for all traders
-//@route GET /api/analytics/traders
-//@access Public
-export const getTraderAnalytics = async (req: Request, res: Response) => {
+//@desc Get top traders analytics for a committee (default route)
+//@route GET /api/analytics/traders/:committeeId
+//@access Private
+export const getTopTradersAnalytics = async (req: Request, res: Response) => {
+  const {committeeId} = req.params;
+  const {year, month, limit = '5'} = req.query;
+
+  const limitNum = parseInt(limit as string, 10) || 5;
+  const yearNum = year ? parseInt(year as string, 10) : undefined;
+  const monthNum = month ? parseInt(month as string, 10) : undefined;
+
+  if (!committeeId) {
+    return res.status(400).json({message: 'Committee ID is required.'});
+  }
+
+  if (month && !year) {
+    return res
+      .status(400)
+      .json({error: 'Year is required when month is specified'});
+  }
+
+  if (year && isNaN(yearNum!)) {
+    return res.status(400).json({error: 'Invalid year'});
+  }
+
+  if (month && isNaN(monthNum!)) {
+    return res.status(400).json({error: 'Invalid month'});
+  }
+
   try {
-    // 1. Fetch overall summary metrics in parallel for efficiency
-    const [totalTraders, totalReceipts, totalValueAggregate, totalMfAggregate] =
-      await Promise.all([
-        prisma.trader.count({where: {isActive: true}}),
-        prisma.receipt.count(),
-        prisma.receipt.aggregate({
-          _sum: {value: true},
-        }),
-        prisma.receipt.aggregate({
-          _sum: {feesPaid: true},
-          where: {natureOfReceipt: 'mf'},
-        }),
-      ]);
-
-    const totalValue = totalValueAggregate._sum.value || 0;
-    const totalMfValue = totalMfAggregate._sum.feesPaid || 0;
-
-    const summary = {
-      totalTraders,
-      totalReceipts,
-      totalValue: Number(totalValue),
-      totalMfValue: Number(totalMfValue),
-      avgMfOfReceipt:
-        totalReceipts > 0
-          ? parseFloat((Number(totalMfValue) / totalReceipts).toFixed(2))
-          : 0,
+    // Build where clause for filtering
+    const whereClause: any = {
+      committeeId,
+      ...(yearNum !== undefined && {year: yearNum}),
+      ...(monthNum !== undefined && {month: monthNum}),
     };
 
-    // 2. Get top 3 traders based on the value they traded
-    const topTraderStats = await prisma.receipt.groupBy({
+    // Get top traders by total value (monthly)
+    const topTradersMonthly = await prisma.traderMonthlyAnalytics.groupBy({
       by: ['traderId'],
+      where: whereClause,
       _sum: {
-        value: true,
-        feesPaid: true,
-        totalWeightKg: true,
-      },
-      _count: {
-        _all: true,
-      },
-      _max: {
-        receiptDate: true,
+        totalValue: true,
+        totalReceipts: true,
+        totalFeesPaid: true,
+        totalQuantity: true,
       },
       orderBy: {
         _sum: {
-          value: 'desc',
+          totalValue: 'desc',
         },
       },
-      take: 3,
+      take: limitNum,
     });
 
-    // 3. Fetch detailed information for each top trader
-    const topTraders = await Promise.all(
-      topTraderStats.map(async (stat) => {
-        const [trader, commoditiesTraded] = await Promise.all([
-          prisma.trader.findUnique({
-            where: {id: stat.traderId},
-            select: {name: true},
-          }),
-          prisma.receipt.findMany({
-            where: {traderId: stat.traderId, commodityId: {not: null}},
-            distinct: ['commodityId'],
-            select: {
-              commodity: {
-                select: {name: true},
-              },
-            },
-          }),
-        ]);
+    // Get trader details for the top traders
+    const traderIds = topTradersMonthly.map((item) => item.traderId);
+    const traderDetails = await prisma.trader.findMany({
+      where: {
+        id: {in: traderIds},
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
 
-        return {
-          traderName: trader?.name || 'Unknown Trader',
-          totalReceipts: stat._count._all,
-          totalValue: Number(stat._sum.value),
-          mfCollected: Number(stat._sum.feesPaid),
-          commodities: commoditiesTraded
-            .map((c) => c.commodity?.name)
-            .filter(Boolean),
-          totalQuantity: Number(stat._sum.totalWeightKg),
-          lastTransaction: stat._max.receiptDate,
-        };
-      })
-    );
+    // Get top traders overall analytics
+    const topTradersOverall = await prisma.traderOverallAnalytics.findMany({
+      where: {
+        committeeId,
+        traderId: {in: traderIds},
+      },
+      orderBy: {
+        totalValue: 'desc',
+      },
+    });
 
-    res.status(200).json({summary, topTraders});
+    // Combine the data
+    const monthlyData = topTradersMonthly.map((item) => {
+      const trader = traderDetails.find((t) => t.id === item.traderId);
+      return {
+        traderId: item.traderId,
+        trader,
+        totalReceipts: item._sum.totalReceipts || 0,
+        totalValue: parseFloat(item._sum.totalValue?.toString() || '0'),
+        totalFeesPaid: parseFloat(item._sum.totalFeesPaid?.toString() || '0'),
+        totalQuantity: parseFloat(item._sum.totalQuantity?.toString() || '0'),
+      };
+    });
+
+    const overallData = topTradersOverall.map((item) => {
+      const trader = traderDetails.find((t) => t.id === item.traderId);
+      return {
+        traderId: item.traderId,
+        trader,
+        totalReceipts: item.totalReceipts,
+        totalValue: parseFloat(item.totalValue.toString()),
+        totalFeesPaid: parseFloat(item.totalFeesPaid.toString()),
+        totalQuantity: parseFloat(item.totalQuantity.toString()),
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        period:
+          yearNum !== undefined && monthNum !== undefined
+            ? `${yearNum}-${monthNum.toString().padStart(2, '0')}`
+            : yearNum !== undefined
+            ? `${yearNum}`
+            : 'All time',
+        topTradersMonthly: monthlyData,
+        topTradersOverall: overallData,
+        limit: limitNum,
+      },
+    });
   } catch (error) {
+    console.error('Error fetching top traders analytics:', error);
     return handlePrismaError(res, error);
   }
 };
+
+//@desc Get detailed analytics for a specific trader
+//@route GET /api/analytics/traders/:committeeId/:traderId
+//@access Private
+export const getTraderDetailedAnalytics = async (
+  req: Request,
+  res: Response
+) => {
+  const {committeeId, traderId} = req.params;
+  const {year, month} = req.query;
+
+  const yearNum = year ? parseInt(year as string, 10) : undefined;
+  const monthNum = month ? parseInt(month as string, 10) : undefined;
+
+  if (!committeeId || !traderId) {
+    return res
+      .status(400)
+      .json({message: 'Committee ID and Trader ID are required.'});
+  }
+
+  if (month && !year) {
+    return res
+      .status(400)
+      .json({error: 'Year is required when month is specified'});
+  }
+
+  if (year && isNaN(yearNum!)) {
+    return res.status(400).json({error: 'Invalid year'});
+  }
+
+  if (month && isNaN(monthNum!)) {
+    return res.status(400).json({error: 'Invalid month'});
+  }
+
+  try {
+    // Build where clause for filtering
+    const whereClause: any = {
+      traderId,
+      committeeId,
+      ...(yearNum !== undefined && {year: yearNum}),
+      ...(monthNum !== undefined && {month: monthNum}),
+    };
+
+    // Get monthly analytics
+    const monthlyAnalytics = await prisma.traderMonthlyAnalytics.findMany({
+      where: whereClause,
+      include: {
+        trader: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: [{year: 'desc'}, {month: 'desc'}],
+    });
+
+    // Get overall analytics
+    const overallAnalytics = await prisma.traderOverallAnalytics.findUnique({
+      where: {
+        traderId_committeeId: {
+          traderId,
+          committeeId,
+        },
+      },
+      include: {
+        trader: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Generate insights
+    const insights = generateTraderInsights(monthlyAnalytics, overallAnalytics);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        trader: monthlyAnalytics[0]?.trader || overallAnalytics?.trader,
+        monthlyAnalytics: monthlyAnalytics.map((item) => ({
+          year: item.year,
+          month: item.month,
+          totalReceipts: item.totalReceipts,
+          totalValue: parseFloat(item.totalValue.toString()),
+          totalFeesPaid: parseFloat(item.totalFeesPaid.toString()),
+          totalQuantity: parseFloat(item.totalQuantity.toString()),
+        })),
+        overallAnalytics: overallAnalytics
+          ? {
+              totalReceipts: overallAnalytics.totalReceipts,
+              totalValue: parseFloat(overallAnalytics.totalValue.toString()),
+              totalFeesPaid: parseFloat(
+                overallAnalytics.totalFeesPaid.toString()
+              ),
+              totalQuantity: parseFloat(
+                overallAnalytics.totalQuantity.toString()
+              ),
+            }
+          : null,
+
+        insights,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching trader detailed analytics:', error);
+    return handlePrismaError(res, error);
+  }
+};
+
+// Helper function to generate insights for traders
+function generateTraderInsights(monthlyData: any[], overallData: any) {
+  const insights = [];
+
+  if (monthlyData.length === 0) {
+    insights.push('No monthly data available for this trader');
+    return insights;
+  }
+
+  // Average analysis
+  const avgValue =
+    monthlyData.reduce(
+      (sum, item) => sum + parseFloat(item.totalValue.toString()),
+      0
+    ) / monthlyData.length;
+
+  const avgReceipts =
+    monthlyData.reduce((sum, item) => sum + item.totalReceipts, 0) /
+    monthlyData.length;
+
+  insights.push(`Average monthly value: ₹${avgValue.toLocaleString()}`);
+
+  insights.push(`Average monthly receipts: ${avgReceipts.toFixed(0)}`);
+
+  // Activity analysis
+  if (overallData) {
+    const daysSinceFirst = overallData.firstTransactionDate
+      ? Math.floor(
+          (new Date().getTime() - overallData.firstTransactionDate.getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : 0;
+    const daysSinceLast = overallData.lastTransactionDate
+      ? Math.floor(
+          (new Date().getTime() - overallData.lastTransactionDate.getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : 0;
+
+    insights.push(
+      `Trading history: ${daysSinceFirst} days since first transaction`
+    );
+
+    if (daysSinceLast === 0) {
+      insights.push('Recent activity: Active today');
+    } else if (daysSinceLast <= 7) {
+      insights.push(
+        `Recent activity: Last transaction ${daysSinceLast} days ago`
+      );
+    } else {
+      insights.push(`Recent activity: Inactive for ${daysSinceLast} days`);
+    }
+  }
+
+  return insights;
+}

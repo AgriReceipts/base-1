@@ -10,7 +10,12 @@ export const CreateReceiptSchema = z
     traderAddress: z.string().optional(),
     payeeName: z.string().min(1, 'Payee name is required'),
     payeeAddress: z.string().optional(),
-    commodity: z.string().min(1, 'Commodity is required'),
+    commodity: z
+      .string()
+      .min(
+        1,
+        'Commodity is required, Please select Other and enter the new name if commodity doesnot exist in the list'
+      ),
     newCommodityName: z.string().optional(),
     quantity: z.number().positive('Quantity must be greater than 0'),
     unit: z.enum(['quintals', 'kilograms', 'bags', 'numbers'], {
