@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.2.0",
+    "@mui/x-data-grid": "^8.7.0",
+    "reaviz": "^16.0.4",
+    "recharts": "^3.1.0"
+  }
+}

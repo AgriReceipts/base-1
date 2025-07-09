@@ -5,6 +5,7 @@ import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import usermanagement from '../../components/AdCompo/Usermanage'
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry.tsx'
+import DistrictAnalysis from '../../components/Adcompo/Districtanalysis';
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
@@ -21,12 +22,7 @@ import TargetManagement from './utils/pages/TargetManagement';
 import Usermanage from '../../components/AdCompo/Usermanage';
 import type { Key } from 'lucide-react';
 
-// Placeholder components for new pages
-const DistrictAnalysis = () => (
-  <div className='p-8 w-full text-center text-xl text-gray-600'>
-    District Analysis (Coming Soon)
-  </div>
-);
+
 
 
 export default function SupervisorDashboard() {
