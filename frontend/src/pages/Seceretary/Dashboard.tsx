@@ -10,8 +10,9 @@ import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
 import {TargetManager} from '@/components/AdCompo/TargetManager';
-import useInitialData from '@/hooks/useMetadata';
+
 import {useAuthStore} from '@/stores/authStore';
+import useInitialData from '@/hooks/useInititalData';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);

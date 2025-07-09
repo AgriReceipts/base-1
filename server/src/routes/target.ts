@@ -10,7 +10,7 @@ import {authorizeRoles} from '../middleware/roleAccess';
 
 const targetRoutes = Router();
 targetRoutes.use(authenticateUser);
-targetRoutes.use(authorizeRoles('ad'));
+targetRoutes.use(authorizeRoles('ad', 'secretary'));
 targetRoutes.post('/setTarget', setTarget);
 targetRoutes.get('/getTargets', getTargets);
 targetRoutes.put('/updateTarget/:targetId', updateTarget);
