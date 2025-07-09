@@ -1,20 +1,33 @@
 // Design system configuration
 export const theme = {
   colors: {
-    // Primary brand colors
+    // Primary brand colors (updated to vibrant green-gold)
     primary: {
-      50: '#f0f9ff',
-      100: '#e0f2fe',
-      200: '#bae6fd',
-      300: '#7dd3fc',
-      400: '#38bdf8',
-      500: '#0ea5e9', // Main primary
-      600: '#0284c7',
-      700: '#0369a1',
-      800: '#075985',
-      900: '#0c4a6e',
+      50: '#f6fef7',
+      100: '#e3fcec',
+      200: '#c6f6d5',
+      300: '#9ae6b4',
+      400: '#68d391',
+      500: '#38a169', // Main primary (vibrant green)
+      600: '#2f855a',
+      700: '#276749',
+      800: '#22543d',
+      900: '#1c4532',
     },
-    // Neutral grays
+    // Gold accent for highlights
+    gold: {
+      50: '#fffbea',
+      100: '#fff3c4',
+      200: '#fce588',
+      300: '#fadb5f',
+      400: '#f7c948',
+      500: '#f0b429',
+      600: '#de911d',
+      700: '#cb6e17',
+      800: '#b44d12',
+      900: '#8d2b0b',
+    },
+    // Neutral grays (unchanged)
     neutral: {
       50: '#fafafa',
       100: '#f5f5f5',
@@ -38,17 +51,17 @@ export const theme = {
       600: '#16a34a',
       700: '#15803d',
     },
-    // Warning (for pending states)
+    // Warning (for pending states, made more vibrant)
     warning: {
-      50: '#fffbeb',
-      100: '#fef3c7',
-      200: '#fde68a',
-      300: '#fcd34d',
-      400: '#fbbf24',
-      500: '#f59e0b',
-      600: '#d97706',
+      50: '#fffbea',
+      100: '#fff3c4',
+      200: '#fce588',
+      300: '#fadb5f',
+      400: '#f7c948',
+      500: '#f0b429',
+      600: '#de911d',
     },
-    // Error (for rejected/error states)
+    // Error (for rejected/error states, unchanged)
     error: {
       50: '#fef2f2',
       100: '#fee2e2',

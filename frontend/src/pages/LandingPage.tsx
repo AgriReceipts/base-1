@@ -114,14 +114,13 @@ const LandingPage = () => {
             </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-8 animate-slide-in-up">
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">
-                Digital AMC
+                Agri Receipts
               </span>
               <br />
-              <span className="text-gray-800">Revolution</span>
+              <span className="text-gray-800">Platform</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in">
-              Pioneering the future of agricultural market management through cutting-edge digital transformation, 
-              artificial intelligence, and blockchain-ready infrastructure for Andhra Pradesh.
+              Empowering Andhra Pradesh’s agricultural markets with Agri Receipts: a secure, digital, and innovative platform for managing, verifying, and analyzing agricultural trade receipts—where tradition meets technology and every harvest is valued.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center animate-slide-in-up">
               <Link
@@ -169,11 +168,10 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-800 mb-6">
-              Transforming Agricultural Markets
+              Why Agri Receipts?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              A visionary initiative to modernize agricultural market operations through 
-              advanced technology, ensuring efficiency, transparency, and sustainable growth.
+              Agri Receipts is a visionary initiative to modernize agricultural market operations through advanced technology, ensuring efficiency, transparency, and sustainable growth for all stakeholders.
             </p>
           </div>
 
@@ -245,7 +243,7 @@ const LandingPage = () => {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-800 mb-6">Revolutionary Features</h2>
             <p className="text-xl text-gray-600">
-              Cutting-edge technology stack powering the future of agricultural market management
+              Cutting-edge technology stack powering the future of agricultural market management with Agri Receipts
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -299,11 +297,10 @@ const LandingPage = () => {
               <FiCheckCircle className="text-white" size={40} />
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
-              Instant Public Verification
+              Instant Public Verification with Agri Receipts
             </h2>
             <p className="text-xl text-emerald-100 mb-12 leading-relaxed">
-              Revolutionary transparency through real-time receipt verification. Any citizen can instantly 
-              validate agricultural market receipts, ensuring complete accountability and trust in the system.
+              Revolutionary transparency through real-time receipt verification. Any citizen can instantly validate agricultural market receipts using Agri Receipts, ensuring complete accountability and trust in the system.
             </p>
             <Link
               to="/verifyReceipt"
@@ -348,7 +345,7 @@ const LandingPage = () => {
             <div>
               <h4 className="font-bold text-lg mb-6">Project Information</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li>Version 1.0.0 (Beta)</li>
+                <li>Agri Receipts &mdash; Version 1.0.0 (Beta)</li>
                 <li>Cloud-Native Architecture</li>
                 <li>Enterprise Security Standards</li>
                 <li>24/7 System Monitoring</li>

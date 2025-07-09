@@ -1,5 +1,5 @@
 {
-  "name": "receipt-management-system",
+  "name": "agri-receipts",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -18,7 +18,7 @@
     "db:studio": "cd server && npm run db:studio",
     "db:seed": "cd server && npm run db:seed"
   },
-  "description": "Receipt Management System - Monorepo with frontend and server",
+  "description": "Agri Receipts - Monorepo with frontend and server",
   "keywords": ["receipt", "management", "system", "monorepo"],
   "author": "",
   "license": "ISC"

@@ -1,8 +1,9 @@
 {
-  "name": "frontend",
+  "name": "agri-receipts-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "Frontend for Agri Receipts application",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
