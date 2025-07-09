@@ -189,8 +189,6 @@ export const getDetailedCommodityAnalytics = async (
   const yearNum = year ? parseInt(year as string, 10) : undefined;
   const monthNum = month ? parseInt(month as string, 10) : undefined;
 
-  console.log('cmooi', committeeId, commodityId);
-
   // Validation
   if (!committeeId || !commodityId) {
     return res.status(400).json({
