@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import {Card, CardContent} from '../../components/ui/Card';
 import LoginForm from '../../components/Authcompo/LoginForm';
 import {FiShield, FiUsers, FiBarChart, FiFileText} from 'react-icons/fi';
 
@@ -86,55 +85,51 @@ const LoginPage = () => {
           </a>
 
           {/* Demo credentials */}
-          <Card className='bg-primary-50 border-primary-200'>
-            <CardContent className='space-y-3'>
-              <div className='bg-blue-50 p-4 rounded-lg border border-blue-100'>
-                <h3 className='font-bold text-gray-800 mb-3'>
-                  Demo Login Credentials
-                </h3>
-                <ul className='space-y-2 text-sm'>
-                  <li className='flex items-center'>
-                    <span className='font-medium w-40'>
-                      DEO (Tuni Committee):
-                    </span>
-                    <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
-                      deo_tuni
-                    </span>
-                  </li>
-                  <li className='flex items-center'>
-                    <span className='font-medium w-40'>
-                      Supervisor (Kakinada Rural):
-                    </span>
-                    <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
-                      supervisor_kakinadarural
-                    </span>
-                  </li>
-                  <li className='flex items-center'>
-                    <span className='font-medium w-40'>
-                      Secretary (Pithapuram):
-                    </span>
-                    <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
-                      secretary_pithapuram
-                    </span>
-                  </li>
-                  <li className='flex items-center'>
-                    <span className='font-medium w-40'>
-                      Assistant Director:
-                    </span>
-                    <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
-                      ad_user1
-                    </span>
-                  </li>
-                </ul>
-                <p className='mt-3 text-xs text-gray-500'>
-                  Password for all users:{' '}
-                  <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
-                    password123
-                  </span>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className='bg-primary-50 border-primary-200 p-4 rounded-lg'>
+            <h3 className='font-bold text-gray-800 mb-3'>
+              Demo Login Credentials
+            </h3>
+            <ul className='space-y-2 text-sm'>
+              <li className='flex items-center'>
+                <span className='font-medium w-40'>
+                  DEO (Tuni Committee):
+                </span>
+                <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
+                  deo_tuni
+                </span>
+              </li>
+              <li className='flex items-center'>
+                <span className='font-medium w-40'>
+                  Supervisor (Kakinada Rural):
+                </span>
+                <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
+                  supervisor_kakinadarural
+                </span>
+              </li>
+              <li className='flex items-center'>
+                <span className='font-medium w-40'>
+                  Secretary (Pithapuram):
+                </span>
+                <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
+                  secretary_pithapuram
+                </span>
+              </li>
+              <li className='flex items-center'>
+                <span className='font-medium w-40'>
+                  Assistant Director:
+                </span>
+                <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
+                  ad_user1
+                </span>
+              </li>
+            </ul>
+            <p className='mt-3 text-xs text-gray-500'>
+              Password for all users:{' '}
+              <span className='font-mono bg-blue-100 px-2 py-1 rounded'>
+                password123
+              </span>
+            </p>
+          </div>
         </div>
 
         {/* Right side - Login form */}
