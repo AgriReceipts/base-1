@@ -3,6 +3,8 @@ import {useState, useEffect} from 'react';
 import Reports from '../../components/supervisorcomponents/Reports';
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
+import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry.tsx'
+import DistrictAnalysis from '../../components/Adcompo/Districtanalysis';
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
@@ -10,22 +12,22 @@ import {
   FiHome,
   FiBarChart2,
   FiFileText,
+  FiPlusSquare,
   FiTarget,
   FiUsers,
   FiBarChart,
 } from 'react-icons/fi';
 
 import Usermanage from '../../components/AdCompo/Usermanage';
+
+import type { Key } from 'lucide-react';
+
+
 import {TargetManager} from '@/components/AdCompo/TargetManager';
 import useInitialData from '@/hooks/useMetadata';
 import {useAuthStore} from '@/stores/authStore';
 
-// Placeholder components for new pages
-const DistrictAnalysis = () => (
-  <div className='p-8 w-full text-center text-xl text-gray-600'>
-    District Analysis (Coming Soon)
-  </div>
-);
+
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -56,13 +58,15 @@ export default function SupervisorDashboard() {
   // New navigation fields for AD with icons
   const navItems = [
     {key: 'overview', label: 'Overview', icon: <FiHome />},
+    {key: 'addReceipt', label: 'Add Receipt', icon: <FiPlusSquare />},
+    {key: 'allReceipts', label: 'All Receipts', icon: <FiFileText />},
     {
       key: 'districtAnalysis',
       label: 'District Analysis',
       icon: <FiBarChart2 />,
     },
-    {key: 'allReceipts', label: 'All Receipts', icon: <FiFileText />},
     {key: 'targetManagement', label: 'Target Management', icon: <FiTarget />},
+
     {key: 'userManagement', label: 'User Management', icon: <FiUsers />},
     {key: 'viewReports', label: 'View Reports', icon: <FiBarChart />},
   ];
@@ -74,6 +78,8 @@ export default function SupervisorDashboard() {
         return <Overview onNavigate={setActiveNav} />;
       case 'districtAnalysis':
         return <DistrictAnalysis />;
+      case 'addReceipt':
+        return <ReceiptEntry/>;
       case 'allReceipts':
         return <ViewReceipts />;
       case 'targetManagement':
