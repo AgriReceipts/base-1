@@ -43,12 +43,13 @@ export const AppRouter: React.FC = () => {
         <Route
           path='/supervisor'
           element={<Navigate to='/dashboard' replace={true} />}
- 
-         <Route
+        />
+
+        <Route
           path='/secretary'
           element={<Navigate to='/dashboard' replace={true} />}
+        />
         <Route path='/verifyReceipt' element={<VerifyReceipt />} />
-
       </Routes>
     </div>
   );

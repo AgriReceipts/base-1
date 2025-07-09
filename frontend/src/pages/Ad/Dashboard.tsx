@@ -3,8 +3,8 @@ import {useState, useEffect} from 'react';
 import Reports from '../../components/supervisorcomponents/Reports';
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
-import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry.tsx'
-import DistrictAnalysis from '../../components/Adcompo/Districtanalysis';
+import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry.tsx';
+
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
@@ -20,14 +20,12 @@ import {
 
 import Usermanage from '../../components/AdCompo/Usermanage';
 
-import type { Key } from 'lucide-react';
-
+import type {Key} from 'lucide-react';
 
 import {TargetManager} from '@/components/AdCompo/TargetManager';
 import useInitialData from '@/hooks/useMetadata';
 import {useAuthStore} from '@/stores/authStore';
-
-
+import DistrictAnalysis from '@/components/AdCompo/Districtanalysis.tsx';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -79,7 +77,7 @@ export default function SupervisorDashboard() {
       case 'districtAnalysis':
         return <DistrictAnalysis />;
       case 'addReceipt':
-        return <ReceiptEntry/>;
+        return <ReceiptEntry />;
       case 'allReceipts':
         return <ViewReceipts />;
       case 'targetManagement':

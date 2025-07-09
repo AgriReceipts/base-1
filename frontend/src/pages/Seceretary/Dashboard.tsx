@@ -2,7 +2,6 @@ import {useState, useEffect} from 'react';
 import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
 import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysis';
 import Reports from '../../components/supervisorcomponents/Reports';
-import TargetManagement from '../Ad/TargetManagement';
 
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
@@ -10,6 +9,9 @@ import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
+import {TargetManager} from '@/components/AdCompo/TargetManager';
+import useInitialData from '@/hooks/useMetadata';
+import {useAuthStore} from '@/stores/authStore';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -33,6 +35,8 @@ export default function SupervisorDashboard() {
   useEffect(() => {
     localStorage.setItem('activeNav', activeNav);
   }, [activeNav]);
+  const {detailedCommittee} = useInitialData();
+  const {user} = useAuthStore();
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
 
@@ -48,8 +52,13 @@ export default function SupervisorDashboard() {
         return <ReceiptEntry />;
       case 'viewReceipts':
         return <ViewReceipts />;
-       case 'targetManagement':
-        return <TargetManagement />;
+      case 'targetManagement':
+        return (
+          <TargetManager
+            committees={detailedCommittee}
+            currentUser={user?.name || 'ad'}
+          />
+        );
       case 'reports':
         return <Reports />;
       default:
