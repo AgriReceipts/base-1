@@ -29,30 +29,18 @@ export const AppRouter: React.FC = () => {
               <Navigate to="/login" replace />
             )
           }
-      
-   
+        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/dashboard" element={<DashboardRouter />} />
 
-        <Route path='/login' element={<LoginPage />} />
-        <Route path='/dashboard' element={<DashboardRouter />} />
-        <Route
-          path='/ad'
-          element={<Navigate to='/dashboard' replace={true} />}
-        />
-        <Route
-          path='/deo'
-          element={<Navigate to='/dashboard' replace={true} />}
-        />
-        <Route
-          path='/supervisor'
-          element={<Navigate to='/dashboard' replace={true} />}
-        />
+        {/* Role-specific redirect aliases */}
+        <Route path="/ad" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/deo" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/supervisor" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/secretary" element={<Navigate to="/dashboard" replace />} />
 
-        <Route
-          path='/secretary'
-          element={<Navigate to='/dashboard' replace={true} />}
-        />
-        <Route path='/verifyReceipt' element={<VerifyReceipt />} />
-
+        {/* Public route */}
+        <Route path="/verifyReceipt" element={<VerifyReceipt />} />
       </Routes>
     </div>
   );

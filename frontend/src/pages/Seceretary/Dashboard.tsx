@@ -5,7 +5,6 @@ import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysi
 import Reports from '../../components/supervisorcomponents/Reports';
 
 
-import Reports from '../../components/supervisorcomponents/Reports';
 import { MetricCards } from '../../components/supervisorcomponents/metric-cards';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry';
@@ -22,8 +21,6 @@ export default function SecretaryDashboard() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [activeNav, setActiveNav] = useState(() => localStorage.getItem('activeNav') || 'overview');
 
-  const { detailedCommittee } = useInitialData();
-  const { user } = useAuthStore();
 
   useEffect(() => {
     const handleResize = () => {
