@@ -12,6 +12,7 @@ import {
   FiPlusSquare,
   FiEye,
   FiPlus,
+  FiTarget,
   FiBarChart2,
 } from 'react-icons/fi';
 
@@ -28,26 +29,24 @@ const roleNavItems = {
     {id: 'committeeAnalysis', label: 'Committee Analysis', icon: <FiUsers />},
     {id: 'reports', label: 'Reports', icon: <FiFileText />},
   ],
+   secretary: [
+    {id: 'overview', label: 'Overview', icon: <FiHome />},
+    {id: 'addReceipt', label: 'Add Receipt', icon: <FiPlusSquare />},
+    {id: 'viewReceipts', label: 'View Receipts', icon: <FiEye />},
+    {id: 'traderAnalysis', label: 'Trader Analysis', icon: <FiTrendingUp />},
+    {id: 'targetManagement', label: 'Target Management', icon: <FiTarget />},
+    
+    {id: 'committeeAnalysis', label: 'Committee Analysis', icon: <FiUsers />},
+    {id: 'reports', label: 'Reports', icon: <FiFileText />},
+  ],
   deo: [
     {id: 'overview', label: 'Overview', icon: <FiHome />},
     {id: 'addReceipt', label: 'Add Receipt', icon: <FiPlus />},
     {id: 'viewReceipts', label: 'View Receipts', icon: <FiFileText />},
     {id: 'reports', label: 'Reports', icon: <FiBarChart2 />},
   ],
-  ad: [
-    // Add navigation items for 'Assistant Director' here
-    {id: 'overview', label: 'Overview', icon: <FiHome />},
-    {id: 'addReceipt', label: 'Add Receipt', icon: <FiPlusSquare />},
-    {id: 'reports', label: 'Reports', icon: <FiFileText />},
-    {id: 'viewReceipts', label: 'View Receipts', icon: <FiEye />},
-    {id: 'traderAnalysis', label: 'Trader Analysis', icon: <FiTrendingUp />},
-    {id: 'committeeAnalysis', label: 'Committee Analysis', icon: <FiUsers />},
-  ],
-  secretary: [
-    // Add navigation items for 'Secretary' here
-    {id: 'overview', label: 'Overview', icon: <FiHome />},
-    {id: 'committeeAnalysis', label: 'Committee Analysis', icon: <FiUsers />},
-  ],
+ 
+  
   // Add more roles as needed
 };
 
@@ -114,7 +113,7 @@ export default function Sidebar({
         sidebarVisible ? 'w-64 left-0' : '-left-64 w-0'
       } ${isMobile ? 'shadow-lg' : ''}`}>
       {/* Header */}
-      <div className='p-5 border-b border-gray-200'>
+      <div className='p-6 border-b border-gray-200'>
         <h2 className='text-xl font-semibold text-gray-800'>
           {getRoleDisplay(role)} 
         </h2>
