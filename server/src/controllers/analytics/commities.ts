@@ -36,14 +36,11 @@ export const getCommitteAnalytics = async (req: Request, res: Response) => {
       },
       select: {
         totalFeesPaid: true,
-        totalReceipts: true,
         totalValue: true,
         marketFees: true,
         officeFees: true,
         checkpostFees: true,
         otherFees: true,
-        uniqueCommodities: true,
-        uniqueTraders: true,
       },
     });
 
@@ -52,7 +49,7 @@ export const getCommitteAnalytics = async (req: Request, res: Response) => {
     const startDate = new Date(endDate);
     startDate.setMonth(startDate.getMonth() - 11); // 11 months back + current month = 12 months
 
-    // Get 12 months of market fees data
+    // Get 12 months of market fees data for visual chart
     const chartData = await prisma.committeeMonthlyAnalytics.findMany({
       where: {
         committeeId: committeeId,
@@ -74,6 +71,32 @@ export const getCommitteAnalytics = async (req: Request, res: Response) => {
       },
       orderBy: [{year: 'asc'}, {month: 'asc'}],
     });
+
+    //Get all time data
+
+    const allTimeMfCollection = await prisma.committeeMonthlyAnalytics.findMany(
+      {
+        where: {
+          committeeId,
+        },
+        select: {
+          checkpostFees: true,
+          officeFees: true,
+          otherFees: true,
+        },
+      }
+    );
+    let totalCheckpostFees = 0;
+    let totalOfficeFees = 0;
+    let totalOtherFees = 0;
+
+    for (const entry of allTimeMfCollection) {
+      totalCheckpostFees += Number(entry.checkpostFees);
+      totalOfficeFees += Number(entry.officeFees);
+      totalOtherFees += Number(entry.otherFees);
+    }
+
+    const totalFees = totalCheckpostFees + totalOfficeFees + totalOtherFees;
 
     // Format chart data
     const monthNames = [
@@ -99,6 +122,12 @@ export const getCommitteAnalytics = async (req: Request, res: Response) => {
     const response = {
       currentMonth: currentData,
       chartData: formattedChartData,
+      allTime: {
+        totalFees,
+        totalCheckpostFees,
+        totalOfficeFees,
+        totalOtherFees,
+      },
     };
 
     return res.status(200).json(response);
