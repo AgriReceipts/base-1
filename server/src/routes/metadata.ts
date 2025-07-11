@@ -6,8 +6,11 @@ import {
   getAllTraders,
   getCheckPosts,
 } from '../controllers/metadata/otherController';
+import {cacheMiddleware} from '../middleware/cacheMiddleware';
 
 const metaDataRoutes = Router();
+
+metaDataRoutes.use(cacheMiddleware());
 
 metaDataRoutes.get('/commodities', getAllCommodities);
 metaDataRoutes.get('/committees', getAllCommitties);

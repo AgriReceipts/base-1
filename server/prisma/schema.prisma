@@ -40,7 +40,6 @@ enum Unit {
 
 enum ReportLevel {
   committee
-
   district
   checkpost
 }
@@ -112,8 +111,6 @@ model Committee {
 
   receipts Receipt[]
 
-  MonthlyReport MonthlyReport[]
-
   Target Target[]
 
   CommitteeMonthlyAnalytics CommitteeMonthlyAnalytics[]
@@ -124,6 +121,8 @@ model Committee {
   CommodityOverallAnalytics CommodityOverallAnalytics[]
 
   DailyAnalytics DailyAnalytics[]
+
+  MonthlyReport MonthlyReport[]
 
   @@index([name])
 }
@@ -147,9 +146,13 @@ model Checkpost {
 
   Target Target[]
 
+  DailyAnalytics DailyAnalytics[]
+
+  CommitteeMonthlyAnalytics CommitteeMonthlyAnalytics[]
+
   MonthlyReport MonthlyReport[]
 
-  DailyAnalytics DailyAnalytics[]
+  @@unique([name, committeeId])
 }
 
 model Trader {
@@ -158,16 +161,6 @@ model Trader {
   name String @unique
 
   address String
-
-  phone String?
-
-  email String?
-
-  gstNumber String?
-
-  panNumber String?
-
-  licenseNumber String?
 
   isActive Boolean @default(true)
 
@@ -183,8 +176,6 @@ model Trader {
   TraderOverallAnalytics TraderOverallAnalytics[]
 
   @@index([name])
-  @@index([phone])
-  @@index([gstNumber])
 }
 
 model Commodity {
@@ -204,10 +195,6 @@ model Commodity {
 
   CommodityMonthlyAnalytics CommodityMonthlyAnalytics[]
   CommodityOverallAnalytics CommodityOverallAnalytics[]
-
-  Target Target[]
-
-  MonthlyReport MonthlyReport[]
 
   @@index([name])
   @@index([category])
@@ -331,22 +318,19 @@ model Target {
   totalValueTarget Decimal? // Optional: target for total trade value
 
   // Metadata
-  setBy      String // User who set the target (AD)
-  approvedBy String? // Optional approval
-  isActive   Boolean @default(true)
-  notes      String?
+  setBy    String // User who set the target (AD)
+  isActive Boolean @default(true)
+  notes    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  committee   Committee  @relation(fields: [committeeId], references: [id])
-  checkpost   Checkpost? @relation(fields: [checkpostId], references: [id])
-  Commodity   Commodity? @relation(fields: [commodityId], references: [id])
-  commodityId String?
+  committee Committee  @relation(fields: [committeeId], references: [id])
+  checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
 
   // One target per committee/checkpost per month
-  @@unique([year, month, committeeId, checkpostId])
+  @@unique([year, month, committeeId, checkpostId, isActive])
   @@index([committeeId, year])
   @@index([checkpostId, year])
   @@index([year, month])
@@ -446,6 +430,7 @@ model CommitteeMonthlyAnalytics {
   id String @id @default(uuid())
 
   committeeId String
+  checkPostId String?
 
   year Int
 
@@ -465,6 +450,9 @@ model CommitteeMonthlyAnalytics {
 
   otherFees Decimal @default(0)
 
+  marketFeeTarget  Decimal? // Monthly market fee target
+  totalValueTarget Decimal? // Monthly total value target
+
   uniqueTraders Int @default(0) // optional
 
   uniqueCommodities Int @default(0) // optional
@@ -473,7 +461,8 @@ model CommitteeMonthlyAnalytics {
 
   updatedAt DateTime @updatedAt
 
-  committee Committee @relation(fields: [committeeId], references: [id])
+  committee Committee  @relation(fields: [committeeId], references: [id])
+  Checkpost Checkpost? @relation(fields: [checkPostId], references: [id])
 
   @@unique([committeeId, year, month]) // Ensure only one row per month
   @@index([committeeId, year, month])
@@ -525,20 +514,6 @@ model DailyAnalytics {
 
   uniqueCommodities Int @default(0)
 
-  // Running totals (for efficient cumulative queries)
-
-  monthToDateReceipts Int @default(0)
-
-  monthToDateValue Decimal @default(0)
-
-  monthToDateFees Decimal @default(0)
-
-  yearToDateReceipts Int @default(0)
-
-  yearToDateValue Decimal @default(0)
-
-  yearToDateFees Decimal @default(0)
-
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
@@ -571,8 +546,6 @@ model MonthlyReport {
   committeeId String?
 
   checkpostId String? // For checkpost-level reports
-
-  commodityId String? // For commodity-level reports
 
   // Report level indicator
 
@@ -622,28 +595,13 @@ model MonthlyReport {
 
   others_fees Decimal @default(0)
 
-  // Additional analytics
-
-  uniqueTraders Int @default(0)
-
-  uniqueCommodities Int @default(0)
-
-  avgReceiptValue Decimal @default(0)
-
-  avgFeeRate Decimal @default(0)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
   // Relations
 
   committee Committee? @relation(fields: [committeeId], references: [id])
 
   checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
 
-  commodity Commodity? @relation(fields: [commodityId], references: [id])
-
+  @@unique([year, month, reportLevel, committeeId, checkpostId])
   @@index([year, month, reportLevel])
   @@index([committeeId, year, month])
 }

@@ -83,9 +83,9 @@ export const updateReceiptWithAnalytics = async (
         traderId: existing.traderId,
         commodityId: existing.commodityId!,
         receiptDate: existing.receiptDate,
-        value: existing.value,
-        feesPaid: existing.feesPaid,
-        totalWeightKg: existing.totalWeightKg!,
+        value: existing.value.toNumber(),
+        feesPaid: existing.feesPaid.toNumber(),
+        totalWeightKg: existing.totalWeightKg!.toNumber(),
       },
       new: {
         committeeId: updatedReceipt.committeeId,

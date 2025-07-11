@@ -12,10 +12,12 @@ import {
   getDetailedCommodityAnalytics,
   getTopCommoditiesAnalytics,
 } from '../controllers/analytics/commodities';
+import {cacheMiddleware} from '../middleware/cacheMiddleware';
 
 const analyticsRoutes = Router();
 
 analyticsRoutes.use(authenticateUser);
+analyticsRoutes.use(cacheMiddleware());
 
 //committeAnalytics Endpoints
 analyticsRoutes.get(
