@@ -14,6 +14,252 @@ function formatLakh(val: number) {
   return `₹${val}`;
 }
 
+// Enhanced Target Performance Component
+const TargetPerformanceCard = ({currentData, timeFrame}: any) => {
+  // Mock target data - in real implementation, this would come from API
+  const mockTargetData = {
+    month: {
+      target: 450000,
+      achieved: currentData?.marketFees || 0,
+      previousMonth: 380000,
+    },
+    year: {
+      target: 5400000,
+      achieved: (currentData?.marketFees || 0) * 12, // Extrapolated
+      previousYear: 4800000,
+    }
+  };
+
+  const targetInfo = timeFrame === 'month' ? mockTargetData.month : mockTargetData.year;
+  const achievementPercentage = (targetInfo.achieved / targetInfo.target) * 100;
+  const variance = targetInfo.achieved - targetInfo.target;
+  const isPositive = variance >= 0;
+
+  return (
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 border border-blue-200">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-blue-900">
+          🎯 Target Performance ({timeFrame === 'month' ? 'Monthly' : 'Annual'})
+        </h3>
+        <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+          isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {isPositive ? '✅' : '⚠️'} {achievementPercentage.toFixed(1)}%
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="text-sm text-gray-600 mb-1">Target</div>
+          <div className="text-xl font-bold text-blue-600">{formatLakh(targetInfo.target)}</div>
+        </div>
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="text-sm text-gray-600 mb-1">Achieved</div>
+          <div className="text-xl font-bold text-green-600">{formatLakh(targetInfo.achieved)}</div>
+        </div>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="mb-4">
+        <div className="flex justify-between text-sm text-gray-600 mb-2">
+          <span>Progress</span>
+          <span>{achievementPercentage.toFixed(1)}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-3">
+          <div 
+            className={`h-3 rounded-full transition-all duration-1000 ${
+              achievementPercentage >= 100 ? 'bg-green-500' : 
+              achievementPercentage >= 75 ? 'bg-yellow-500' : 'bg-red-500'
+            }`}
+            style={{width: `${Math.min(achievementPercentage, 100)}%`}}
+          ></div>
+        </div>
+      </div>
+
+      {/* Variance Analysis */}
+      <div className="bg-white rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm text-gray-600">Variance</div>
+            <div className={`text-lg font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              {isPositive ? '+' : ''}{formatLakh(variance)}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-gray-600">vs Previous {timeFrame === 'month' ? 'Month' : 'Year'}</div>
+            <div className="text-lg font-bold text-blue-600">
+              +{formatLakh(targetInfo.achieved - (timeFrame === 'month' ? targetInfo.previousMonth : targetInfo.previousYear))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Market Fee Trend Analysis Component
+const MarketFeeTrendAnalysis = ({chartData}: any) => {
+  const trendData = useMemo(() => {
+    if (!chartData || chartData.length < 2) return null;
+    
+    const recent = chartData.slice(-6);
+    const growth = recent.map((item: any, index: number) => {
+      if (index === 0) return {...item, growth: 0};
+      const prevValue = recent[index - 1].mf;
+      const currentValue = item.mf;
+      const growthRate = prevValue > 0 ? ((currentValue - prevValue) / prevValue) * 100 : 0;
+      return {...item, growth: growthRate};
+    });
+
+    const avgGrowth = growth.reduce((sum: number, item: any) => sum + item.growth, 0) / growth.length;
+    const trend = avgGrowth > 5 ? 'Excellent' : avgGrowth > 0 ? 'Growing' : avgGrowth > -5 ? 'Stable' : 'Declining';
+    
+    return {
+      data: growth,
+      avgGrowth,
+      trend,
+      maxValue: Math.max(...recent.map((item: any) => item.mf)),
+      minValue: Math.min(...recent.map((item: any) => item.mf)),
+    };
+  }, [chartData]);
+
+  if (!trendData) return null;
+
+  return (
+    <div className="bg-gradient-to-br from-purple-50 to-pink-100 rounded-xl p-6 border border-purple-200">
+      <h3 className="text-lg font-bold text-purple-900 mb-4">📈 Market Fee Trend Analysis</h3>
+      
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="bg-white rounded-lg p-4 text-center">
+          <div className="text-sm text-gray-600">Trend Status</div>
+          <div className={`text-lg font-bold ${
+            trendData.trend === 'Excellent' ? 'text-green-600' :
+            trendData.trend === 'Growing' ? 'text-blue-600' :
+            trendData.trend === 'Stable' ? 'text-yellow-600' : 'text-red-600'
+          }`}>
+            {trendData.trend}
+          </div>
+        </div>
+        <div className="bg-white rounded-lg p-4 text-center">
+          <div className="text-sm text-gray-600">Avg Growth</div>
+          <div className={`text-lg font-bold ${trendData.avgGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {trendData.avgGrowth >= 0 ? '+' : ''}{trendData.avgGrowth.toFixed(1)}%
+          </div>
+        </div>
+        <div className="bg-white rounded-lg p-4 text-center">
+          <div className="text-sm text-gray-600">Peak Collection</div>
+          <div className="text-lg font-bold text-purple-600">
+            {formatLakh(trendData.maxValue)}
+          </div>
+        </div>
+      </div>
+
+      {/* Mini Trend Chart */}
+      <div className="bg-white rounded-lg p-4">
+        <div className="text-sm font-semibold text-gray-700 mb-2">6-Month Growth Pattern</div>
+        <div className="flex items-end justify-between h-16">
+          {trendData.data.map((item: any, index: number) => (
+            <div key={index} className="flex flex-col items-center">
+              <div 
+                className={`w-6 rounded-t transition-all duration-500 ${
+                  item.growth > 0 ? 'bg-green-400' : item.growth < 0 ? 'bg-red-400' : 'bg-gray-400'
+                }`}
+                style={{
+                  height: `${Math.max(Math.abs(item.growth) * 2, 4)}px`,
+                  maxHeight: '48px'
+                }}
+              ></div>
+              <div className="text-xs text-gray-500 mt-1">
+                {item.date.split(' ')[0]}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Performance Insights Component
+const PerformanceInsights = ({currentData, timeFrame}: any) => {
+  const insights = useMemo(() => {
+    const marketFees = currentData?.marketFees || 0;
+    const totalFees = currentData?.totalFeesPaid || 0;
+    const receipts = currentData?.totalReceipts || 0;
+    const avgPerReceipt = receipts > 0 ? marketFees / receipts : 0;
+
+    const insights = [];
+
+    if (marketFees > 400000) {
+      insights.push({
+        type: 'success',
+        icon: '🎉',
+        title: 'Excellent Performance',
+        message: `Market fees collection of ${formatLakh(marketFees)} exceeds expectations!`
+      });
+    } else if (marketFees > 200000) {
+      insights.push({
+        type: 'good',
+        icon: '👍',
+        title: 'Good Progress',
+        message: `Steady collection of ${formatLakh(marketFees)} shows consistent performance.`
+      });
+    } else {
+      insights.push({
+        type: 'warning',
+        icon: '⚠️',
+        title: 'Needs Attention',
+        message: `Collection of ${formatLakh(marketFees)} is below optimal levels.`
+      });
+    }
+
+    if (avgPerReceipt > 1000) {
+      insights.push({
+        type: 'info',
+        icon: '💰',
+        title: 'High Value Transactions',
+        message: `Average ${formatLakh(avgPerReceipt)} per receipt indicates quality trades.`
+      });
+    }
+
+    const marketFeeRatio = totalFees > 0 ? (marketFees / totalFees) * 100 : 0;
+    if (marketFeeRatio > 80) {
+      insights.push({
+        type: 'success',
+        icon: '📊',
+        title: 'Optimal Fee Structure',
+        message: `${marketFeeRatio.toFixed(1)}% market fees shows healthy trading activity.`
+      });
+    }
+
+    return insights;
+  }, [currentData, timeFrame]);
+
+  return (
+    <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-6 border border-green-200">
+      <h3 className="text-lg font-bold text-green-900 mb-4">🧠 AI Performance Insights</h3>
+      
+      <div className="space-y-3">
+        {insights.map((insight, index) => (
+          <div key={index} className={`bg-white rounded-lg p-4 border-l-4 ${
+            insight.type === 'success' ? 'border-green-500' :
+            insight.type === 'good' ? 'border-blue-500' :
+            insight.type === 'warning' ? 'border-yellow-500' : 'border-purple-500'
+          }`}>
+            <div className="flex items-start">
+              <span className="text-xl mr-3">{insight.icon}</span>
+              <div>
+                <div className="font-semibold text-gray-800">{insight.title}</div>
+                <div className="text-sm text-gray-600 mt-1">{insight.message}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function CommitteeAnalysis() {
   const [locationTimeFrame, setLocationTimeFrame] = useState<'month' | 'all'>(
     'month'
@@ -24,6 +270,7 @@ export default function CommitteeAnalysis() {
   const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(
     null
   );
+  const [analyticsView, setAnalyticsView] = useState<'overview' | 'targets' | 'trends'>('overview');
 
   const {committee} = useAuthStore();
   const committeeId = committee?.id;
@@ -51,8 +298,8 @@ export default function CommitteeAnalysis() {
     error: committeeError,
   } = useCommitteeAnalytics({
     committeeId,
-    year: locationTimeFrame === 'month' ? currentYear : undefined,
-    month: locationTimeFrame === 'month' ? currentMonth : undefined,
+    year: locationTimeFrame === 'month' ? currentYear : currentYear,
+    month: locationTimeFrame === 'month' ? currentMonth : currentMonth,
   });
 
   const {
@@ -101,7 +348,7 @@ export default function CommitteeAnalysis() {
         <div className='text-center'>
           <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto'></div>
           <div className='text-lg font-semibold text-gray-600 mt-2'>
-            Loading Analytics...
+            Loading Advanced Analytics...
           </div>
         </div>
       </div>
@@ -130,6 +377,46 @@ export default function CommitteeAnalysis() {
 
   return (
     <div className='w-full p-4 md:p-6'>
+      {/* Enhanced Header with Analytics View Toggle */}
+      <div className="mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Advanced Committee Analytics</h2>
+            <p className="text-gray-600">Market Fee Performance & Target Analysis</p>
+          </div>
+          <div className="flex bg-gray-100 rounded-lg p-1 mt-4 md:mt-0">
+            <button
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                analyticsView === 'overview'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+              onClick={() => setAnalyticsView('overview')}>
+              📊 Overview
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                analyticsView === 'targets'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+              onClick={() => setAnalyticsView('targets')}>
+              🎯 Targets
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                analyticsView === 'trends'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+              onClick={() => setAnalyticsView('trends')}>
+              📈 Trends
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Market Fee Chart - Always Visible */}
       <div className='mb-8'>
         <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4 w-full'>
           <div className='h-64 md:h-80 w-full flex items-center justify-center'>
@@ -142,122 +429,140 @@ export default function CommitteeAnalysis() {
         </div>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
-        <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
-          <div className='flex items-center justify-between mb-4'>
-            <h3 className='text-lg font-semibold'>Market Fees by Location</h3>
-            <div className='flex bg-gray-100 rounded-lg p-1'>
-              <button
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  locationTimeFrame === 'month'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-                onClick={() => setLocationTimeFrame('month')}>
-                This Month
-              </button>
-              <button
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  locationTimeFrame === 'all'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-                onClick={() => setLocationTimeFrame('all')}>
-                All Time
-              </button>
-            </div>
-          </div>
-          <div className='h-64 md:h-80'>
-            {committeeLoading ? (
-              <div className='flex items-center justify-center h-full'>
-                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
-              </div>
-            ) : committeeData?.locationData ? (
-              <PieChartComponent
-                data={committeeData.locationData.map((d) => {
-                  let color = '#8884d8';
-                  if (d.name === 'Office') color = '#2563eb';
-                  else if (d.name === 'Checkpost') color = '#22c55e';
-                  else if (d.name === 'Other') color = '#f59e42';
-                  return {...d, color};
-                })}
-                onClickData={() => {}}
-              />
-            ) : (
-              <div className='flex items-center justify-center h-full text-gray-500'>
-                No location data available
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col'>
-          <div className='flex items-center justify-between mb-4'>
-            <div>
-              <h3 className='text-xl font-bold mb-1'>Commodity Directory</h3>
-              <div className='text-gray-500 text-sm'>
-                Click on a commodity to view detailed analytics
-              </div>
-            </div>
-            <div className='flex bg-gray-100 rounded-lg p-1'>
-              <button
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  commodityTimeFrame === 'month'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-                onClick={() => setCommodityTimeFrame('month')}>
-                This Month
-              </button>
-              <button
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  commodityTimeFrame === 'all'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-                onClick={() => setCommodityTimeFrame('all')}>
-                All Time
-              </button>
-            </div>
-          </div>
-          <div className='flex-1 flex flex-col gap-3'>
-            {commodityLoading ? (
-              <div className='flex items-center justify-center h-32'>
-                <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600'></div>
-              </div>
-            ) : processedCommodityData.length > 0 ? (
-              processedCommodityData.slice(0, 5).map((c) => (
+      {/* Dynamic Content Based on Selected View */}
+      {analyticsView === 'overview' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
+            <div className='flex items-center justify-between mb-4'>
+              <h3 className='text-lg font-semibold'>Market Fees by Location</h3>
+              <div className='flex bg-gray-100 rounded-lg p-1'>
                 <button
-                  key={c.id}
-                  className={`flex items-center justify-between p-4 rounded-lg border transition bg-white hover:bg-blue-50 ${
-                    selectedCommodityId === c.id ? 'ring-2 ring-blue-400' : ''
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    locationTimeFrame === 'month'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
                   }`}
-                  onClick={() => setSelectedCommodityId(c.id)}>
-                  <div>
-                    <div className='font-semibold text-lg text-left'>
-                      {c.name}
-                    </div>
-                    <div className='text-gray-500 text-sm'>
-                      {c.receipts} receipts
-                    </div>
-                  </div>
-                  <div className='text-right'>
-                    <div className='font-bold text-xl'>
-                      {formatLakh(c.value)}
-                    </div>
-                    <div className='text-xs text-gray-500'>Total Value</div>
-                  </div>
+                  onClick={() => setLocationTimeFrame('month')}>
+                  This Month
                 </button>
-              ))
-            ) : (
-              <div className='flex items-center justify-center h-32 text-gray-500'>
-                No commodity data available
+                <button
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    locationTimeFrame === 'all'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                  onClick={() => setLocationTimeFrame('all')}>
+                  All Time
+                </button>
               </div>
-            )}
+            </div>
+            <div className='h-64 md:h-80'>
+              {committeeLoading ? (
+                <div className='flex items-center justify-center h-full'>
+                  <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
+                </div>
+              ) : committeeData?.locationData ? (
+                <PieChartComponent
+                  data={committeeData.locationData.map((d) => {
+                    let color = '#8884d8';
+                    if (d.name === 'Office') color = '#2563eb';
+                    else if (d.name === 'Checkpost') color = '#22c55e';
+                    else if (d.name === 'Other') color = '#f59e42';
+                    return {...d, color};
+                  })}
+                  onClickData={() => {}}
+                />
+              ) : (
+                <div className='flex items-center justify-center h-full text-gray-500'>
+                  No location data available
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col'>
+            <div className='flex items-center justify-between mb-4'>
+              <div>
+                <h3 className='text-xl font-bold mb-1'>Commodity Directory</h3>
+                <div className='text-gray-500 text-sm'>
+                  Click on a commodity to view detailed analytics
+                </div>
+              </div>
+              <div className='flex bg-gray-100 rounded-lg p-1'>
+                <button
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    commodityTimeFrame === 'month'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                  onClick={() => setCommodityTimeFrame('month')}>
+                  This Month
+                </button>
+                <button
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    commodityTimeFrame === 'all'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                  onClick={() => setCommodityTimeFrame('all')}>
+                  All Time
+                </button>
+              </div>
+            </div>
+            <div className='flex-1 flex flex-col gap-3'>
+              {commodityLoading ? (
+                <div className='flex items-center justify-center h-32'>
+                  <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600'></div>
+                </div>
+              ) : processedCommodityData.length > 0 ? (
+                processedCommodityData.slice(0, 5).map((c) => (
+                  <button
+                    key={c.id}
+                    className={`flex items-center justify-between p-4 rounded-lg border transition bg-white hover:bg-blue-50 ${
+                      selectedCommodityId === c.id ? 'ring-2 ring-blue-400' : ''
+                    }`}
+                    onClick={() => setSelectedCommodityId(c.id)}>
+                    <div>
+                      <div className='font-semibold text-lg text-left'>
+                        {c.name}
+                      </div>
+                      <div className='text-gray-500 text-sm'>
+                        {c.receipts} receipts
+                      </div>
+                    </div>
+                    <div className='text-right'>
+                      <div className='font-bold text-xl'>
+                        {formatLakh(c.value)}
+                      </div>
+                      <div className='text-xs text-gray-500'>Total Value</div>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className='flex items-center justify-center h-32 text-gray-500'>
+                  No commodity data available
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
+      {analyticsView === 'targets' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <TargetPerformanceCard currentData={committeeData?.currentMonth} timeFrame={locationTimeFrame} />
+          <PerformanceInsights currentData={committeeData?.currentMonth} timeFrame={locationTimeFrame} />
+        </div>
+      )}
+
+      {analyticsView === 'trends' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <MarketFeeTrendAnalysis chartData={committeeData?.chartData} />
+          <PerformanceInsights currentData={committeeData?.currentMonth} timeFrame={locationTimeFrame} />
+        </div>
+      )}
+
+      {/* Detailed Commodity Analytics - Always at Bottom */}
       {selectedCommodityId && (
         <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6'>
           {detailedLoading ? (
@@ -273,7 +578,6 @@ export default function CommitteeAnalysis() {
             </div>
           ) : detailedCommodityData ? (
             (() => {
-              // **FIX**: Determine the correct data source based on the time frame toggle.
               const displayAnalytics =
                 commodityTimeFrame === 'all'
                   ? detailedCommodityData.overallAnalytics
@@ -292,7 +596,6 @@ export default function CommitteeAnalysis() {
                       </div>
                     </div>
                     <div className='flex items-center gap-4 mt-4 md:mt-0'>
-                      {/* **FIX**: This toggle now correctly controls the data for this section */}
                       <div className='flex bg-gray-100 rounded-lg p-1'>
                         <button
                           className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
@@ -321,7 +624,6 @@ export default function CommitteeAnalysis() {
                     </div>
                   </div>
 
-                  {/* **FIX**: Stat cards now use the 'displayAnalytics' variable for dynamic data */}
                   <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-6'>
                     <div className='bg-blue-50 rounded-lg p-4 flex flex-col items-center justify-center'>
                       <div className='text-2xl font-bold'>
@@ -357,7 +659,6 @@ export default function CommitteeAnalysis() {
                     </div>
                   </div>
 
-                  {/* **FIX**: Conditionally render graph for 'All Time' and insights for both views */}
                   {commodityTimeFrame === 'all' ? (
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                       <div>
@@ -516,7 +817,6 @@ export default function CommitteeAnalysis() {
                                 {insight}
                               </div>
                             )
-                          )
                         ) : (
                           <div className='text-sm text-gray-500 bg-gray-50 p-3 rounded-lg'>
                             No specific insights for this month.
