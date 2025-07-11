@@ -817,6 +817,7 @@ export default function CommitteeAnalysis() {
                                 {insight}
                               </div>
                             )
+                          )
                         ) : (
                           <div className='text-sm text-gray-500 bg-gray-50 p-3 rounded-lg'>
                             No specific insights for this month.

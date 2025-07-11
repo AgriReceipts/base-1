@@ -33,11 +33,10 @@ export const setTarget = async (req: Request, res: Response) => {
       for (const targetData of validatedTargets) {
         const target = await tx.target.upsert({
           where: {
-            year_month_committeeId: {
-              year: targetData.year,
-              month: targetData.month,
-              committeeId: targetData.committeeId,
-            },
+            year_month_committeeId: undefined, // Remove this line
+            year: targetData.year,
+            month: targetData.month,
+            committeeId: targetData.committeeId,
           },
           update: {
             marketFeeTarget: targetData.marketFeeTarget,
