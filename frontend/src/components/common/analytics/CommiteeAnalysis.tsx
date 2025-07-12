@@ -292,37 +292,88 @@ export default function CommitteeAnalysis() {
     );
   }
 
-  const {
-    data: committeeData,
-    loading: committeeLoading,
-    error: committeeError,
-  } = useCommitteeAnalytics({
-    committeeId,
-    year: locationTimeFrame === 'month' ? currentYear : currentYear,
-    month: locationTimeFrame === 'month' ? currentMonth : currentMonth,
-  });
+  // Replace API hooks with static mock data
+  // const {
+  //   data: committeeData,
+  //   loading: committeeLoading,
+  //   error: committeeError,
+  // } = useCommitteeAnalytics({
+  //   committeeId,
+  //   year: locationTimeFrame === 'month' ? currentYear : currentYear,
+  //   month: locationTimeFrame === 'month' ? currentMonth : currentMonth,
+  // });
+  const committeeData = {
+    chartData: [
+      { date: '2024-01', mf: 100000, officeFees: 40000, checkpostFees: 30000, otherFees: 30000 },
+      { date: '2024-02', mf: 120000, officeFees: 50000, checkpostFees: 40000, otherFees: 30000 },
+      { date: '2024-03', mf: 90000, officeFees: 30000, checkpostFees: 30000, otherFees: 30000 },
+      { date: '2024-04', mf: 150000, officeFees: 60000, checkpostFees: 50000, otherFees: 40000 },
+      { date: '2024-05', mf: 130000, officeFees: 50000, checkpostFees: 50000, otherFees: 30000 },
+      { date: '2024-06', mf: 170000, officeFees: 70000, checkpostFees: 60000, otherFees: 40000 },
+    ],
+    locationData: [
+      { name: 'Office', value: 270000 },
+      { name: 'Checkpost', value: 200000 },
+      { name: 'Other', value: 130000 },
+    ],
+    currentMonth: {
+      marketFees: 170000,
+      totalFeesPaid: 200000,
+      totalReceipts: 120,
+    },
+  };
+  const committeeLoading = false;
+  const committeeError = null;
 
-  const {
-    data: commodityData,
-    loading: commodityLoading,
-    error: commodityError,
-  } = useCommodityAnalytics({
-    committeeId,
-    year: commodityTimeFrame === 'month' ? currentYear : undefined,
-    month: commodityTimeFrame === 'month' ? currentMonth : undefined,
-    limit: 5,
-  });
+  // const {
+  //   data: commodityData,
+  //   loading: commodityLoading,
+  //   error: commodityError,
+  // } = useCommodityAnalytics({
+  //   committeeId,
+  //   year: commodityTimeFrame === 'month' ? currentYear : undefined,
+  //   month: commodityTimeFrame === 'month' ? currentMonth : undefined,
+  //   limit: 5,
+  // });
+  const commodityData = {
+    topCommoditiesMonthly: [
+      { commodityId: '1', commodity: { id: '1', name: 'Wheat', category: 'Grain' }, totalReceipts: 40, totalValue: 80000, totalFeesPaid: 10000, totalQuantity: 2000, averageValuePerReceipt: 2000 },
+      { commodityId: '2', commodity: { id: '2', name: 'Rice', category: 'Grain' }, totalReceipts: 30, totalValue: 60000, totalFeesPaid: 8000, totalQuantity: 1500, averageValuePerReceipt: 2000 },
+      { commodityId: '3', commodity: { id: '3', name: 'Maize', category: 'Grain' }, totalReceipts: 20, totalValue: 40000, totalFeesPaid: 6000, totalQuantity: 1000, averageValuePerReceipt: 2000 },
+    ],
+    topCommoditiesOverall: [
+      { commodityId: '1', commodity: { id: '1', name: 'Wheat', category: 'Grain' }, totalReceipts: 200, totalValue: 400000, totalFeesPaid: 50000, totalQuantity: 10000, averageValuePerReceipt: 2000 },
+      { commodityId: '2', commodity: { id: '2', name: 'Rice', category: 'Grain' }, totalReceipts: 150, totalValue: 300000, totalFeesPaid: 40000, totalQuantity: 8000, averageValuePerReceipt: 2000 },
+      { commodityId: '3', commodity: { id: '3', name: 'Maize', category: 'Grain' }, totalReceipts: 100, totalValue: 200000, totalFeesPaid: 30000, totalQuantity: 5000, averageValuePerReceipt: 2000 },
+    ],
+  };
+  const commodityLoading = false;
+  const commodityError = null;
 
-  const {
-    data: detailedCommodityData,
-    loading: detailedLoading,
-    error: detailedError,
-  } = useCommodityDetailedAnalytics({
-    committeeId,
-    commodityId: selectedCommodityId || '',
-    year: commodityTimeFrame === 'month' ? currentYear : undefined,
-    month: commodityTimeFrame === 'month' ? currentMonth : undefined,
-  });
+  // const {
+  //   data: detailedCommodityData,
+  //   loading: detailedLoading,
+  //   error: detailedError,
+  // } = useCommodityDetailedAnalytics({
+  //   committeeId,
+  //   commodityId: selectedCommodityId || '',
+  //   year: commodityTimeFrame === 'month' ? currentYear : undefined,
+  //   month: commodityTimeFrame === 'month' ? currentMonth : undefined,
+  // });
+  const detailedCommodityData = selectedCommodityId
+    ? {
+        commodity: { id: selectedCommodityId, name: 'Wheat', category: 'Grain' },
+        monthlyAnalytics: [
+          { year: 2024, month: 1, totalReceipts: 10, totalValue: 20000, totalFeesPaid: 2500, totalQuantity: 500, averageValuePerReceipt: 2000 },
+          { year: 2024, month: 2, totalReceipts: 8, totalValue: 16000, totalFeesPaid: 2000, totalQuantity: 400, averageValuePerReceipt: 2000 },
+        ],
+        overallAnalytics: { totalReceipts: 100, totalValue: 200000, totalFeesPaid: 25000, totalQuantity: 5000, averageValuePerReceipt: 2000 },
+        trends: { valueGrowth: 5, quantityGrowth: 3, receiptsGrowth: 2, trend: 'Growing' },
+        insights: ['Strong demand in recent months', 'Consistent price growth'],
+      }
+    : null;
+  const detailedLoading = false;
+  const detailedError = null;
 
   const processedCommodityData = useMemo(() => {
     if (!commodityData) return [];
