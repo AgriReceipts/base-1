@@ -54,15 +54,13 @@ export const setTarget = async (req: Request, res: Response) => {
               marketFeeTarget: targetData.marketFeeTarget,
               totalValueTarget: targetData.totalValueTarget,
               setBy: targetData.setBy,
-              approvedBy: targetData.approvedBy,
               notes: targetData.notes,
-              commodityId: targetData.commodityId,
+
               isActive: true,
             },
             include: {
               committee: true,
               checkpost: true,
-              Commodity: true,
             },
           });
         } else {
@@ -72,14 +70,12 @@ export const setTarget = async (req: Request, res: Response) => {
               ...targetData,
               checkpostId: targetData.checkpostId || null,
               totalValueTarget: targetData.totalValueTarget || null,
-              approvedBy: targetData.approvedBy || null,
+
               notes: targetData.notes || null,
-              commodityId: targetData.commodityId || null,
             },
             include: {
               committee: true,
               checkpost: true,
-              Commodity: true,
             },
           });
         }
@@ -138,12 +134,6 @@ export const getTargets = async (req: Request, res: Response) => {
             name: true,
           },
         },
-        Commodity: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
       },
       orderBy: [
         {year: 'desc'},
@@ -194,7 +184,6 @@ export const updateTarget = async (req: Request, res: Response) => {
       include: {
         committee: true,
         checkpost: true,
-        Commodity: true,
       },
     });
 

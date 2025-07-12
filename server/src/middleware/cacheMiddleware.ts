@@ -1,6 +1,5 @@
 import type {Request, Response, NextFunction} from 'express';
-
-import {getCached, setCache} from '../services/cacheService';
+import {getCached, setCache} from '../services/cache/cacheService';
 
 export function cacheMiddleware(ttlSeconds = 300) {
   return async (req: Request, res: Response, next: NextFunction) => {

@@ -1,6 +1,12 @@
 import {Request, Response} from 'express';
-import prisma from '../../utils/database';
 import {handlePrismaError} from '../../utils/helpers';
+import {topCheckposts} from '../../services/districtAnalytics/checkpost';
+import {districtMetadata} from '../../services/districtAnalytics/districtMetadata';
+import {committeWiseAcheivement} from '../../services/districtAnalytics/committe';
+import {getCurrentFinancialYearStart} from '../../utils/dateHelper';
+import {getCommitteeDoubleBarChartData} from '../../services/districtAnalytics/collectionTrend';
+import {getTopCommodities} from '../../services/districtAnalytics/commodity';
+import {getCommitteeHeatmapData} from '../../services/districtAnalytics/committeHeatmap';
 
 //what all this controller returns
 
@@ -20,22 +26,68 @@ import {handlePrismaError} from '../../utils/helpers';
 //----Checkpost Table
 //Top checkposts performance all checkPosts
 
-export async function getDailyAnalyticsController(req: Request, res: Response) {
-  const {financialYear, month, time} = req.query;
+export async function getDistrictAnalyticsController(
+  req: Request,
+  res: Response
+) {
+  const financialYearStart = req.query.financialYearStart as string | undefined;
+  const monthParam = req.query.month as string | undefined;
+
+  const fyStart: number = financialYearStart
+    ? parseInt(financialYearStart)
+    : getCurrentFinancialYearStart();
+
+  const month: number | undefined = monthParam
+    ? parseInt(monthParam)
+    : undefined;
+
+  if (financialYearStart && isNaN(fyStart)) {
+    return res.status(400).json({message: 'Invalid financialYearStart'});
+  }
+  if (month && isNaN(month)) {
+    return res.status(400).json({message: 'Invalid month'});
+  }
+
   const filters = {
-    financialYear: financialYear as string,
-    month: month as string,
-    time: time as string,
+    fyStart: fyStart,
+    month: month,
   };
+
   try {
-    const [primaryData, committeRevenues, topCommodites, topCheckposts] =
-      await Promise.all([]);
+    const [
+      districtMetadataRes,
+      committeeWiseAcheivementRes,
+      monthlyTrend,
+      topCommodityRes,
+      checkPostsRes,
+      heatMapRes,
+    ] = await Promise.all([
+      districtMetadata(filters),
+      committeWiseAcheivement(filters),
+      getCommitteeDoubleBarChartData({comparisonFyStart: fyStart}),
+      getTopCommodities(filters),
+      topCheckposts(filters),
+      getCommitteeHeatmapData({fyStart}),
+    ]);
 
     return res.status(200).json({
-      primaryData,
-      committeRevenues,
-      topCheckposts,
-      topCommodites,
+      // Important Summary Data
+      districtMetadataRes,
+
+      // Committee Performance
+      committeeWiseAcheivementRes,
+
+      // Monthly Collection Trend (Current vs Previous Year)
+      monthlyTrend,
+
+      // Top Commodities for Pie Chart
+      topCommodityRes,
+
+      // Top Checkposts Performance
+      checkPostsRes,
+
+      // Committee Heatmap Data
+      heatMapRes,
     });
   } catch (error) {
     return handlePrismaError(res, error);

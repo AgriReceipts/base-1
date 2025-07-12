@@ -10,11 +10,9 @@ export const getDailyAnalytics = async (req: Request, res: Response) => {
     const {committeeId, date} = req.params;
 
     if (!committeeId || !date) {
-      return res
-        .status(400)
-        .json({
-          message: 'Committee ID and date is required for daily analytics.',
-        });
+      return res.status(400).json({
+        message: 'Committee ID and date is required for daily analytics.',
+      });
     }
 
     const dailyAnalyticsData = await prisma.dailyAnalytics.findUnique({
@@ -35,12 +33,6 @@ export const getDailyAnalytics = async (req: Request, res: Response) => {
         otherFees: true,
         uniqueTraders: true,
         uniqueCommodities: true,
-        monthToDateFees: true,
-        monthToDateReceipts: true,
-        monthToDateValue: true,
-        yearToDateFees: true,
-        yearToDateReceipts: true,
-        yearToDateValue: true,
         checkpost: true,
       },
     });
