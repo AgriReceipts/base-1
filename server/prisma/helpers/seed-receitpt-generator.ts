@@ -1,10 +1,37 @@
 // File: ./seed-data-generator.ts
-
 import {Unit, NatureOfReceipt, CollectionLocation} from '@prisma/client';
 import {faker} from '@faker-js/faker';
 
-// Your generateReceiptData function remains unchanged.
-// It's now just isolated in its own file for clarity.
+// Helper function to select commodity with weighted distribution
+function selectCommodityWeighted(commodities: any[]): any {
+  if (commodities.length === 0) {
+    throw new Error('Commodities array cannot be empty');
+  }
+
+  // Create weighted distribution: top 5 commodities get 40% (8% each), rest get 60%
+  const topCommoditiesCount = Math.min(5, commodities.length);
+  const remainingCommoditiesCount = commodities.length - topCommoditiesCount;
+
+  const random = Math.random();
+
+  // 40% chance for top 5 commodities (8% each)
+  if (random < 0.4) {
+    const topIndex = Math.floor(random / 0.08); // 0.08 = 8% each
+    return commodities[Math.min(topIndex, topCommoditiesCount - 1)];
+  }
+
+  // 60% chance for remaining commodities
+  if (remainingCommoditiesCount > 0) {
+    const remainingIndex = Math.floor(
+      Math.random() * remainingCommoditiesCount
+    );
+    return commodities[topCommoditiesCount + remainingIndex];
+  }
+
+  // Fallback to top commodities if no remaining ones
+  return commodities[Math.floor(Math.random() * topCommoditiesCount)];
+}
+
 export async function generateReceiptData(
   receiptDate: Date,
   committee: any,
@@ -17,12 +44,10 @@ export async function generateReceiptData(
   const generatedBy = faker.helpers.arrayElement(committeeUsers);
   const trader = faker.helpers.arrayElement(traders);
 
-  // FIX 1: Make commodity optional
-  const commodity =
-    commodities.length > 0 ? faker.helpers.arrayElement(commodities) : null;
-  const hasCommodity = commodity && faker.datatype.boolean({probability: 0.95});
+  // Commodity is now mandatory - use weighted selection
+  const commodity = selectCommodityWeighted(commodities);
 
-  // FIX 2: Generate deterministic and unique book/receipt numbers
+  // Generate deterministic and unique book/receipt numbers
   const dateStr = receiptDate.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
   const bookNumber = `${committee.id.slice(-4)}${dateStr}`;
   const receiptNumber = `${bookNumber}-${sequenceNumber
@@ -50,9 +75,18 @@ export async function generateReceiptData(
       break;
   }
 
-  const value = faker.number.float({min: 100, max: 50000, fractionDigits: 2});
-  const feesPaid =
-    value * faker.number.float({min: 0.01, max: 0.05, fractionDigits: 4});
+  // Value in lakhs (3-10 lakhs or more)
+  const value = faker.number.float({
+    min: 300000,
+    max: 1500000,
+    fractionDigits: 2,
+  }); // 3-15 lakhs
+
+  // 90% market fees (1% of value), 10% other fees (0.5-2% of value)
+  const isMarketFee = Math.random() < 0.9;
+  const feesPaid = isMarketFee
+    ? value * 0.01 // 1% for market fees
+    : value * faker.number.float({min: 0.005, max: 0.02, fractionDigits: 4}); // 0.5-2% for other fees
 
   const natureOfReceipt = faker.helpers.arrayElement(
     Object.values(NatureOfReceipt)
@@ -81,7 +115,7 @@ export async function generateReceiptData(
       break;
   }
 
-  // FIX 3: Use a more standardized format for vehicle numbers
+  // Use a more standardized format for vehicle numbers
   const vehicleNumber = faker.datatype.boolean({probability: 0.7})
     ? faker.string.alphanumeric(10).toUpperCase()
     : null;
@@ -100,7 +134,7 @@ export async function generateReceiptData(
     payeeAddress: faker.datatype.boolean({probability: 0.8})
       ? trader.address
       : faker.location.streetAddress(),
-    commodityId: hasCommodity ? commodity.id : null,
+    commodityId: commodity.id, // Now always present
     quantity,
     unit,
     weightPerBag,

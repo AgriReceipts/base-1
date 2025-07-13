@@ -221,7 +221,7 @@ model Receipt {
 
   // Commodity and quantity
 
-  commodityId String?
+  commodityId String
 
   quantity Decimal
 

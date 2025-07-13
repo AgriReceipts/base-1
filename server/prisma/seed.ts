@@ -1,7 +1,5 @@
 import {PrismaClient} from '@prisma/client';
 import pLimit from 'p-limit';
-import {faker} from '@faker-js/faker';
-import bcrypt from 'bcryptjs';
 import {committeesData, commoditiesData} from './data';
 import {seedUsersAndTraders} from './helpers/user-trader-seeder';
 import {seedTargets} from './helpers/target-seeder';
@@ -11,8 +9,8 @@ import {generateMonthlyReports} from './helpers/report-generator';
 // ==================== CONFIGURABLE PARAMETERS ====================
 const SEED_CONFIG = {
   dateRange: {
-    startDate: new Date('2025-01-01'),
-    endDate: new Date('2025-07-06'),
+    startDate: new Date('2025-05-01'),
+    endDate: new Date('2025-07-01'),
   },
   receipts: {
     perCommitteePerDay: {

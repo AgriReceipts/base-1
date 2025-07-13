@@ -126,7 +126,7 @@ export async function generateMonthlyReports(
           100
         : 0;
 
-    // Generate report slug
+    // Get committee details for report slug
     const committee = await prisma.committee.findUnique({
       where: {id: committeeId},
       select: {name: true},
@@ -141,13 +141,12 @@ export async function generateMonthlyReports(
       year,
       month,
       committeeId,
-      checkpostId: null,
-      commodityId: null,
+      checkpostId: null, // Committee-level reports don't have checkpost
       reportLevel: ReportLevel.committee,
       totalReceipts: analytics.totalReceipts,
       totalValue: parseFloat(analytics.totalValue.toString()),
       totalFeesPaid: parseFloat(analytics.totalFeesPaid.toString()),
-      totalQuantity: 0, // We don't have this aggregated, would need to calculate
+      totalQuantity: 0, // We don't have this aggregated, would need to calculate from receipts
       monthlyTarget,
       cumulativeTarget: cumulativeTarget > 0 ? cumulativeTarget : null,
       monthlyAchievement,
@@ -159,35 +158,10 @@ export async function generateMonthlyReports(
       yearOnYearGrowth,
       mf_fees: parseFloat(analytics.marketFees.toString()),
       lc_fees: 0, // These would need to be calculated from the analytics breakdown
-      uc_fees: 0,
+      uc_fees: 0, // These would need to be calculated from the analytics breakdown
       others_fees: parseFloat(analytics.otherFees.toString()),
-      uniqueTraders: analytics.uniqueTraders,
-      uniqueCommodities: analytics.uniqueCommodities,
-      avgReceiptValue,
-      avgFeeRate,
     };
 
     reports.push(reportData);
   }
-
-  // Create reports in batches
-  const batchSize = config.performance.batchSize;
-  let createdReports = 0;
-
-  for (let i = 0; i < reports.length; i += batchSize) {
-    const batch = reports.slice(i, i + batchSize);
-
-    try {
-      await prisma.monthlyReport.createMany({
-        data: batch,
-        skipDuplicates: true,
-      });
-      createdReports += batch.length;
-    } catch (error) {
-      console.error('Error creating report batch:', error);
-      // Continue with next batch
-    }
-  }
-
-  console.log(`     ✅ Generated ${createdReports} monthly reports`);
 }

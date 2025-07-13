@@ -145,13 +145,6 @@ export async function seedUsersAndTraders(
     const traderData = {
       name: traderName,
       address: faker.location.streetAddress({useFullAddress: true}),
-      phone: faker.datatype.boolean(0.9) ? faker.phone.number() : null,
-      email: faker.datatype.boolean(0.4) ? faker.internet.email() : null,
-      gstNumber: hasGST ? faker.string.alphanumeric(15).toUpperCase() : null,
-      panNumber: hasPAN ? faker.string.alphanumeric(10).toUpperCase() : null,
-      licenseNumber: hasLicense
-        ? faker.string.alphanumeric(12).toUpperCase()
-        : null,
       isActive: faker.datatype.boolean(0.95), // 95% active
     };
 
