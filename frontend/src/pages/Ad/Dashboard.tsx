@@ -4,6 +4,7 @@ import Reports from '../../components/supervisorcomponents/Reports';
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry.tsx';
+
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
@@ -18,16 +19,13 @@ import {
 } from 'react-icons/fi';
 
 import Usermanage from '../../components/AdCompo/Usermanage';
-import {TargetManager} from '@/components/AdCompo/TargetManager';
-import useInitialData from '@/hooks/useMetadata';
-import {useAuthStore} from '@/stores/authStore';
 
-// Placeholder components for new pages
-const DistrictAnalysis = () => (
-  <div className='p-8 w-full text-center text-xl text-gray-600'>
-    District Analysis (Coming Soon)
-  </div>
-);
+import type {Key} from 'lucide-react';
+
+import {TargetManager} from '@/components/AdCompo/TargetManager';
+import useInitialData from '@/hooks/useInititalData';
+import {useAuthStore} from '@/stores/authStore';
+import DistrictAnalysis from '@/components/AdCompo/Districtanalysis.tsx';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);

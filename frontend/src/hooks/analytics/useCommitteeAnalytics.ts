@@ -17,7 +17,12 @@ interface CurrentMonthData {
   uniqueCommodities: number;
   uniqueTraders: number;
 }
-
+interface allTimeData {
+  totalFees: number;
+  totalCheckpostFees: number;
+  totalOfficeFees: number;
+  otalOtherFees: number;
+}
 interface LocationData {
   name: string;
   value: number;
@@ -25,8 +30,10 @@ interface LocationData {
 
 interface CommitteeAnalyticsData {
   currentMonth: CurrentMonthData | null;
-  chartData: ChartData[];
-  locationData: LocationData[];
+  allTime: allTimeData | null;
+  chartData: ChartData[] | null;
+  locationData: LocationData[] | null;
+  allTimeLocationData: LocationData[] | null;
 }
 
 interface UseCommitteeAnalyticsProps {
@@ -85,9 +92,28 @@ export const useCommitteeAnalytics = ({
         );
       }
 
+      const allTimeLocationData: LocationData[] = [];
+      if (response.data.allTime) {
+        allTimeLocationData.push(
+          {
+            name: 'Office',
+            value: Number(response.data.allTime.totalOfficeFees) || 0,
+          },
+          {
+            name: 'Checkpost',
+            value: Number(response.data.allTime.totalCheckpostFees) || 0,
+          },
+          {
+            name: 'Other',
+            value: Number(response.data.allTime.totalOtherFees) || 0,
+          }
+        );
+      }
+
       setData({
         ...response.data,
         locationData,
+        allTimeLocationData,
       });
     } catch (err: any) {
       setError(

@@ -32,7 +32,7 @@ const useInitialData = (committeeId: string | null = null) => {
 
       // Add committee-specific checkposts if committeeId is provided
       if (committeeId) {
-        promises.push(api.get(`/checkpost/${committeeId}`));
+        promises.push(api.get(`metaData/checkpost/${committeeId}`));
       }
 
       const responses = await Promise.all(promises);
