@@ -19,7 +19,7 @@ import {getDistrictAnalyticsController} from '../controllers/analytics/district'
 const analyticsRoutes = Router();
 
 analyticsRoutes.use(authenticateUser);
-analyticsRoutes.use(cacheMiddleware());
+//analyticsRoutes.use(cacheMiddleware());
 
 //committeAnalytics Endpoints
 analyticsRoutes.get(

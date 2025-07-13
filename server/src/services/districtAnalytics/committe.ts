@@ -120,7 +120,7 @@ export const committeWiseAcheivement = async ({
 
       return {
         committeId: entry.committee.id,
-        committeName: entry.committee.name,
+        committeeName: entry.committee.name,
         marketFees: entry.marketFees,
         target: entry.marketFeeTarget,
         totalReceipts: entry.totalReceipts,
@@ -176,7 +176,7 @@ export const committeWiseAcheivement = async ({
 
         return {
           committeId: committe?.id,
-          committeName: committe?.name,
+          committeeName: committe?.name,
           marketFees: item._sum.marketFees?.toNumber() || 0,
           marketFeesTarget: item._sum.marketFeeTarget?.toNumber() || 0,
           totalReceipts: item._sum.totalReceipts || 0,
