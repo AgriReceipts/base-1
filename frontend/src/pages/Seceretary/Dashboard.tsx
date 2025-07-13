@@ -1,5 +1,4 @@
 import {useState, useEffect} from 'react';
-import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
 import CommitteeAnalysisContainer from '../../components/supervisorcomponents/CommitteeAnalysisContainer';
 
 import Reports from '../../components/supervisorcomponents/Reports';
@@ -12,13 +11,11 @@ import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
 import {TargetManager} from '@/components/AdCompo/TargetManager';
 import {useAuthStore} from '@/stores/authStore';
+import CommitteeAnalysis from '@/components/common/analytics/CommitteAnalysis';
 
 export default function SecretaryDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [activeNav, setActiveNav] = useState(
-    () => localStorage.getItem('activeNav') || 'overview'
-  );
   const [activeNav, setActiveNav] = useState(
     () => localStorage.getItem('activeNav') || 'overview'
   );
@@ -51,14 +48,9 @@ export default function SecretaryDashboard() {
       case 'viewReceipts':
         return <ViewReceipts />;
       case 'CommitteeAnalysis':
-        return <CommitteeAnalysisContainer />;
+        return <CommitteeAnalysis />;
       case 'targetManagement':
-        return (
-          <TargetManager
-            committees={detailedCommittee}
-            currentUser={user?.name || 'secretary'}
-          />
-        );
+        return <TargetManager currentUser={user?.name || 'secretary'} />;
       case 'reports':
         return <Reports />;
       default:
@@ -78,8 +70,6 @@ export default function SecretaryDashboard() {
   return (
     <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
       <div className='flex flex-1 overflow-hidden relative'>
-    <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
-      <div className='flex flex-1 overflow-hidden relative'>
         <Sidebar
           sidebarVisible={sidebarVisible}
           isMobile={isMobile}
@@ -94,19 +84,15 @@ export default function SecretaryDashboard() {
             isMobile && sidebarVisible ? 'ml-0 opacity-50' : 'ml-0'
           }`}>
           <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
-          }`}>
-          <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
             <Nav onToggleSidebar={toggleSidebar} />
           </div>
 
           {activeNav === 'overview' && (
             <div className='p-4'>
-            <div className='p-4'>
               <MetricCards />
             </div>
           )}
 
-          <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
           <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
             {renderContent()}
           </div>
@@ -114,7 +100,6 @@ export default function SecretaryDashboard() {
 
         {isMobile && sidebarVisible && (
           <div
-            className='fixed inset-0 bg-black/10 z-40 md:hidden'
             className='fixed inset-0 bg-black/10 z-40 md:hidden'
             onClick={toggleSidebar}
           />

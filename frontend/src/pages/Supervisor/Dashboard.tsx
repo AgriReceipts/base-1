@@ -1,6 +1,5 @@
 import {useState, useEffect} from 'react';
 import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
-import CommitteeAnalysisContainer from '../../components/supervisorcomponents/CommitteeAnalysisContainer'
 import Reports from '../../components/supervisorcomponents/Reports';
 
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
@@ -9,6 +8,7 @@ import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
+import CommitteeAnalysis from '@/components/common/analytics/CommitteAnalysis';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -42,7 +42,7 @@ export default function SupervisorDashboard() {
       case 'traderAnalysis':
         return <TraderAnalysis />;
       case 'committeeAnalysis':
-        return <CommitteeAnalysisContainer />;
+        return <CommitteeAnalysis />;
       case 'addReceipt':
         return <ReceiptEntry />;
       case 'viewReceipts':

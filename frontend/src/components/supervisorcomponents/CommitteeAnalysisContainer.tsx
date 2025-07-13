@@ -1,17 +1,23 @@
 import React, {useState, useMemo} from 'react';
 import {useAuthStore} from '@/stores/authStore';
 import {useCommitteeAnalytics} from '@/hooks/analytics/useCommitteeAnalytics';
-import {useCommodityAnalytics, useCommodityDetailedAnalytics} from '@/hooks/analytics/useCommodityAnalytics';
+import {
+  useCommodityAnalytics,
+  useCommodityDetailedAnalytics,
+} from '@/hooks/analytics/useCommodityAnalytics';
 import {formatMoney} from '@/lib/helpers';
 import CommitteeAnalysisView from './CommitteeAnalysisView';
 
-type ViewMode = 'overview' | 'targets' | 'trends';
 type TimeFrame = 'month' | 'all';
 
 export default function CommitteeAnalysisContainer() {
-  const [locationTimeFrame, setLocationTimeFrame] = useState<TimeFrame>('month');
-  const [commodityTimeFrame, setCommodityTimeFrame] = useState<TimeFrame>('month');
-  const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(null);
+  const [locationTimeFrame, setLocationTimeFrame] =
+    useState<TimeFrame>('month');
+  const [commodityTimeFrame, setCommodityTimeFrame] =
+    useState<TimeFrame>('month');
+  const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(
+    null
+  );
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
 
   const {committee} = useAuthStore();
@@ -26,7 +32,7 @@ export default function CommitteeAnalysisContainer() {
     loading: committeeLoading,
     error: committeeError,
   } = useCommitteeAnalytics({
-    committeeId,
+    committeeId: committeeId || '',
     year: currentYear,
     month: currentMonth,
   });
@@ -36,7 +42,7 @@ export default function CommitteeAnalysisContainer() {
     loading: commodityLoading,
     error: commodityError,
   } = useCommodityAnalytics({
-    committeeId,
+    committeeId: committeeId || '',
     year: commodityTimeFrame === 'month' ? currentYear : undefined,
     month: commodityTimeFrame === 'month' ? currentMonth : undefined,
     limit: 5,
@@ -47,7 +53,7 @@ export default function CommitteeAnalysisContainer() {
     loading: detailedLoading,
     error: detailedError,
   } = useCommodityDetailedAnalytics({
-    committeeId,
+    committeeId: committeeId || '',
     commodityId: selectedCommodityId || '',
     year: commodityTimeFrame === 'month' ? currentYear : undefined,
     month: commodityTimeFrame === 'month' ? currentMonth : undefined,
@@ -55,9 +61,10 @@ export default function CommitteeAnalysisContainer() {
 
   const processedCommodityData = useMemo(() => {
     if (!commodityData) return [];
-    const dataSource = commodityTimeFrame === 'month'
-      ? commodityData.topCommoditiesMonthly
-      : commodityData.topCommoditiesOverall;
+    const dataSource =
+      commodityTimeFrame === 'month'
+        ? commodityData.topCommoditiesMonthly
+        : commodityData.topCommoditiesOverall;
     return dataSource.map((item) => ({
       id: item.commodityId,
       name: item.commodity.name,
@@ -72,9 +79,10 @@ export default function CommitteeAnalysisContainer() {
 
   const currentLocationData = useMemo(() => {
     if (!committeeData) return [];
-    const dataSource = locationTimeFrame === 'month'
-      ? committeeData.locationData
-      : committeeData.allTimeLocationData;
+    const dataSource =
+      locationTimeFrame === 'month'
+        ? committeeData.locationData
+        : committeeData.allTimeLocationData;
     return dataSource || [];
   }, [committeeData, locationTimeFrame]);
 

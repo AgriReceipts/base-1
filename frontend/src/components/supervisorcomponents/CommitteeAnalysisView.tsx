@@ -48,11 +48,10 @@ export default function CommitteeAnalysisView({
   detailedError,
   commodityLoading,
 }: CommitteeAnalysisViewProps) {
-
   // ==========================================================================
   // LEFT PANEL RENDERERS
   // ==========================================================================
-  
+
   /**
    * Renders the left panel content based on current view mode
    */
@@ -76,20 +75,20 @@ export default function CommitteeAnalysisView({
     <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
       <div className='flex items-center justify-between mb-4'>
         <h3 className='text-lg font-semibold'>Market Fees by Location</h3>
-        <TimeFrameToggle 
+        <TimeFrameToggle
           currentFrame={locationTimeFrame}
           setFrame={setLocationTimeFrame}
           options={[
-            { label: 'This Month', value: 'month' },
-            { label: 'All Time', value: 'all' }
+            {label: 'This Month', value: 'month'},
+            {label: 'All Time', value: 'all'},
           ]}
         />
       </div>
 
-      <SummaryBox 
-        label="Total Fees Collected"
+      <SummaryBox
+        label='Total Fees Collected'
         value={formatMoney(totalFees)}
-        className="mb-4"
+        className='mb-4'
       />
 
       <div className='h-64 md:h-80'>
@@ -99,12 +98,12 @@ export default function CommitteeAnalysisView({
           <PieChartComponent
             data={currentLocationData.map((d) => ({
               ...d,
-              color: getLocationColor(d.name)
+              color: getLocationColor(d.name),
             }))}
             onClickData={() => {}}
           />
         ) : (
-          <EmptyState message="No location data available" />
+          <EmptyState message='No location data available' />
         )}
       </div>
     </div>
@@ -124,35 +123,35 @@ export default function CommitteeAnalysisView({
 
       {/* Target vs Achieved metrics */}
       <div className='grid grid-cols-2 gap-4 mb-6'>
-        <MetricCard 
-          value="₹50,000" 
-          label="Monthly Target" 
-          bgColor="bg-blue-50"
+        <MetricCard
+          value='₹50,000'
+          label='Monthly Target'
+          bgColor='bg-blue-50'
         />
-        <MetricCard 
-          value={`₹${formatMoney(totalFees)}`} 
-          label="Achieved" 
-          bgColor="bg-green-50"
+        <MetricCard
+          value={`₹${formatMoney(totalFees)}`}
+          label='Achieved'
+          bgColor='bg-green-50'
         />
       </div>
 
       {/* Progress bar */}
-      <div className="mb-2 flex justify-between text-sm text-gray-600">
+      <div className='mb-2 flex justify-between text-sm text-gray-600'>
         <span>Progress</span>
         <span>{targetAchievement}%</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
-        <div 
-          className="bg-blue-600 h-2.5 rounded-full" 
-          style={{width: `${targetAchievement}%`}}
-        ></div>
+      <div className='w-full bg-gray-200 rounded-full h-2.5'>
+        <div
+          className='bg-blue-600 h-2.5 rounded-full'
+          style={{width: `${targetAchievement}%`}}></div>
       </div>
 
       {/* Static AI suggestion */}
-      <div className="mt-6 p-3 bg-yellow-50 border border-yellow-100 rounded-lg">
-        <h4 className="font-medium text-yellow-800 mb-1">AI Suggestion</h4>
-        <p className="text-sm text-yellow-700">
-          Focus on Eastern checkpost - increasing coverage there could help achieve 92% of target.
+      <div className='mt-6 p-3 bg-yellow-50 border border-yellow-100 rounded-lg'>
+        <h4 className='font-medium text-yellow-800 mb-1'>AI Suggestion</h4>
+        <p className='text-sm text-yellow-700'>
+          Focus on Eastern checkpost - increasing coverage there could help
+          achieve 92% of target.
         </p>
       </div>
     </div>
@@ -165,46 +164,43 @@ export default function CommitteeAnalysisView({
     <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
       <div className='flex items-center justify-between mb-4'>
         <h3 className='text-lg font-semibold'>Market Trends</h3>
-        <TimeFrameToggle 
+        <TimeFrameToggle
           currentFrame={locationTimeFrame}
           setFrame={setLocationTimeFrame}
           options={[
-            { label: 'Monthly', value: 'month' },
-            { label: 'Annual', value: 'all' }
+            {label: 'Monthly', value: 'month'},
+            {label: 'Annual', value: 'all'},
           ]}
         />
       </div>
 
       {/* Three metric cards */}
       <div className='grid grid-cols-3 gap-3 mb-6'>
-        <MetricCard 
-          value="Growing" 
-          label="Trend Status" 
-          bgColor="bg-green-50"
+        <MetricCard
+          value='Growing'
+          label='Trend Status'
+          bgColor='bg-green-50'
         />
-        <MetricCard 
-          value="+8.2%" 
-          label="Avg Growth" 
-          bgColor="bg-blue-50"
-        />
-        <MetricCard 
-          value="Nov" 
-          label="Peak Collection" 
-          bgColor="bg-purple-50"
+        <MetricCard value='+8.2%' label='Avg Growth' bgColor='bg-blue-50' />
+        <MetricCard
+          value='Nov'
+          label='Peak Collection'
+          bgColor='bg-purple-50'
         />
       </div>
 
       {/* 6 month bar chart */}
-      <h4 className="text-md font-medium mb-3">6 Month Growth Pattern</h4>
-      <div className="h-48">
+      <h4 className='text-md font-medium mb-3'>6 Month Growth Pattern</h4>
+      <div className='h-48'>
         <BarChartPlaceholder />
       </div>
 
       {/* Static AI suggestion */}
-      <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-        <h4 className="font-medium text-blue-800 mb-1">AI Trend Insight</h4>
-        <p className="text-sm text-blue-700">
-          Coffee volumes typically peak in November (+45% from baseline). Prepare additional resources.
+      <div className='mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg'>
+        <h4 className='font-medium text-blue-800 mb-1'>AI Trend Insight</h4>
+        <p className='text-sm text-blue-700'>
+          Coffee volumes typically peak in November (+45% from baseline).
+          Prepare additional resources.
         </p>
       </div>
     </div>
@@ -213,22 +209,22 @@ export default function CommitteeAnalysisView({
   // ==========================================================================
   // RIGHT PANEL RENDERERS (COMMODITY DIRECTORY)
   // ==========================================================================
-  
+
   /**
    * Right panel - Shows commodity directory (unchanged as requested)
    */
   const renderRightContent = () => (
     <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col'>
-      <PanelHeader 
-        title="Commodity Directory"
-        subtitle="Click on a commodity to view detailed analytics"
+      <PanelHeader
+        title='Commodity Directory'
+        subtitle='Click on a commodity to view detailed analytics'
         action={
-          <TimeFrameToggle 
+          <TimeFrameToggle
             currentFrame={commodityTimeFrame}
             setFrame={setCommodityTimeFrame}
             options={[
-              { label: 'This Month', value: 'month' },
-              { label: 'All Time', value: 'all' }
+              {label: 'This Month', value: 'month'},
+              {label: 'All Time', value: 'all'},
             ]}
           />
         }
@@ -236,18 +232,20 @@ export default function CommitteeAnalysisView({
 
       <div className='flex-1 flex flex-col gap-3'>
         {commodityLoading ? (
-          <LoadingSpinner size="md" />
+          <LoadingSpinner size='md' />
         ) : processedCommodityData.length > 0 ? (
-          processedCommodityData.slice(0, 5).map((c) => (
-            <CommodityCard 
-              key={c.id}
-              commodity={c}
-              isSelected={selectedCommodityId === c.id}
-              onClick={() => setSelectedCommodityId(c.id)}
-            />
-          ))
+          processedCommodityData
+            .slice(0, 5)
+            .map((c) => (
+              <CommodityCard
+                key={c.id}
+                commodity={c}
+                isSelected={selectedCommodityId === c.id}
+                onClick={() => setSelectedCommodityId(c.id)}
+              />
+            ))
         ) : (
-          <EmptyState message="No commodity data available" />
+          <EmptyState message='No commodity data available' />
         )}
       </div>
     </div>
@@ -256,14 +254,18 @@ export default function CommitteeAnalysisView({
   // ==========================================================================
   // SUB-COMPONENTS
   // ==========================================================================
-  
+
   /**
    * Reusable time frame toggle component
    */
-  const TimeFrameToggle = ({ currentFrame, setFrame, options }: {
+  const TimeFrameToggle = ({
+    currentFrame,
+    setFrame,
+    options,
+  }: {
     currentFrame: string;
     setFrame: (frame: string) => void;
-    options: { label: string; value: string }[];
+    options: {label: string; value: string}[];
   }) => (
     <div className='flex bg-gray-100 rounded-lg p-1'>
       {options.map((option) => (
@@ -284,7 +286,11 @@ export default function CommitteeAnalysisView({
   /**
    * Reusable summary box component
    */
-  const SummaryBox = ({ label, value, className = '' }: {
+  const SummaryBox = ({
+    label,
+    value,
+    className = '',
+  }: {
     label: string;
     value: string;
     className?: string;
@@ -298,15 +304,16 @@ export default function CommitteeAnalysisView({
   /**
    * Reusable loading spinner
    */
-  const LoadingSpinner = ({ size = 'lg' }: { size?: 'sm' | 'md' | 'lg' }) => {
+  const LoadingSpinner = ({size = 'lg'}: {size?: 'sm' | 'md' | 'lg'}) => {
     const sizes = {
       sm: 'h-6 w-6',
       md: 'h-8 w-8',
-      lg: 'h-12 w-12'
+      lg: 'h-12 w-12',
     };
     return (
       <div className='flex items-center justify-center h-full'>
-        <div className={`animate-spin rounded-full ${sizes[size]} border-b-2 border-blue-600`}></div>
+        <div
+          className={`animate-spin rounded-full ${sizes[size]} border-b-2 border-blue-600`}></div>
       </div>
     );
   };
@@ -314,7 +321,7 @@ export default function CommitteeAnalysisView({
   /**
    * Reusable empty state component
    */
-  const EmptyState = ({ message }: { message: string }) => (
+  const EmptyState = ({message}: {message: string}) => (
     <div className='flex items-center justify-center h-full text-gray-500'>
       {message}
     </div>
@@ -323,7 +330,11 @@ export default function CommitteeAnalysisView({
   /**
    * Panel header component
    */
-  const PanelHeader = ({ title, subtitle, action }: {
+  const PanelHeader = ({
+    title,
+    subtitle,
+    action,
+  }: {
     title: string;
     subtitle: string;
     action?: React.ReactNode;
@@ -340,7 +351,11 @@ export default function CommitteeAnalysisView({
   /**
    * Commodity card component
    */
-  const CommodityCard = ({ commodity, isSelected, onClick }: {
+  const CommodityCard = ({
+    commodity,
+    isSelected,
+    onClick,
+  }: {
     commodity: any;
     isSelected: boolean;
     onClick: () => void;
@@ -351,9 +366,7 @@ export default function CommitteeAnalysisView({
       }`}
       onClick={onClick}>
       <div>
-        <div className='font-semibold text-lg text-left'>
-          {commodity.name}
-        </div>
+        <div className='font-semibold text-lg text-left'>{commodity.name}</div>
         <div className='text-gray-500 text-sm'>
           {commodity.receipts} receipts
         </div>
@@ -368,7 +381,11 @@ export default function CommitteeAnalysisView({
   /**
    * Metric card component for displaying key metrics
    */
-  const MetricCard = ({ value, label, bgColor }: {
+  const MetricCard = ({
+    value,
+    label,
+    bgColor,
+  }: {
     value: string;
     label: string;
     bgColor: string;
@@ -385,16 +402,15 @@ export default function CommitteeAnalysisView({
   const BarChartPlaceholder = () => {
     const months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const values = [30, 45, 60, 75, 90, 65]; // Sample data
-    
+
     return (
-      <div className="flex items-end h-full gap-2 pt-4">
+      <div className='flex items-end h-full gap-2 pt-4'>
         {months.map((month, index) => (
-          <div key={month} className="flex-1 flex flex-col items-center">
-            <div 
-              className="w-full bg-blue-400 rounded-t-sm"
-              style={{ height: `${values[index]}%` }}
-            ></div>
-            <div className="text-xs text-gray-500 mt-1">{month}</div>
+          <div key={month} className='flex-1 flex flex-col items-center'>
+            <div
+              className='w-full bg-blue-400 rounded-t-sm'
+              style={{height: `${values[index]}%`}}></div>
+            <div className='text-xs text-gray-500 mt-1'>{month}</div>
           </div>
         ))}
       </div>
@@ -406,9 +422,9 @@ export default function CommitteeAnalysisView({
    */
   const getLocationColor = (locationName: string) => {
     const colors: Record<string, string> = {
-      'Office': '#2563eb',
-      'Checkpost': '#22c55e',
-      'Other': '#f59e42'
+      Office: '#2563eb',
+      Checkpost: '#22c55e',
+      Other: '#f59e42',
     };
     return colors[locationName] || '#8884d8';
   };
@@ -416,7 +432,7 @@ export default function CommitteeAnalysisView({
   // ==========================================================================
   // MAIN COMPONENT RENDER
   // ==========================================================================
-  
+
   return (
     <div className='w-full p-4 md:p-6'>
       {/* Top navigation and title */}
@@ -424,17 +440,17 @@ export default function CommitteeAnalysisView({
         <h2 className='text-2xl font-bold'>Committee Analytics Dashboard</h2>
         <div className='flex bg-gray-100 rounded-lg p-1'>
           <ViewModeButton
-            mode="overview"
+            mode='overview'
             currentMode={viewMode}
             onClick={() => setViewMode('overview')}
           />
           <ViewModeButton
-            mode="targets"
+            mode='targets'
             currentMode={viewMode}
             onClick={() => setViewMode('targets')}
           />
           <ViewModeButton
-            mode="trends"
+            mode='trends'
             currentMode={viewMode}
             onClick={() => setViewMode('trends')}
           />
@@ -446,11 +462,17 @@ export default function CommitteeAnalysisView({
         <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4 w-full'>
           <div className='flex items-center justify-between mb-4'>
             <h3 className='text-lg font-semibold'>
-              {viewMode === 'overview' ? 'Market Fees Overview' :
-               viewMode === 'targets' ? 'Target Progress' : 'Market Trends'}
+              {viewMode === 'overview'
+                ? 'Market Fees Overview'
+                : viewMode === 'targets'
+                ? 'Target Progress'
+                : 'Market Trends'}
             </h3>
             <div className='text-sm text-gray-500'>
-              {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              {new Date().toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric',
+              })}
             </div>
           </div>
           <div className='h-64 md:h-80 w-full flex items-center justify-center'>
@@ -492,7 +514,11 @@ export default function CommitteeAnalysisView({
 /**
  * View mode button component
  */
-const ViewModeButton = ({ mode, currentMode, onClick }: {
+const ViewModeButton = ({
+  mode,
+  currentMode,
+  onClick,
+}: {
   mode: 'overview' | 'targets' | 'trends';
   currentMode: string;
   onClick: () => void;
@@ -500,9 +526,9 @@ const ViewModeButton = ({ mode, currentMode, onClick }: {
   const labels = {
     overview: 'Overview',
     targets: 'Targets',
-    trends: 'Trends'
+    trends: 'Trends',
   };
-  
+
   return (
     <button
       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -526,7 +552,7 @@ const DetailedCommodityView = ({
   setSelectedCommodityId,
   detailedCommodityData,
   detailedLoading,
-  detailedError
+  detailedError,
 }: {
   commodityTimeFrame: 'month' | 'all';
   setCommodityTimeFrame: (frame: 'month' | 'all') => void;
@@ -539,7 +565,7 @@ const DetailedCommodityView = ({
   <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6'>
     {detailedLoading ? (
       <div className='flex items-center justify-center h-32'>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
       </div>
     ) : detailedError ? (
       <div className='text-center py-8 text-red-500'>
@@ -575,19 +601,25 @@ const DetailedCommodityView = ({
           </div>
           <div className='bg-green-50 rounded-lg p-3 text-center'>
             <div className='font-bold text-lg'>
-              {formatMoney(detailedCommodityData.overallAnalytics?.totalValue || 0)}
+              {formatMoney(
+                detailedCommodityData.overallAnalytics?.totalValue || 0
+              )}
             </div>
             <div className='text-xs text-gray-600 mt-1'>Total Value</div>
           </div>
           <div className='bg-yellow-50 rounded-lg p-3 text-center'>
             <div className='font-bold text-lg'>
-              {formatMoney(detailedCommodityData.overallAnalytics?.totalFeesPaid || 0)}
+              {formatMoney(
+                detailedCommodityData.overallAnalytics?.totalFeesPaid || 0
+              )}
             </div>
             <div className='text-xs text-gray-600 mt-1'>Total Fees</div>
           </div>
           <div className='bg-purple-50 rounded-lg p-3 text-center'>
             <div className='font-bold text-lg'>
-              {(detailedCommodityData.overallAnalytics?.totalQuantity || 0).toFixed(1)}
+              {(
+                detailedCommodityData.overallAnalytics?.totalQuantity || 0
+              ).toFixed(1)}
             </div>
             <div className='text-xs text-gray-600 mt-1'>Quantity</div>
           </div>
