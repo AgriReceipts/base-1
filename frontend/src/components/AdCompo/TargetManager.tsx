@@ -4,16 +4,15 @@ import React, {useState} from 'react';
 import {TargetForm} from './TargetForm';
 import {TargetList} from './TargetList';
 import toast from 'react-hot-toast';
+import useInitialData from '@/hooks/useInititalData';
 
 interface TargetManagerProps {
-  committees: Committee[];
   currentUser: string;
 }
 
-export const TargetManager: React.FC<TargetManagerProps> = ({
-  committees,
-  currentUser,
-}) => {
+export const TargetManager: React.FC<TargetManagerProps> = ({currentUser}) => {
+  const {detailedCommittee} = useInitialData();
+  const committees: Committee[] = detailedCommittee ?? [];
   const [selectedCommittee, setSelectedCommittee] = useState<string>('');
   const [selectedCheckpost, setSelectedCheckpost] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<number>(
@@ -82,7 +81,7 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
           </div>
 
           {/* ✅ Conditional Checkpost Dropdown */}
-          {selectedCommitteeData?.checkposts?.length > 0 && (
+          {(selectedCommitteeData?.checkposts?.length ?? 0) > 0 && (
             <div className='flex-1 min-w-[250px]'>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
                 Select Checkpost
@@ -92,7 +91,7 @@ export const TargetManager: React.FC<TargetManagerProps> = ({
                 onChange={(e) => setSelectedCheckpost(e.target.value)}
                 className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'>
                 <option value=''>All Checkposts</option>
-                {selectedCommitteeData.checkposts.map((checkpost) => (
+                {selectedCommitteeData?.checkposts?.map((checkpost) => (
                   <option key={checkpost.id} value={checkpost.id}>
                     {checkpost.name}
                   </option>

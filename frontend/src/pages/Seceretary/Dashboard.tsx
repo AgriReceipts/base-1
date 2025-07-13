@@ -11,12 +11,14 @@ import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
 import {TargetManager} from '@/components/AdCompo/TargetManager';
-import useInitialData from '@/hooks/useInititalData';
 import {useAuthStore} from '@/stores/authStore';
 
 export default function SecretaryDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [activeNav, setActiveNav] = useState(
+    () => localStorage.getItem('activeNav') || 'overview'
+  );
   const [activeNav, setActiveNav] = useState(
     () => localStorage.getItem('activeNav') || 'overview'
   );
@@ -36,7 +38,6 @@ export default function SecretaryDashboard() {
   useEffect(() => {
     localStorage.setItem('activeNav', activeNav);
   }, [activeNav]);
-  const {detailedCommittee} = useInitialData();
   const {user} = useAuthStore();
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
@@ -77,6 +78,8 @@ export default function SecretaryDashboard() {
   return (
     <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
       <div className='flex flex-1 overflow-hidden relative'>
+    <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
+      <div className='flex flex-1 overflow-hidden relative'>
         <Sidebar
           sidebarVisible={sidebarVisible}
           isMobile={isMobile}
@@ -91,15 +94,19 @@ export default function SecretaryDashboard() {
             isMobile && sidebarVisible ? 'ml-0 opacity-50' : 'ml-0'
           }`}>
           <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
+          }`}>
+          <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
             <Nav onToggleSidebar={toggleSidebar} />
           </div>
 
           {activeNav === 'overview' && (
             <div className='p-4'>
+            <div className='p-4'>
               <MetricCards />
             </div>
           )}
 
+          <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
           <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
             {renderContent()}
           </div>
@@ -107,6 +114,7 @@ export default function SecretaryDashboard() {
 
         {isMobile && sidebarVisible && (
           <div
+            className='fixed inset-0 bg-black/10 z-40 md:hidden'
             className='fixed inset-0 bg-black/10 z-40 md:hidden'
             onClick={toggleSidebar}
           />

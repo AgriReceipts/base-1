@@ -12,10 +12,14 @@ import {
   getDetailedCommodityAnalytics,
   getTopCommoditiesAnalytics,
 } from '../controllers/analytics/commodities';
+//import {cacheMiddleware} from '../middleware/cacheMiddleware';
+import {authorizeRoles} from '../middleware/roleAccess';
+import {getDistrictAnalyticsController} from '../controllers/analytics/district';
 
 const analyticsRoutes = Router();
 
 analyticsRoutes.use(authenticateUser);
+//analyticsRoutes.use(cacheMiddleware());
 
 //committeAnalytics Endpoints
 analyticsRoutes.get(
@@ -47,7 +51,11 @@ analyticsRoutes.get(
 //Daily Analytics for each committee
 analyticsRoutes.get('/dailyAnalytics/:committeeId/:date', getDailyAnalytics);
 
-//Todo add seperate endpoints for disctrictwide Analytics
-//analyticsRoutes.get('/districWide');
+//disctrictwide Analytics
+analyticsRoutes.get(
+  '/districtAnalytics',
+  authorizeRoles('ad'),
+  getDistrictAnalyticsController
+);
 
 export default analyticsRoutes;

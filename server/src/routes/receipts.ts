@@ -10,6 +10,7 @@ import {
 } from '../controllers/receipts/getReceipts';
 import {downloadReceipt} from '../controllers/receipts/downloadReceipt';
 import {verifyReceipt} from '../controllers/receipts/verifyReceipt';
+//import {cacheMiddleware} from '../middleware/cacheMiddleware';
 
 const receiptRoutes = Router();
 
@@ -22,7 +23,7 @@ receiptRoutes.post(
 receiptRoutes.get('/getAllReceipts', authenticateUser, getAllReceipts);
 receiptRoutes.get('/getReceipt/:id', getReceiptById);
 receiptRoutes.get('/getReceiptByRn/:receiptNumber', getReceiptByReceiptNumber);
-receiptRoutes.get('/download/:id', downloadReceipt);
+receiptRoutes.get('/download/:id', authenticateUser, downloadReceipt);
 receiptRoutes.get('/verifyReceipt', verifyReceipt);
 
 export default receiptRoutes;

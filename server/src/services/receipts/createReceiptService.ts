@@ -1,5 +1,4 @@
 import prisma from '../../utils/database';
-import Decimal from 'decimal.js';
 import {CreateReceiptRequest} from '../../types/receipt';
 import {updateAnalyticsOnReceiptCreate} from '../analytics/analyticsOnReceiptCreate';
 export const createReceiptWithAnalytics = async (

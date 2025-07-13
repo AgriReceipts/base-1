@@ -49,7 +49,6 @@ export const getAllCommitties = async (req: Request, res: Response) => {
 // @route   GET /api/metadata/checkpost/:committeeId
 // @access  Public
 export const getCheckPosts = async (req: Request, res: Response) => {
-  console.log('this got hit instead');
   const committeeId = req.params.committeeId;
   try {
     const checkposts = await prisma.committee.findUnique({
