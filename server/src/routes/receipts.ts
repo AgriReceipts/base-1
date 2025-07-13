@@ -10,7 +10,7 @@ import {
 } from '../controllers/receipts/getReceipts';
 import {downloadReceipt} from '../controllers/receipts/downloadReceipt';
 import {verifyReceipt} from '../controllers/receipts/verifyReceipt';
-import {cacheMiddleware} from '../middleware/cacheMiddleware';
+//import {cacheMiddleware} from '../middleware/cacheMiddleware';
 
 const receiptRoutes = Router();
 

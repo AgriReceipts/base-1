@@ -12,7 +12,7 @@ import {
   getDetailedCommodityAnalytics,
   getTopCommoditiesAnalytics,
 } from '../controllers/analytics/commodities';
-import {cacheMiddleware} from '../middleware/cacheMiddleware';
+//import {cacheMiddleware} from '../middleware/cacheMiddleware';
 import {authorizeRoles} from '../middleware/roleAccess';
 import {getDistrictAnalyticsController} from '../controllers/analytics/district';
 
