@@ -1,8 +1,5 @@
 import {useState, useEffect} from 'react';
-import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
-import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysis';
 import Reports from '../../components/supervisorcomponents/Reports';
-
 import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry';
@@ -10,7 +7,6 @@ import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
 import {TargetManager} from '@/components/AdCompo/TargetManager';
-import useInitialData from '@/hooks/useInititalData';
 import {useAuthStore} from '@/stores/authStore';
 
 export default function SecretaryDashboard() {
@@ -35,7 +31,6 @@ export default function SecretaryDashboard() {
   useEffect(() => {
     localStorage.setItem('activeNav', activeNav);
   }, [activeNav]);
-  const {detailedCommittee} = useInitialData();
   const {user} = useAuthStore();
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
@@ -49,12 +44,7 @@ export default function SecretaryDashboard() {
       case 'viewReceipts':
         return <ViewReceipts />;
       case 'targetManagement':
-        return (
-          <TargetManager
-            committees={detailedCommittee}
-            currentUser={user?.name || 'secretary'}
-          />
-        );
+        return <TargetManager currentUser={user?.name || 'secretary'} />;
       case 'reports':
         return <Reports />;
       default:
