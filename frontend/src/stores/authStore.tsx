@@ -144,7 +144,7 @@ export const handleJwtLogin = (token: string) => {
     useAuthStore.getState().login({
       user: {
         name: decoded.username, // JWT has 'username'
-        designation: decoded.role, // JWT has 'role'
+        designation: decoded.role || 'unknown', // JWT has 'role'
       },
       role: decoded.role,
       committee: decoded.committee ?? null,

@@ -132,7 +132,7 @@ export const useTraderAnalytics = ({
   };
 };
 
-// Hook for detailed commodity analytics
+// Hook for detailed Trader analytics
 interface UseTraderDetailedAnalyticsProps {
   committeeId: string;
   traderId: string;

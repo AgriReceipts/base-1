@@ -1,7 +1,3 @@
-'use client';
-
-import React from 'react';
-
 import {Card, CardContent} from '../../components/ui/Card';
 import LoginForm from '../../components/Authcompo/LoginForm';
 import {FiShield, FiUsers, FiBarChart, FiFileText} from 'react-icons/fi';

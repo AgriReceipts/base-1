@@ -1,5 +1,4 @@
 import {formatMoney} from '@/lib/helpers';
-import React from 'react';
 import {
   PieChart,
   Pie,
@@ -37,12 +36,14 @@ const PieChartComponent = ({data, onClickData}: PieChartComponentProps) => {
           dataKey='value'
           animationDuration={400}
           label={({name, value, percent}) =>
-            `${name}: ${formatMoney(value)} (${(percent * 100).toFixed(0)}%)`
+            `${name}: ${formatMoney(value || 0)} (${(
+              percent || 0 * 100
+            ).toFixed(0)}%)`
           }
           onClick={
             onClickData ? (_, index) => onClickData(data[index]) : undefined
           }>
-          {data.map((entry, index) => (
+          {data.map((_, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>

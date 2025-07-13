@@ -47,21 +47,6 @@ export default function DeoDashboard() {
     }
   };
 
-  const getPageTitle = () => {
-    switch (activeNav) {
-      case 'overview':
-        return 'Dashboard Overview';
-      case 'addReceipt':
-        return 'Add New Receipt';
-      case 'viewReceipts':
-        return 'Receipt Management';
-      case 'reports':
-        return 'Reports & Analytics';
-      default:
-        return 'Dashboard';
-    }
-  };
-
   return (
     <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
       <div className='flex flex-1 overflow-hidden relative'>

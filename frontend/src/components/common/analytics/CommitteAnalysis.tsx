@@ -1,4 +1,4 @@
-import React, {useState, useMemo} from 'react';
+import {useState, useMemo} from 'react';
 import PieChartComponent from './PieChartComponent';
 import AreaChartComponent from './AreaChartComponent';
 import {useAuthStore} from '@/stores/authStore';

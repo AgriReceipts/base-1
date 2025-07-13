@@ -52,10 +52,6 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
   traders,
   setCommoditySearch,
 }) => {
-  const filteredCommodities = commodities.filter((c) =>
-    c.toLowerCase().includes(commoditySearch.toLowerCase())
-  );
-
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value ? new Date(e.target.value) : undefined;
     onDateChange(newDate);

@@ -1,5 +1,4 @@
 import {useState, useEffect} from 'react';
-import CommitteeAnalysisContainer from '../../components/supervisorcomponents/CommitteeAnalysisContainer';
 
 import Reports from '../../components/supervisorcomponents/Reports';
 

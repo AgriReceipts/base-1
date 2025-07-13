@@ -30,7 +30,6 @@ export const TargetForm: React.FC<TargetFormProps> = ({
   committee,
   year,
   currentUser,
-  existingTarget,
   onSave,
   onCancel,
   loading,

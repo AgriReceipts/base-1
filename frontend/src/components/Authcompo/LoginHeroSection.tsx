@@ -1,5 +1,3 @@
-import React from 'react';
-
 const LoginHeroSection = () => {
   return (
     <div className='hidden lg:flex flex-col justify-center'>

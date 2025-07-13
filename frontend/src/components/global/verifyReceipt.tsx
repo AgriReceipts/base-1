@@ -135,7 +135,7 @@ const VerifyReceipt: React.FC = () => {
           message: 'Receipt not found or invalid',
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.response?.status === 404) {
         setVerificationResult({
           success: false,

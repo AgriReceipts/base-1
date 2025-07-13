@@ -1,5 +1,4 @@
 import {downloadDistrictReport} from '@/lib/download';
-import React from 'react';
 import {
   FiFileText,
   FiDownload,

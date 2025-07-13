@@ -16,14 +16,6 @@ interface Committee {
 interface FilterChangeEvent
   extends React.ChangeEvent<HTMLInputElement | HTMLSelectElement> {}
 
-interface Filters {
-  search: string;
-  natureOfReceipt: string;
-  committeeId: string;
-  startDate: string;
-  endDate: string;
-}
-
 interface Pagination {
   page: number;
   limit: number;
@@ -39,7 +31,7 @@ const ViewReceipts = () => {
   const [committees, setCommittees] = useState<Committee[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(
     null
   );

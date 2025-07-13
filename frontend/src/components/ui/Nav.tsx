@@ -1,4 +1,3 @@
-import React from 'react'; // REMOVED: useState, useEffect
 import {FiSidebar} from 'react-icons/fi';
 import logo from '../../assets/logo-ap.png';
 import {useAuthStore} from '@/stores/authStore';

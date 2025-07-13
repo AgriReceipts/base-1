@@ -139,7 +139,7 @@ export const TargetList: React.FC<TargetListProps> = ({
                 <td px-6 py-4 whitespace-nowrap text-sm text-gray-500>
                   <Trash
                     className='text-red-500 ml-5 cursor-pointer'
-                    onClick={() => deleteTarget(target?.id)}
+                    onClick={() => target.id && deleteTarget(target.id)}
                   />
                 </td>
                 <td className='px-6 py-4 text-sm text-gray-500 max-w-xs truncate'>

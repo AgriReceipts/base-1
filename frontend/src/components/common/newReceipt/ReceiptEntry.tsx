@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect} from 'react';
 import {z} from 'zod';
 import {
   type CreateReceiptRequest,
@@ -12,9 +12,6 @@ import useInitialData from '@/hooks/useInititalData';
 
 // Define types for better readability and maintenance
 type FormData = Omit<z.infer<typeof CreateReceiptSchema>, 'receiptDate'>;
-type Commodity = string;
-type Checkpost = {id: string; name: string};
-type Trader = string;
 
 interface ReceiptEntryProps {
   receiptToEdit?: EditReceipt;
@@ -112,7 +109,9 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
       console.error('Validation Errors:', errors);
       // Show the first error message
       const firstError = Object.values(errors)[0]?.[0];
-      setErrorMessage(firstError || 'Please fill all required fields correctly');
+      setErrorMessage(
+        firstError || 'Please fill all required fields correctly'
+      );
       setLoading(false);
       return;
     }
@@ -160,36 +159,35 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
 
       {/* Success Dialog */}
       {isSuccessDialogOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-white rounded-lg p-6 max-w-sm w-full'>
+            <div className='text-center'>
+              <div className='mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100'>
                 <svg
-                  className="h-6 w-6 text-green-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+                  className='h-6 w-6 text-green-600'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'>
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
                     strokeWidth={2}
-                    d="M5 13l4 4L19 7"
+                    d='M5 13l4 4L19 7'
                   />
                 </svg>
               </div>
-              <h3 className="mt-3 text-lg font-medium text-gray-900">
+              <h3 className='mt-3 text-lg font-medium text-gray-900'>
                 Success!
               </h3>
-              <div className="mt-2 text-sm text-gray-500">
-                Receipt has been {isEditing ? 'updated' : 'created'} successfully.
+              <div className='mt-2 text-sm text-gray-500'>
+                Receipt has been {isEditing ? 'updated' : 'created'}{' '}
+                successfully.
               </div>
-              <div className="mt-4">
+              <div className='mt-4'>
                 <button
-                  type="button"
-                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
-                  onClick={() => setIsSuccessDialogOpen(false)}
-                >
+                  type='button'
+                  className='inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm'
+                  onClick={() => setIsSuccessDialogOpen(false)}>
                   OK
                 </button>
               </div>

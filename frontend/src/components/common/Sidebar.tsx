@@ -12,7 +12,6 @@ import {
   FiPlusSquare,
   FiEye,
   FiPlus,
-  FiTarget,
   FiBarChart2,
 } from 'react-icons/fi';
 
@@ -29,16 +28,25 @@ const roleNavItems = {
     {id: 'committeeAnalysis', label: 'Committee Analysis', icon: <FiUsers />},
     {id: 'reports', label: 'Reports', icon: <FiFileText />},
   ],
-   
+
   deo: [
     {id: 'overview', label: 'Overview', icon: <FiHome />},
     {id: 'addReceipt', label: 'Add Receipt', icon: <FiPlus />},
     {id: 'viewReceipts', label: 'View Receipts', icon: <FiFileText />},
     {id: 'reports', label: 'Reports', icon: <FiBarChart2 />},
   ],
- 
-  
-  // Add more roles as needed
+
+  ad: [
+    {id: 'overview', label: 'Overview', icon: <FiHome />},
+    {id: 'viewReceipts', label: 'View Receipts', icon: <FiEye />},
+    {id: 'reports', label: 'Reports', icon: <FiFileText />},
+  ],
+
+  secretary: [
+    {id: 'overview', label: 'Overview', icon: <FiHome />},
+    {id: 'viewReceipts', label: 'View Receipts', icon: <FiEye />},
+    {id: 'reports', label: 'Reports', icon: <FiFileText />},
+  ],
 };
 
 // --- Component Props ---
@@ -106,7 +114,7 @@ export default function Sidebar({
       {/* Header */}
       <div className='p-6 border-b border-gray-200'>
         <h2 className='text-xl font-semibold text-gray-800'>
-          {getRoleDisplay(role)} 
+          {getRoleDisplay(role)}
         </h2>
       </div>
 
