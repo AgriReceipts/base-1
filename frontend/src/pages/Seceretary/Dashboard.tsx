@@ -1,7 +1,8 @@
 
 import {useState, useEffect} from 'react';
 import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
-import CommitteeAnalysis from '../../components/common/analytics/CommiteeAnalysis';
+import CommitteeAnalysisContainer from '../../components/supervisorcomponents/CommitteeAnalysisContainer'
+
 import Reports from '../../components/supervisorcomponents/Reports';
 
 
@@ -50,6 +51,8 @@ export default function SecretaryDashboard() {
         return <ReceiptEntry />;
       case 'viewReceipts':
         return <ViewReceipts />;
+       case 'CommitteeAnalysis':
+        return <CommitteeAnalysisContainer />;
       case 'targetManagement':
         return (
           <TargetManager
@@ -71,6 +74,7 @@ export default function SecretaryDashboard() {
     { key: 'addReceipt', label: 'Add Receipt' },
     { key: 'viewReceipts', label: 'View Receipts' },
     { key: 'targetManagement', label: 'Target Management' },
+    { key: 'CommitteeAnalysis', label: 'Committee Analysis' },
     { key: 'reports', label: 'Reports' },
   ];
 

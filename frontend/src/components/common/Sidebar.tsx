@@ -29,16 +29,7 @@ const roleNavItems = {
     {id: 'committeeAnalysis', label: 'Committee Analysis', icon: <FiUsers />},
     {id: 'reports', label: 'Reports', icon: <FiFileText />},
   ],
-   secretary: [
-    {id: 'overview', label: 'Overview', icon: <FiHome />},
-    {id: 'addReceipt', label: 'Add Receipt', icon: <FiPlusSquare />},
-    {id: 'viewReceipts', label: 'View Receipts', icon: <FiEye />},
-    {id: 'traderAnalysis', label: 'Trader Analysis', icon: <FiTrendingUp />},
-    {id: 'targetManagement', label: 'Target Management', icon: <FiTarget />},
-    
-    {id: 'committeeAnalysis', label: 'Committee Analysis', icon: <FiUsers />},
-    {id: 'reports', label: 'Reports', icon: <FiFileText />},
-  ],
+   
   deo: [
     {id: 'overview', label: 'Overview', icon: <FiHome />},
     {id: 'addReceipt', label: 'Add Receipt', icon: <FiPlus />},
