@@ -7,19 +7,45 @@ import {HeatmapComponent} from './DistrictAnalytics/Heatmap';
 import {HorizontalBarChart} from './DistrictAnalytics/HorizontalChart';
 import {PieChartComponent} from './DistrictAnalytics/PieChart';
 import {Cell, Pie, PieChart, Tooltip} from 'recharts';
-
 import {CommitteeHorizontalBars} from './DistrictAnalytics/HorizontalBar';
 
-// Define all interfaces at the top
 interface FilterState {
   financialYear: string;
   month: string;
 }
 
-// Main Dashboard Component
+const getFinancialYearOptions = (count = 5): string[] => {
+  const currentYear = new Date().getFullYear();
+  const options: string[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const startYear = currentYear - i;
+    const endYear = startYear + 1;
+    options.push(`${startYear}-${endYear}`);
+  }
+
+  return options.reverse(); // Show recent years first
+};
+
+const months = [
+  {label: 'All', value: 'All'},
+  {label: 'April', value: '4'},
+  {label: 'May', value: '5'},
+  {label: 'June', value: '6'},
+  {label: 'July', value: '7'},
+  {label: 'August', value: '8'},
+  {label: 'September', value: '9'},
+  {label: 'October', value: '10'},
+  {label: 'November', value: '11'},
+  {label: 'December', value: '12'},
+  {label: 'January', value: '1'},
+  {label: 'February', value: '2'},
+  {label: 'March', value: '3'},
+];
+
 const DistrictAnalysis: React.FC = () => {
   const [filters, setFilters] = useState<FilterState>({
-    financialYear: '2023-2024',
+    financialYear: '2025-2026',
     month: 'All',
   });
 
@@ -31,6 +57,10 @@ const DistrictAnalysis: React.FC = () => {
     }));
   };
 
+  const financialYearStart = parseInt(filters.financialYear.split('-')[0]);
+  const monthNumber =
+    filters.month !== 'All' ? parseInt(filters.month) : undefined;
+
   const {
     committeeWiseAchievement,
     districtMetadata,
@@ -41,17 +71,19 @@ const DistrictAnalysis: React.FC = () => {
     loading,
     error,
   } = useDistrictAnalytics({
-    financialYearStart: '2025',
+    financialYearStart: financialYearStart.toString(),
+    month: monthNumber?.toString(),
   });
 
   const getHeatmapColor = (value: number): string => {
-    if (value >= 90) return '#22c55e'; // Green
-    if (value >= 80) return '#84cc16'; // Light green
-    if (value >= 70) return '#eab308'; // Yellow
-    if (value >= 60) return '#f97316'; // Orange
-    if (value >= 50) return '#ef4444'; // Red
-    return '#94a3b8'; // Gray for low values
+    if (value >= 90) return '#22c55e';
+    if (value >= 80) return '#84cc16';
+    if (value >= 70) return '#eab308';
+    if (value >= 60) return '#f97316';
+    if (value >= 50) return '#ef4444';
+    return '#94a3b8';
   };
+
   if (loading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
@@ -74,7 +106,6 @@ const DistrictAnalysis: React.FC = () => {
     );
   }
 
-  // Add null check for districtMetadata - this is the key fix
   if (!districtMetadata) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
@@ -85,15 +116,17 @@ const DistrictAnalysis: React.FC = () => {
     );
   }
 
+  const financialYearOptions = getFinancialYearOptions(5);
+
   return (
-    <div className='min-h-screen bg-gray-50 p-4 md:p-6 '>
+    <div className='min-h-screen bg-gray-50 p-4 md:p-6'>
       <div className='max-w-full mx-auto'>
         <h1 className='text-2xl md:text-3xl font-bold text-gray-800 mb-6'>
           District Revenue Analysis Dashboard
         </h1>
 
-        {/* Filters & Controls */}
-        <div className='bg-white rounded-lg shadow-md p-4 mb-6'>
+        {/* Filters */}
+        <div className='bg-white rounded-lg shadow-md p-4 mb-6 sticky top-0 z-10'>
           <h2 className='text-lg font-semibold text-gray-700 mb-4'>
             Filters & Controls
           </h2>
@@ -109,10 +142,12 @@ const DistrictAnalysis: React.FC = () => {
                 name='financialYear'
                 value={filters.financialYear}
                 onChange={handleFilterChange}
-                className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border'>
-                <option value='2022-2023'>2022-2023</option>
-                <option value='2023-2024'>2023-2024</option>
-                <option value='2024-2025'>2024-2025</option>
+                className='block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
+                {financialYearOptions.map((fy) => (
+                  <option key={fy} value={fy}>
+                    {fy}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -127,24 +162,10 @@ const DistrictAnalysis: React.FC = () => {
                 name='month'
                 value={filters.month}
                 onChange={handleFilterChange}
-                className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border'>
-                <option value='All'>All Months</option>
-                {[
-                  'April',
-                  'May',
-                  'June',
-                  'July',
-                  'August',
-                  'September',
-                  'October',
-                  'November',
-                  'December',
-                  'January',
-                  'February',
-                  'March',
-                ].map((month) => (
-                  <option key={month} value={month}>
-                    {month}
+                className='block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
+                {months.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
                   </option>
                 ))}
               </select>
@@ -152,7 +173,7 @@ const DistrictAnalysis: React.FC = () => {
           </div>
         </div>
 
-        {/* Metric Cards */}
+        {/* Metrics */}
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
           <MetricCard
             title='Total Collection'
@@ -164,7 +185,7 @@ const DistrictAnalysis: React.FC = () => {
           />
           <MetricCard
             title='Achievement Rate'
-            value={`${districtMetadata.achievementPercent}%`}
+            value={`${districtMetadata.achievementPercent ?? 0}%`}
             subtitle='Against Target'
             color='#10b981'
           />
@@ -182,7 +203,7 @@ const DistrictAnalysis: React.FC = () => {
           />
         </div>
 
-        {/* Charts Row 1 - Line and Bar Charts */}
+        {/* Charts */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
           <ChartCard title='Committee Wise Achievement (in Lakhs)'>
             <CommitteeHorizontalBars data={committeeWiseAchievement} />
@@ -192,7 +213,6 @@ const DistrictAnalysis: React.FC = () => {
           </ChartCard>
         </div>
 
-        {/* Charts Row 2 - Pie Charts */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
           <ChartCard title='Top Commodities by Revenue'>
             <PieChartComponent data={topCommodities} />
@@ -222,8 +242,8 @@ const DistrictAnalysis: React.FC = () => {
                 label={({name, percent}) =>
                   `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
                 }>
-                <Cell fill='#10b981' /> {/* Green for Achieved */}
-                <Cell fill='#f97316' /> {/* Orange for Pending */}
+                <Cell fill='#10b981' />
+                <Cell fill='#f97316' />
               </Pie>
               <Tooltip
                 content={({active, payload}) => {
@@ -247,7 +267,6 @@ const DistrictAnalysis: React.FC = () => {
           </ChartCard>
         </div>
 
-        {/* Checkpost Performance */}
         <div className='mb-6'>
           <ChartCard
             title='Top Checkpost Performance (in Lakhs)'
@@ -256,7 +275,6 @@ const DistrictAnalysis: React.FC = () => {
           </ChartCard>
         </div>
 
-        {/* Heatmap */}
         <div className='mb-6'>
           <ChartCard
             title='Committee-Month Performance Heatmap'
@@ -265,7 +283,6 @@ const DistrictAnalysis: React.FC = () => {
           </ChartCard>
         </div>
 
-        {/* Committee Analysis Table */}
         <div className='mb-6'>
           <ChartCard title='Detailed Committee Analysis' className='w-full'>
             <CommitteeTable data={committeeWiseAchievement} />
