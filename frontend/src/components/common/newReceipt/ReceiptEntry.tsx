@@ -1,5 +1,4 @@
 import {useState, useEffect, useCallback} from 'react';
-import {toast} from 'react-hot-toast';
 import {z} from 'zod';
 import {
   type CreateReceiptRequest,
@@ -63,6 +62,8 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
   );
   const [loading, setLoading] = useState(false);
   const [commoditySearch, setCommoditySearch] = useState('');
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isEditing = !!receiptToEdit;
 
   useEffect(() => {
@@ -94,6 +95,7 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(null);
 
     const payload: CreateReceiptRequest = {
       ...formData,
@@ -108,7 +110,9 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
     if (!validation.success) {
       const errors = validation.error.flatten().fieldErrors;
       console.error('Validation Errors:', errors);
-      Object.values(errors).forEach((err) => toast.error(err[0]));
+      // Show the first error message
+      const firstError = Object.values(errors)[0]?.[0];
+      setErrorMessage(firstError || 'Please fill all required fields correctly');
       setLoading(false);
       return;
     }
@@ -116,17 +120,17 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
     try {
       if (isEditing) {
         await api.put(`/receipts/${receiptToEdit.id}`, validation.data);
-        toast.success('Receipt updated successfully!');
+        setIsSuccessDialogOpen(true);
       } else {
         await api.post('/receipts/createReceipt', validation.data);
-        toast.success('Receipt saved successfully!');
+        setIsSuccessDialogOpen(true);
         handleReset();
       }
     } catch (error) {
       if (isAxiosError(error) && error.response?.data?.message) {
-        toast.error(error.response.data.message);
+        setErrorMessage(error.response.data.message);
       } else {
-        toast.error('An error occurred while saving the receipt.');
+        setErrorMessage('An error occurred while saving the receipt.');
       }
     } finally {
       setLoading(false);
@@ -134,22 +138,66 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
   };
 
   return (
-    <FormReceipt
-      formData={formData}
-      onFormChange={handleFormChange}
-      handleSubmit={handleSubmit}
-      handleReset={handleReset}
-      date={date}
-      onDateChange={handleDateChange}
-      isEditing={isEditing}
-      loading={loading}
-      committeeData={committee}
-      availableCheckposts={availableCheckposts}
-      commodities={commodities}
-      traders={traders}
-      commoditySearch={commoditySearch}
-      setCommoditySearch={setCommoditySearch}
-    />
+    <>
+      <FormReceipt
+        formData={formData}
+        onFormChange={handleFormChange}
+        handleSubmit={handleSubmit}
+        handleReset={handleReset}
+        date={date}
+        onDateChange={handleDateChange}
+        isEditing={isEditing}
+        loading={loading}
+        committeeData={committee}
+        availableCheckposts={availableCheckposts}
+        commodities={commodities}
+        traders={traders}
+        commoditySearch={commoditySearch}
+        setCommoditySearch={setCommoditySearch}
+        errorMessage={errorMessage}
+        onErrorDismiss={() => setErrorMessage(null)}
+      />
+
+      {/* Success Dialog */}
+      {isSuccessDialogOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg
+                  className="h-6 w-6 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h3 className="mt-3 text-lg font-medium text-gray-900">
+                Success!
+              </h3>
+              <div className="mt-2 text-sm text-gray-500">
+                Receipt has been {isEditing ? 'updated' : 'created'} successfully.
+              </div>
+              <div className="mt-4">
+                <button
+                  type="button"
+                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
+                  onClick={() => setIsSuccessDialogOpen(false)}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
