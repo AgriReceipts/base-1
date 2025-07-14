@@ -33,19 +33,32 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
     return (committee[month as keyof HeatMapRes] as number) || 0;
   };
 
+  // Calculate dynamic dimensions
+  const leftMargin = 180;
+  const cellWidth = 60;
+  const cellHeight = 35;
+  const cellSpacing = 8;
+  const headerHeight = 80;
+  const legendHeight = 120; // Increased to ensure legend is visible
+  const totalWidth =
+    leftMargin + months.length * (cellWidth + cellSpacing) - cellSpacing + 40;
+  const heatmapHeight =
+    committees.length * (cellHeight + cellSpacing) - cellSpacing;
+  const totalHeight = headerHeight + heatmapHeight + legendHeight;
+
   return (
     <div className='w-full overflow-x-auto'>
       <svg
         width='100%'
-        height={committees.length * 30 + 100}
-        viewBox={`0 0 800 ${committees.length * 30 + 100}`}
-        className='min-w-[800px]'>
+        height={totalHeight}
+        viewBox={`0 0 ${totalWidth} ${totalHeight}`}
+        className={`min-w-[${totalWidth}px]`}>
         {/* Title */}
         <text
-          x='400'
-          y='20'
+          x={totalWidth / 2}
+          y='25'
           textAnchor='middle'
-          className='text-sm fill-gray-600 font-medium'>
+          className='text-lg fill-gray-700 font-semibold'>
           Achievement Percentage by Committee and Month
         </text>
 
@@ -53,10 +66,10 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
         {months.map((month, index) => (
           <text
             key={`month-${index}`}
-            x={150 + index * 50 + 25}
-            y='45'
+            x={leftMargin + index * (cellWidth + cellSpacing) + cellWidth / 2}
+            y='60'
             textAnchor='middle'
-            className='text-xs fill-gray-600'>
+            className='text-sm fill-gray-600 font-medium'>
             {month.substring(0, 3)} {/* Show abbreviated month names */}
           </text>
         ))}
@@ -65,12 +78,17 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
         {committees.map((committee, index) => (
           <text
             key={`committee-${index}`}
-            x='140'
-            y={80 + index * 30 + 15}
+            x={leftMargin - 10}
+            y={
+              headerHeight +
+              index * (cellHeight + cellSpacing) +
+              cellHeight / 2 +
+              4
+            }
             textAnchor='end'
-            className='text-xs fill-gray-600'>
-            {committee.length > 20
-              ? `${committee.substring(0, 17)}...`
+            className='text-sm fill-gray-600 font-medium'>
+            {committee.length > 25
+              ? `${committee.substring(0, 22)}...`
               : committee}
           </text>
         ))}
@@ -83,24 +101,33 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
             return (
               <g key={`cell-${committeeIndex}-${monthIndex}`}>
                 <rect
-                  x={150 + monthIndex * 50}
-                  y={80 + committeeIndex * 30}
-                  width='40'
-                  height='20'
+                  x={leftMargin + monthIndex * (cellWidth + cellSpacing)}
+                  y={headerHeight + committeeIndex * (cellHeight + cellSpacing)}
+                  width={cellWidth}
+                  height={cellHeight}
                   fill={getColor(value)}
                   stroke='#fff'
-                  strokeWidth='0.5'
-                  rx='2'>
+                  strokeWidth='1'
+                  rx='4'>
                   <title>{`${committee.committeeName} - ${month}: ${value}%`}</title>
                 </rect>
 
                 {/* Value text for cells with enough contrast */}
-                {value > 30 && (
+                {value > 0 && (
                   <text
-                    x={150 + monthIndex * 50 + 20}
-                    y={80 + committeeIndex * 30 + 13}
+                    x={
+                      leftMargin +
+                      monthIndex * (cellWidth + cellSpacing) +
+                      cellWidth / 2
+                    }
+                    y={
+                      headerHeight +
+                      committeeIndex * (cellHeight + cellSpacing) +
+                      cellHeight / 2 +
+                      4
+                    }
                     textAnchor='middle'
-                    className='text-[10px] fill-white font-medium'>
+                    className='text-xs fill-gray-600 '>
                     {value}%
                   </text>
                 )}
@@ -109,39 +136,47 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
           })
         )}
 
-        {/* Color legend */}
+        {/* Color legend - positioned below heatmap with proper spacing */}
         <text
-          x='150'
-          y={committees.length * 30 + 70}
-          className='text-xs fill-gray-600'>
-          Performance:
+          x={leftMargin}
+          y={headerHeight + heatmapHeight + 40}
+          className='text-sm fill-gray-700 font-medium'>
+          Performance Scale:
         </text>
 
-        {[0, 20, 40, 60, 80, 100].map((value, index) => (
-          <g
-            key={`legend-${index}`}
-            transform={`translate(${250 + index * 50}, ${
-              committees.length * 30 + 60
-            })`}>
-            <rect
-              x='0'
-              y='0'
-              width='40'
-              height='20'
-              fill={getColor(value)}
-              stroke='#fff'
-              strokeWidth='0.5'
-              rx='2'
-            />
-            <text
-              x='20'
-              y='35'
-              textAnchor='middle'
-              className='text-xs fill-gray-500'>
-              {value}%
-            </text>
-          </g>
-        ))}
+        {[0, 20, 40, 60, 80, 100].map((value, index) => {
+          const color = getColor(value);
+          const rectX = leftMargin + index * (cellWidth + cellSpacing);
+          const rectY = headerHeight + heatmapHeight + 50;
+          const textX = rectX + cellWidth / 2;
+          const textY = rectY + 35; // Moved text closer to rectangle
+
+          console.log(`Legend ${index}: value=${value}, color=${color}`); // Debug log
+
+          return (
+            <g key={`legend-${index}`}>
+              <rect
+                x={rectX}
+                y={rectY}
+                width={cellWidth}
+                height='25'
+                fill={color || '#d1d5db'}
+                stroke='#9ca3af'
+                strokeWidth='1'
+                rx='4'
+              />
+              <text
+                x={textX}
+                y={textY}
+                textAnchor='middle'
+                fill='#374151'
+                fontSize='12'
+                fontWeight='500'>
+                {value}%
+              </text>
+            </g>
+          );
+        })}
       </svg>
     </div>
   );

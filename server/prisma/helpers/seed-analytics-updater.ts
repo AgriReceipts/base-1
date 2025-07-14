@@ -12,7 +12,9 @@ import {
  * 3. Upserting CommitteeMonthlyAnalytics.
  * 4. Upserting TraderMonthlyAnalytics and TraderOverallAnalytics.
  * 5. Upserting CommodityMonthlyAnalytics and CommodityOverallAnalytics.
- * All operations are performed within a single transaction for data integrity.
+ *
+ * Note: Operations are performed sequentially without transactions for seed script performance.
+ * Data integrity is sacrificed for speed during seeding process.
  */
 export async function processDayBatch(
   prisma: PrismaClient,
@@ -25,9 +27,9 @@ export async function processDayBatch(
     return;
   }
 
-  await prisma.$transaction(async (tx) => {
+  try {
     // 1. Create all receipts for this batch
-    await tx.receipt.createMany({
+    await prisma.receipt.createMany({
       data: receipts,
       skipDuplicates: true, // Good practice
     });
@@ -39,7 +41,7 @@ export async function processDayBatch(
     const analytics = calculateDayAnalytics(receipts, receiptDate, committeeId);
 
     // 2. Upsert DailyAnalytics
-    await tx.dailyAnalytics.upsert({
+    await prisma.dailyAnalytics.upsert({
       where: {
         receiptDate_committeeId: {
           receiptDate,
@@ -65,11 +67,11 @@ export async function processDayBatch(
     });
 
     // 3. Update Committee-level Monthly Analytics
-    await updateCommitteeAnalytics(tx, committeeId, year, month, receipts);
+    await updateCommitteeAnalytics(prisma, committeeId, year, month, receipts);
 
     // 4. Update Trader-level Monthly and Overall Analytics
     await updateTraderAnalytics(
-      tx,
+      prisma,
       committeeId,
       year,
       month,
@@ -78,8 +80,14 @@ export async function processDayBatch(
     );
 
     // 5. Update Commodity-level Monthly and Overall Analytics
-    await updateCommodityAnalytics(tx, committeeId, year, month, receipts);
-  });
+    await updateCommodityAnalytics(prisma, committeeId, year, month, receipts);
+  } catch (error) {
+    console.error(
+      `Error processing day batch for committee ${committeeId} on ${receiptDate.toISOString()}:`,
+      error
+    );
+    throw error; // Re-throw to allow caller to handle
+  }
 }
 
 /**
