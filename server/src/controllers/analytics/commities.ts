@@ -39,7 +39,7 @@ export const getCommitteAnalytics = async (req: Request, res: Response) => {
         totalValue: true,
         marketFees: true,
         officeFees: true,
-        checkpostFees: true,
+        checkpostMarketFees: true,
         otherFees: true,
       },
     });
@@ -80,7 +80,7 @@ export const getCommitteAnalytics = async (req: Request, res: Response) => {
           committeeId,
         },
         select: {
-          checkpostFees: true,
+          checkpostMarketFees: true,
           officeFees: true,
           otherFees: true,
         },
@@ -91,7 +91,7 @@ export const getCommitteAnalytics = async (req: Request, res: Response) => {
     let totalOtherFees = 0;
 
     for (const entry of allTimeMfCollection) {
-      totalCheckpostFees += Number(entry.checkpostFees);
+      totalCheckpostFees += Number(entry.checkpostMarketFees);
       totalOfficeFees += Number(entry.officeFees);
       totalOtherFees += Number(entry.otherFees);
     }

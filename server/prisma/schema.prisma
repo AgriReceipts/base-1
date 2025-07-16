@@ -89,7 +89,9 @@ model User {
 
   committee Committee? @relation(fields: [committeeId], references: [id])
 
-  receipts Receipt[]
+  receipts           Receipt[]
+  superVisorTargets  Target[]
+  committeeAnalytics CommitteeMonthlyAnalytics[]
 
   @@index([username])
 }
@@ -310,8 +312,9 @@ model Target {
   year  Int
   month Int
 
-  committeeId String
-  checkpostId String? // Optional: for checkpost-specific targets
+  committeeId  String
+  checkpostId  String? // Optional: for checkpost-specific targets
+  superVisorId String?
 
   // Target amounts
   marketFeeTarget  Decimal
@@ -328,11 +331,13 @@ model Target {
   // Relations
   committee Committee  @relation(fields: [committeeId], references: [id])
   checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
+  User      User?      @relation(fields: [superVisorId], references: [id])
 
   // One target per committee/checkpost per month
-  @@unique([year, month, committeeId, checkpostId, isActive])
+  @@unique([year, month, committeeId, checkpostId, superVisorId, isActive])
   @@index([committeeId, year])
   @@index([checkpostId, year])
+  @@index([superVisorId, year])
   @@index([year, month])
 }
 
@@ -429,8 +434,9 @@ model CommodityOverallAnalytics {
 model CommitteeMonthlyAnalytics {
   id String @id @default(uuid())
 
-  committeeId String
-  checkPostId String?
+  committeeId  String
+  checkPostId  String?
+  superVisorId String?
 
   year Int
 
@@ -446,7 +452,8 @@ model CommitteeMonthlyAnalytics {
 
   officeFees Decimal @default(0)
 
-  checkpostFees Decimal @default(0)
+  checkpostMarketFees  Decimal @default(0)
+  superVisorMarketFees Decimal @default(0)
 
   otherFees Decimal @default(0)
 
@@ -463,6 +470,7 @@ model CommitteeMonthlyAnalytics {
 
   committee Committee  @relation(fields: [committeeId], references: [id])
   Checkpost Checkpost? @relation(fields: [checkPostId], references: [id])
+  User      User?      @relation(fields: [superVisorId], references: [id])
 
   @@unique([committeeId, year, month]) // Ensure only one row per month
   @@index([committeeId, year, month])

@@ -218,7 +218,7 @@ export const updateAnalyticsOnReceiptCreate = async (
       // Initialize all relevant fields correctly on creation
       marketFees: natureOfReceipt === 'mf' ? feesPaid : 0,
       officeFees: collectionLocation === 'office' ? feesPaid : 0,
-      checkpostFees: collectionLocation === 'checkpost' ? feesPaid : 0,
+      checkpostMarketFees: collectionLocation === 'checkpost' ? feesPaid : 0,
       otherFees: collectionLocation === 'other' ? feesPaid : 0,
     },
   });

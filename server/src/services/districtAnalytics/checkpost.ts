@@ -21,7 +21,7 @@ export const topCheckposts = async ({
       },
       select: {
         checkPostId: true,
-        checkpostFees: true,
+        checkpostMarketFees: true,
         Checkpost: {
           select: {
             name: true,
@@ -34,7 +34,7 @@ export const topCheckposts = async ({
 
     data.forEach((entry) => {
       const name = entry.Checkpost?.name || 'Unknown';
-      const fee = Number(entry.checkpostFees || 0);
+      const fee = Number(entry.checkpostMarketFees || 0);
       feesByCheckpost[name] = (feesByCheckpost[name] || 0) + fee;
     });
 
@@ -58,7 +58,7 @@ export const topCheckposts = async ({
       },
       select: {
         checkPostId: true,
-        checkpostFees: true,
+        checkpostMarketFees: true,
         Checkpost: {
           select: {
             name: true,
@@ -71,7 +71,7 @@ export const topCheckposts = async ({
 
     data.forEach((entry) => {
       const name = entry.Checkpost?.name || 'Unknown';
-      const fee = Number(entry.checkpostFees || 0);
+      const fee = Number(entry.checkpostMarketFees || 0);
       feesByCheckpost[name] = (feesByCheckpost[name] || 0) + fee;
     });
 
