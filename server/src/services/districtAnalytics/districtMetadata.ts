@@ -1,6 +1,6 @@
-import {DistrictMetadata} from '../../types/districtAnalytics';
-import prisma from '../../utils/database';
-import {getFinancialYearRange} from '../../utils/dateHelper';
+import { DistrictMetadata } from "../../types/districtAnalytics";
+import prisma from "../../utils/database";
+import { getFinancialYearRange } from "../../utils/dateHelper";
 
 export const districtMetadata = async ({
   fyStart,
@@ -38,7 +38,7 @@ export const districtMetadata = async ({
         totalReceipts: true,
         totalValue: true,
       },
-      orderBy: [{year: 'asc'}, {month: 'asc'}],
+      orderBy: [{ year: "asc" }, { month: "asc" }],
     });
   }
 
@@ -54,7 +54,8 @@ export const districtMetadata = async ({
     totalValue += Number(entry.totalValue || 0);
   });
 
-  const avgTransaction = totalReceipts > 0 ? totalValue / totalReceipts : 0;
+  const avgTransaction =
+    totalReceipts > 0 ? totalMarketFees / totalReceipts : 0;
 
   const achievementPercent =
     totalTarget > 0 ? (totalMarketFees / totalTarget) * 100 : null;

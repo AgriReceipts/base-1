@@ -1,6 +1,6 @@
-import type {Committee, Target} from '@/types/targets';
-import {Trash} from 'lucide-react';
-import React from 'react';
+import type { Committee, Target } from "@/types/targets";
+import { Trash } from "lucide-react";
+import React from "react";
 
 interface TargetListProps {
   targets: Target[];
@@ -12,18 +12,18 @@ interface TargetListProps {
 }
 
 const MONTH_NAMES = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 export const TargetList: React.FC<TargetListProps> = ({
@@ -36,36 +36,43 @@ export const TargetList: React.FC<TargetListProps> = ({
 }) => {
   if (loading) {
     return (
-      <div className='flex justify-center items-center py-8'>
-        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  // ✅ Filter targets based on selectedCheckpost
-  const filteredTargets = selectedCheckpost
-    ? targets.filter((target) => target.checkpost?.id === selectedCheckpost)
-    : targets;
+  // ✅ Determine what targets to display based on selectedCheckpost
+  const displayTargets = (() => {
+    if (!selectedCheckpost || selectedCheckpost === "all") {
+      // Show only committee-level targets when "All Checkposts" is selected
+      return targets.filter((target) => !target.checkpost);
+    } else {
+      // Show checkpost-specific targets + committee-level targets for specific checkpost
+      const checkpostTargets = targets.filter(
+        (target) => target.checkpost?.id === selectedCheckpost,
+      );
+      const committeeLevelTargets = targets.filter(
+        (target) => !target.checkpost,
+      );
+      return [...checkpostTargets, ...committeeLevelTargets];
+    }
+  })();
 
-  // ✅ Get committee-level targets (those without a specific checkpost)
-  const committeeLevelTargets = targets.filter((target) => !target.checkpost);
+  // ✅ Check if we have checkpost-specific targets when filtering by specific checkpost
+  const hasCheckpostTargets =
+    selectedCheckpost && selectedCheckpost !== "all"
+      ? targets.some((target) => target.checkpost?.id === selectedCheckpost)
+      : true;
 
-  // ✅ When filtering by checkpost, combine checkpost-specific targets with committee-level targets
-  const displayTargets = selectedCheckpost
-    ? [...filteredTargets, ...committeeLevelTargets]
-    : targets;
-
-  // ✅ Check if we have checkpost-specific targets when filtering
-  const hasCheckpostTargets = selectedCheckpost
-    ? filteredTargets.length > 0
-    : true;
-  const checkpostName = selectedCheckpost
-    ? committee?.checkposts?.find((cp) => cp.id === selectedCheckpost)?.name
-    : null;
+  const checkpostName =
+    selectedCheckpost && selectedCheckpost !== "all"
+      ? committee?.checkposts?.find((cp) => cp.id === selectedCheckpost)?.name
+      : null;
 
   if (displayTargets.length === 0) {
     return (
-      <div className='text-center py-8 text-gray-500'>
+      <div className="text-center py-8 text-gray-500">
         No targets found for {committee?.name}
         {checkpostName && ` - ${checkpostName}`} in {year}-{year + 1}
       </div>
@@ -74,9 +81,9 @@ export const TargetList: React.FC<TargetListProps> = ({
 
   // ✅ Get display name for header
   const getDisplayName = () => {
-    if (selectedCheckpost) {
+    if (selectedCheckpost && selectedCheckpost !== "all") {
       const checkpostName = committee?.checkposts?.find(
-        (cp) => cp.id === selectedCheckpost
+        (cp) => cp.id === selectedCheckpost,
       )?.name;
       return `${committee?.name} - ${checkpostName}`;
     }
@@ -85,65 +92,67 @@ export const TargetList: React.FC<TargetListProps> = ({
 
   return (
     <div>
-      <h2 className='text-xl font-semibold mb-4'>
+      <h2 className="text-xl font-semibold mb-4">
         Existing Targets - {getDisplayName()} ({year}-{year + 1})
       </h2>
 
       {/* ✅ Show message when no checkpost-specific targets found */}
-      {selectedCheckpost && !hasCheckpostTargets && (
-        <div className='mb-4 p-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded'>
-          No specific targets found for {checkpostName}. Showing committee-level
-          targets below.
-        </div>
-      )}
+      {selectedCheckpost &&
+        selectedCheckpost !== "all" &&
+        !hasCheckpostTargets && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded">
+            No specific targets found for {checkpostName}. Showing
+            committee-level targets below.
+          </div>
+        )}
 
-      <div className='overflow-x-auto'>
-        <table className='min-w-full bg-white border border-gray-200'>
-          <thead className='bg-gray-50'>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Month
               </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Checkpost
               </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Market Fee Target
               </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Set By
               </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Notes
               </th>
             </tr>
           </thead>
-          <tbody className='bg-white divide-y divide-gray-200'>
+          <tbody className="bg-white divide-y divide-gray-200">
             {displayTargets.map((target) => (
-              <tr key={target.id} className='hover:bg-gray-50'>
-                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+              <tr key={target.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {MONTH_NAMES[target.month - 1]}
                 </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                  {target.checkpost?.name || 'Committee Level'}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {target.checkpost?.name || "Committee Level"}
                 </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   ₹{target.marketFeeTarget.toLocaleString()}
                 </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {target.setBy}
                 </td>
-                <td px-6 py-4 whitespace-nowrap text-sm text-gray-500>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <Trash
-                    className='text-red-500 ml-5 cursor-pointer'
+                    className="text-red-500 ml-5 cursor-pointer"
                     onClick={() => target.id && deleteTarget(target.id)}
                   />
                 </td>
-                <td className='px-6 py-4 text-sm text-gray-500 max-w-xs truncate'>
-                  {target.notes || 'No notes'}
+                <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                  {target.notes || "No notes"}
                 </td>
               </tr>
             ))}

@@ -34,5 +34,4 @@ export interface Target {
 export interface MonthlyTarget {
   month: number;
   marketFeeTarget: number;
-  totalValueTarget: number;
 }
