@@ -65,13 +65,7 @@ export default function DeoDashboard() {
           <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
             <Nav onToggleSidebar={toggleSidebar} />
           </div>
-          {/* Metrics for overview page */}
-          {activeNav === 'overview' && (
-            <div className='p-4'>
-              <MetricCards />
-            </div>
-          )}
-
+         
           <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
             {renderContent()}
           </div>
