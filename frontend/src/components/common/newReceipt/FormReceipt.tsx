@@ -1,14 +1,14 @@
 
 import React from 'react';
-import {format} from 'date-fns';
-import type {CreateReceiptSchema} from '@/types/receipt';
-import type {z} from 'zod';
+import { format } from 'date-fns';
+import type { CreateReceiptSchema } from '@/types/receipt';
+import { z } from 'zod';
 
 // Define props interface for type safety
 interface FormReceiptProps {
   formData: Omit<z.infer<typeof CreateReceiptSchema>, 'receiptDate'>;
   onFormChange: (
-    field: keyof FormReceiptProps['formData'],
+    field: keyof Omit<z.infer<typeof CreateReceiptSchema>, 'receiptDate'>,
     value: string | number
   ) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -17,8 +17,8 @@ interface FormReceiptProps {
   onDateChange: (date?: Date) => void;
   isEditing: boolean;
   loading: boolean;
-  committeeData: {id: string; name: string; code?: string} | null;
-  availableCheckposts: {id: string; name: string}[];
+  committeeData: { id: string; name: string; code?: string } | null;
+  availableCheckposts: { id: string; name: string }[];
   commodities: string[];
   traders: string[];
   commoditySearch: string;
@@ -28,25 +28,48 @@ interface FormReceiptProps {
 }
 
 // Constants for select options
-const units = ['quintals', 'kilograms', 'bags', 'numbers'];
-const natureOfReceipt = [
-  {value: 'mf', label: 'Market Fee (MF)'},
-  {value: 'lc', label: 'License Fee (LC)'},
-  {value: 'uc', label: 'User Charges (UC)'},
-  {value: 'others', label: 'Others'},
-];
-const supervisors = ['SUPERVISOR_1', 'SUPERVISOR_2', 'SUPERVISOR_3'];
+const units = ['quintals', 'kilograms', 'bags', 'numbers'] as const;
 
-// Helper function to format numbers as Indian currency
-const formatIndianCurrency = (num: number | string): string => {
-  if (!num) return '₹0';
-  const number = typeof num === 'string' ? parseFloat(num) : num;
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2
-  }).format(number);
+type NatureOfReceiptOption = {
+  value: 'mf' | 'lc' | 'uc' | 'others';
+  label: string;
+};
+
+const natureOfReceipt: NatureOfReceiptOption[] = [
+  { value: 'mf', label: 'Market Fee (MF)' },
+  { value: 'lc', label: 'License Fee (LC)' },
+  { value: 'uc', label: 'User Charges (UC)' },
+  { value: 'others', label: 'Others' },
+];
+
+const supervisors = ['SUPERVISOR_1', 'SUPERVISOR_2', 'SUPERVISOR_3'] as const;
+
+// Helper function to format numbers in Indian style (12,34,567)
+const formatIndianNumber = (num: number | string): string => {
+  if (!num) return '0';
+  
+  const numberStr = typeof num === 'string' ? num.replace(/,/g, '') : num.toString();
+  const [whole, decimal] = numberStr.split('.');
+  
+  let lastThree = whole.substring(whole.length - 3);
+  let otherNumbers = whole.substring(0, whole.length - 3);
+  
+  if (otherNumbers !== '') {
+    lastThree = ',' + lastThree;
+  }
+  
+  let result = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
+  
+  if (decimal) {
+    result += '.' + decimal;
+  }
+  
+  return result;
+};
+
+// Helper to parse Indian formatted numbers back to number type
+const parseIndianNumber = (str: string): number => {
+  return parseFloat(str.replace(/,/g, ''));
 };
 
 const FormReceipt: React.FC<FormReceiptProps> = ({
@@ -70,10 +93,10 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
     onDateChange(newDate);
   };
 
-  const handleCurrencyChange = (field: string, value: string) => {
-    // Remove non-numeric characters except decimal point
+  const handleNumberChange = (field: keyof typeof formData, value: string) => {
+    // Remove any non-digit characters except decimal point
     const numericValue = value.replace(/[^0-9.]/g, '');
-    onFormChange(field as keyof FormReceiptProps['formData'], numericValue ? parseFloat(numericValue) : 0);
+    onFormChange(field, numericValue ? parseIndianNumber(numericValue) : 0);
   };
 
   return (
@@ -170,6 +193,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     value={date ? format(date, 'yyyy-MM-dd') : ''}
                     onChange={handleDateChange}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    required
                   />
                 </div>
                 <div>
@@ -185,6 +209,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     value={formData.bookNumber}
                     onChange={(e) => onFormChange('bookNumber', e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    required
                   />
                 </div>
                 <div>
@@ -202,6 +227,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       onFormChange('receiptNumber', e.target.value)
                     }
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    required
                   />
                 </div>
               </div>
@@ -233,6 +259,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                         }
                         placeholder="Search and select trader"
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        required
                       />
                       <div className="absolute z-20 mt-1 w-full bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto hidden group-focus-within:block">
                         {traders
@@ -279,11 +306,12 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                           type="text"
                           id="newTraderName"
                           placeholder="Enter new trader name"
-                          value={formData.newTraderName}
+                          value={formData.newTraderName || ''}
                           onChange={(e) =>
                             onFormChange('newTraderName', e.target.value)
                           }
                           className="w-full px-3 py-2 text-sm border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                          required
                         />
                       </div>
                       <div>
@@ -295,7 +323,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                         <textarea
                           id="traderAddress"
                           placeholder="Enter trader address"
-                          value={formData.traderAddress}
+                          value={formData.traderAddress || ''}
                           onChange={(e) =>
                             onFormChange('traderAddress', e.target.value)
                           }
@@ -327,7 +355,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       type="text"
                       id="payeeName"
                       placeholder="Enter payee name"
-                      value={formData.payeeName}
+                      value={formData.payeeName || ''}
                       onChange={(e) =>
                         onFormChange('payeeName', e.target.value)
                       }
@@ -343,7 +371,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     <textarea
                       id="payeeAddress"
                       placeholder="Enter payee address"
-                      value={formData.payeeAddress}
+                      value={formData.payeeAddress || ''}
                       onChange={(e) =>
                         onFormChange('payeeAddress', e.target.value)
                       }
@@ -427,6 +455,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                           onFormChange('newCommodityName', e.target.value)
                         }
                         className="w-full px-3 py-2 text-sm border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        required
                       />
                       {!formData.newCommodityName?.trim() && (
                         <p className="mt-1 text-xs text-red-600">
@@ -443,14 +472,13 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     Total Quantity<span className="text-red-600">*</span>
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     id="quantity"
                     placeholder="Enter quantity"
-                    value={formData.quantity}
-                    onChange={(e) =>
-                      onFormChange('quantity', Number(e.target.value))
-                    }
+                    value={formatIndianNumber(formData.quantity)}
+                    onChange={(e) => handleNumberChange('quantity', e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    required
                   />
                 </div>
                 <div>
@@ -463,7 +491,9 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     id="unit"
                     value={formData.unit}
                     onChange={(e) => onFormChange('unit', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]">
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]"
+                    required
+                  >
                     <option value="">Select unit</option>
                     {units.map((unit) => (
                       <option key={unit} value={unit}>
@@ -481,11 +511,12 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       <input
                         type="number"
                         placeholder="Enter weight per bag"
-                        value={formData.weightPerBag}
+                        value={formData.weightPerBag || ''}
                         onChange={(e) =>
                           onFormChange('weightPerBag', Number(e.target.value))
                         }
                         className="w-full px-3 py-2 text-sm border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        required
                       />
                       {!formData.weightPerBag && (
                         <p className="mt-1 text-xs text-red-600">
@@ -521,7 +552,9 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     onChange={(e) =>
                       onFormChange('natureOfReceipt', e.target.value)
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]">
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]"
+                    required
+                  >
                     <option value="">Select nature</option>
                     {natureOfReceipt.map((nature) => (
                       <option key={nature.value} value={nature.value}>
@@ -541,8 +574,8 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       type="text"
                       id="value"
                       placeholder="Enter value"
-                      value={formatIndianCurrency(formData.value || 0)}
-                      onChange={(e) => handleCurrencyChange('value', e.target.value)}
+                      value={formatIndianNumber(formData.value || 0)}
+                      onChange={(e) => handleNumberChange('value', e.target.value)}
                       className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -561,9 +594,10 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       type="text"
                       id="feesPaid"
                       placeholder="Enter fees paid"
-                      value={formatIndianCurrency(formData.feesPaid || 0)}
-                      onChange={(e) => handleCurrencyChange('feesPaid', e.target.value)}
+                      value={formatIndianNumber(formData.feesPaid || 0)}
+                      onChange={(e) => handleNumberChange('feesPaid', e.target.value)}
                       className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      required
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <span className="text-gray-500">₹</span>
@@ -584,11 +618,12 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     type="text"
                     id="natureOtherText"
                     placeholder="Specify other nature"
-                    value={formData.natureOtherText}
+                    value={formData.natureOtherText || ''}
                     onChange={(e) =>
                       onFormChange('natureOtherText', e.target.value)
                     }
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    required
                   />
                 </div>
               )}
@@ -617,7 +652,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     type="text"
                     id="vehicleNumber"
                     placeholder="Enter vehicle number"
-                    value={formData.vehicleNumber}
+                    value={formData.vehicleNumber || ''}
                     onChange={(e) =>
                       onFormChange('vehicleNumber', e.target.value)
                     }
@@ -634,7 +669,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     type="text"
                     id="invoiceNumber"
                     placeholder="Enter EY bill/invoice number"
-                    value={formData.invoiceNumber}
+                    value={formData.invoiceNumber || ''}
                     onChange={(e) =>
                       onFormChange('invoiceNumber', e.target.value)
                     }
@@ -649,11 +684,12 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                   </label>
                   <select
                     id="collectionLocation"
-                    value={formData.collectionLocation}
+                    value={formData.collectionLocation || ''}
                     onChange={(e) =>
                       onFormChange('collectionLocation', e.target.value)
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]">
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]"
+                  >
                     <option value="">Select location</option>
                     <option value="office">Office</option>
                     <option value="checkpost">Checkpost</option>
@@ -672,11 +708,12 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                   </label>
                   <select
                     id="officeSupervisor"
-                    value={formData.officeSupervisor}
+                    value={formData.officeSupervisor || ''}
                     onChange={(e) =>
                       onFormChange('officeSupervisor', e.target.value)
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]">
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]"
+                  >
                     <option value="">Select supervisor</option>
                     {supervisors.map((supervisor) => (
                       <option key={supervisor} value={supervisor}>
@@ -686,31 +723,30 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                   </select>
                 </div>
               )}
-
               {formData.collectionLocation === 'checkpost' && (
                 <div className="mt-3">
                   <label
-                    htmlFor="checkpostId"
+                    htmlFor="checkpostName"
                     className="block text-sm font-medium text-gray-600 mb-1">
-                    Checkpost
+                    Checkpost Name
                   </label>
                   <select
-                    id="checkpostId"
-                    value={                    formData.checkpostId}
+                    id="checkpostName"
+                    value={formData.checkpostName || ''}
                     onChange={(e) =>
-                      onFormChange('checkpostId', e.target.value)
+                      onFormChange('checkpostName', e.target.value)
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]">
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2NzY3NjciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im03IDE1IDUgNSA1LTUiLz48L3N2Zz4=')] bg-no-repeat bg-[center_right_0.75rem]"
+                  >
                     <option value="">Select checkpost</option>
                     {availableCheckposts.map((checkpost) => (
-                      <option key={checkpost.id} value={checkpost.id}>
+                      <option key={checkpost.id} value={checkpost.name}>
                         {checkpost.name}
                       </option>
                     ))}
                   </select>
                 </div>
               )}
-
               {formData.collectionLocation === 'other' && (
                 <div className="mt-3">
                   <label
@@ -722,7 +758,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     type="text"
                     id="otherLocation"
                     placeholder="Specify other location"
-                    value={formData.otherLocation}
+                    value={formData.otherLocation || ''}
                     onChange={(e) =>
                       onFormChange('otherLocation', e.target.value)
                     }
@@ -732,26 +768,26 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
               )}
             </section>
 
-            {/* Additional Information */}
-            <section aria-labelledby="additional-info" className="space-y-4">
+            {/* Remarks */}
+            <section aria-labelledby="remarks" className="space-y-4">
               <h3
-                id="additional-info"
+                id="remarks"
                 className="text-base font-semibold text-gray-700 mb-3 flex items-center">
                 <svg className="w-4 h-4 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
                 </svg>
-                Additional Information
+                Remarks
               </h3>
               <div>
                 <label
                   htmlFor="remarks"
                   className="block text-sm font-medium text-gray-600 mb-1">
-                  Remarks
+                  Additional Notes
                 </label>
                 <textarea
                   id="remarks"
                   placeholder="Enter any additional remarks"
-                  value={formData.remarks}
+                  value={formData.remarks || ''}
                   onChange={(e) => onFormChange('remarks', e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   rows={3}
@@ -759,74 +795,21 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
               </div>
             </section>
 
-            {/* Summary Card */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <h3 className="text-base font-semibold text-gray-700 mb-3">
-                Receipt Summary
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Commodity:</span>
-                    <span className="font-medium">
-                      {formData.commodity === 'Other'
-                        ? formData.newCommodityName
-                        : formData.commodity}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Quantity:</span>
-                    <span className="font-medium">
-                      {formData.quantity} {formData.unit}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Trader/Farmer:</span>
-                    <span className="font-medium">
-                      {formData.traderName === 'New'
-                        ? formData.newTraderName
-                        : formData.traderName}
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Nature of Receipt:</span>
-                    <span className="font-medium">
-                      {natureOfReceipt.find(
-                        (n) => n.value === formData.natureOfReceipt
-                      )?.label || 'Not specified'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Commodity Value:</span>
-                    <span className="font-medium">
-                      {formatIndianCurrency(formData.value || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Fees Paid:</span>
-                    <span className="font-medium text-green-600">
-                      {formatIndianCurrency(formData.feesPaid || 0)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Form Actions */}
             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={handleReset}
                 disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Reset
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 {loading ? (
                   <span className="flex items-center">
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
