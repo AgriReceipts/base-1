@@ -86,12 +86,7 @@ export default function SecretaryDashboard() {
             <Nav onToggleSidebar={toggleSidebar} />
           </div>
 
-          {activeNav === 'overview' && (
-            <div className='p-4'>
-              <MetricCards />
-            </div>
-          )}
-
+          
           <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
             {renderContent()}
           </div>
