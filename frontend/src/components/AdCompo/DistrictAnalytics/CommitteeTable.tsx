@@ -55,11 +55,13 @@ export const CommitteeTable: React.FC<CommitteeTableProps> = ({ data }) => {
                   ${
                     item.status === "Met"
                       ? "bg-green-100 text-green-800"
-                      : item.status === "Lagging"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : item.status === "Not Met"
-                          ? "bg-orange-100 text-orange-500"
-                          : "bg-red-100 text-red-900"
+                      : item.status === "On Track"
+                        ? "bg-blue-100 text-blue-800"
+                        : item.status === "Lagging"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : item.status === "Not Met"
+                            ? "bg-orange-100 text-orange-500"
+                            : "bg-red-100 text-red-900"
                   }`}
                 >
                   {item.status}

@@ -1,34 +1,34 @@
-import prisma from '../../utils/database';
-import {getFinancialYearRange} from '../../utils/dateHelper';
+import prisma from "../../utils/database";
+import { getFinancialYearRange } from "../../utils/dateHelper";
 
 const getStatus = (
   achievementPercentage: number,
   expectedPercentage: number,
   hasTarget: boolean,
-  isCurrentMonth: boolean = false
+  isCurrentMonth: boolean = false,
 ) => {
   // No target set
-  if (!hasTarget) return 'No Target';
+  if (!hasTarget) return "No Target";
 
   // For current month, consider time elapsed
   if (isCurrentMonth) {
     const tolerance = 10; // 10% tolerance for current month
 
     if (achievementPercentage >= expectedPercentage - tolerance) {
-      return 'On Track';
+      return "On Track";
     } else if (achievementPercentage >= expectedPercentage * 0.7) {
-      return 'Lagging';
+      return "Lagging";
     } else {
-      return 'Critical';
+      return "Critical";
     }
   }
 
   // For completed months or yearly view
-  if (achievementPercentage >= 100) return 'Met';
-  if (achievementPercentage >= 90) return 'On Track';
-  if (achievementPercentage >= 70) return 'Lagging';
-  if (achievementPercentage >= 50) return 'Critical';
-  return 'Not Met';
+  if (achievementPercentage >= 100) return "Met";
+  if (achievementPercentage >= 90) return "On Track";
+  if (achievementPercentage >= 70) return "Lagging";
+  if (achievementPercentage >= 50) return "Not Met";
+  return "Failed";
 };
 
 const getCurrentFinancialMonth = () => {
@@ -43,7 +43,7 @@ const getExpectedPercentageForCurrentMonth = (month: number) => {
   const daysInMonth = new Date(
     now.getFullYear(),
     now.getMonth() + 1,
-    0
+    0,
   ).getDate();
 
   // If it's the same month, calculate based on days elapsed
@@ -63,7 +63,7 @@ const getExpectedPercentageForYear = (fyStart: number) => {
   const daysInMonth = new Date(
     now.getFullYear(),
     now.getMonth() + 1,
-    0
+    0,
   ).getDate();
 
   // Calculate months completed + partial current month
@@ -107,12 +107,12 @@ export const committeWiseAcheivement = async ({
 
     return data.map((entry) => {
       const hasTarget = Boolean(
-        entry.marketFeeTarget && entry.marketFeeTarget.toNumber() > 0
+        entry.marketFeeTarget && entry.marketFeeTarget.toNumber() > 0,
       );
       const achievementPercentage = hasTarget
         ? Math.round(
             (entry.marketFees.toNumber() / entry.marketFeeTarget!.toNumber()) *
-              100
+              100,
           )
         : 0;
 
@@ -130,7 +130,7 @@ export const committeWiseAcheivement = async ({
           achievementPercentage,
           expectedPercentage,
           hasTarget,
-          isCurrentMonth
+          isCurrentMonth,
         ),
         isCurrentMonth,
       };
@@ -138,7 +138,7 @@ export const committeWiseAcheivement = async ({
   } else {
     const [part1, part2] = getFinancialYearRange(fyStart);
     const data = await prisma.committeeMonthlyAnalytics.groupBy({
-      by: ['committeeId'],
+      by: ["committeeId"],
       where: {
         OR: [part1, part2],
       },
@@ -164,13 +164,13 @@ export const committeWiseAcheivement = async ({
         });
 
         const hasTarget = Boolean(
-          item._sum.marketFeeTarget && item._sum.marketFeeTarget.toNumber() > 0
+          item._sum.marketFeeTarget && item._sum.marketFeeTarget.toNumber() > 0,
         );
         const achievementPercentage = hasTarget
           ? Math.round(
               (item._sum.marketFees!.toNumber() /
                 item._sum.marketFeeTarget!.toNumber()) *
-                100
+                100,
             )
           : 0;
 
@@ -186,11 +186,11 @@ export const committeWiseAcheivement = async ({
             achievementPercentage,
             expectedPercentage,
             hasTarget,
-            false
+            false,
           ),
           isCurrentMonth: false,
         };
-      })
+      }),
     );
 
     return resultWithNames;
