@@ -154,12 +154,12 @@ async function main() {
 
   console.log('✅ Receipts and analytics seeded successfully');
 
-  // ==================== GENERATE MONTHLY REPORTS ====================
-  console.log('📊 Generating monthly reports...');
+  // // ==================== GENERATE MONTHLY REPORTS ====================
+  // console.log('📊 Generating monthly reports...');
 
-  await generateMonthlyReports(prisma, SEED_CONFIG);
+  // await generateMonthlyReports(prisma, SEED_CONFIG);
 
-  console.log('✅ Monthly reports generated successfully');
+  // console.log('✅ Monthly reports generated successfully');
 
   // ==================== COMPLETION ====================
   console.log('🎉 Database seeding completed successfully!');

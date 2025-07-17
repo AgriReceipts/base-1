@@ -431,6 +431,8 @@ model CommodityOverallAnalytics {
   @@unique([commodityId, committeeId])
 }
 
+// Only the models that need changes for market fees focus
+
 model CommitteeMonthlyAnalytics {
   id String @id @default(uuid())
 
@@ -438,98 +440,66 @@ model CommitteeMonthlyAnalytics {
   checkPostId  String?
   superVisorId String?
 
-  year Int
-
+  year  Int
   month Int
 
-  totalReceipts Int @default(0)
+  totalReceipts Int     @default(0)
+  totalValue    Decimal @default(0)
 
-  totalValue Decimal @default(0)
+  // SIMPLIFIED: Only track market fees (remove other fee breakdowns)
+  marketFees Decimal @default(0) // Only market fees matter for targets
 
-  totalFeesPaid Decimal @default(0)
-
-  marketFees Decimal @default(0)
-
-  officeFees Decimal @default(0)
-
-  checkpostMarketFees  Decimal @default(0)
-  superVisorMarketFees Decimal @default(0)
-
-  otherFees Decimal @default(0)
+  // Fee collection location breakdown (for market fees only)
+  officeFees          Decimal @default(0)
+  checkpostMarketFees Decimal @default(0)
+  otherFees           Decimal @default(0)
 
   marketFeeTarget  Decimal? // Monthly market fee target
   totalValueTarget Decimal? // Monthly total value target
 
-  uniqueTraders Int @default(0) // optional
-
-  uniqueCommodities Int @default(0) // optional
+  uniqueTraders     Int @default(0)
+  uniqueCommodities Int @default(0)
 
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
 
   committee Committee  @relation(fields: [committeeId], references: [id])
   Checkpost Checkpost? @relation(fields: [checkPostId], references: [id])
   User      User?      @relation(fields: [superVisorId], references: [id])
 
-  @@unique([committeeId, year, month]) // Ensure only one row per month
+  @@unique([committeeId, year, month])
   @@index([committeeId, year, month])
   @@index([committeeId])
 }
-
-// Daily analytics for real-time "today" queries
 
 model DailyAnalytics {
   id String @id @default(uuid())
 
   receiptDate DateTime
-
   committeeId String
-
   checkpostId String?
 
   // Daily totals
-
-  totalReceipts Int @default(0)
-
-  totalValue Decimal @default(0)
-
-  totalFeesPaid Decimal @default(0)
-
+  totalReceipts Int     @default(0)
+  totalValue    Decimal @default(0)
   totalQuantity Decimal @default(0)
 
-  // Breakdown by nature
+  // SIMPLIFIED: Only track market fees for analytics
+  marketFees Decimal @default(0) // Only market fees from all receipts
 
-  mf_fees Decimal @default(0)
-
-  lc_fees Decimal @default(0)
-
-  uc_fees Decimal @default(0)
-
-  others_fees Decimal @default(0)
-
-  // Breakdown by collection location
-
-  officeFees Decimal @default(0)
-
+  // Collection location breakdown (for market fees only)
+  officeFees    Decimal @default(0)
   checkpostFees Decimal @default(0)
+  otherFees     Decimal @default(0)
 
-  otherFees Decimal @default(0)
-
-  // Unique counts
-
-  uniqueTraders Int @default(0)
-
+  uniqueTraders     Int @default(0)
   uniqueCommodities Int @default(0)
 
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
 
   // Relations
-
-  committee Committee @relation(fields: [committeeId], references: [id])
-
+  committee Committee  @relation(fields: [committeeId], references: [id])
   checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
 
   @@unique([receiptDate, committeeId])
@@ -538,75 +508,42 @@ model DailyAnalytics {
   @@index([receiptDate, checkpostId])
 }
 
-//Reports
-
 model MonthlyReport {
   id String @id @default(uuid())
 
   reportSlug String @unique
-
-  year Int
-
-  month Int
-
-  // Committee reference (null for district-level records)
+  year       Int
+  month      Int
 
   committeeId String?
-
-  checkpostId String? // For checkpost-level reports
-
-  // Report level indicator
-
+  checkpostId String?
   reportLevel ReportLevel
 
   // Basic metrics
-
   totalReceipts Int
-
-  totalValue Decimal
-
-  totalFeesPaid Decimal
-
+  totalValue    Decimal
   totalQuantity Decimal
 
-  // Target comparison
+  // SIMPLIFIED: Only market fees matter for reporting
+  marketFees Decimal @default(0) // This is what we track against targets
 
-  monthlyTarget Decimal? // Monthly market fee target
-
-  cumulativeTarget Decimal? // Cumulative target up to this month
-
-  monthlyAchievement Decimal // Market fees collected this month
-
+  // Target comparison (only for market fees)
+  monthlyTarget         Decimal? // Monthly market fee target
+  cumulativeTarget      Decimal? // Cumulative target up to this month
+  monthlyAchievement    Decimal // Market fees collected this month
   cumulativeAchievement Decimal // Progressive total up to this month
 
   // Performance metrics
-
-  monthlyVariance Decimal? // Monthly target vs achievement
-
+  monthlyVariance    Decimal? // Monthly target vs achievement
   cumulativeVariance Decimal? // Cumulative target vs achievement
-
   achievementPercent Decimal? // Percentage of annual target achieved
 
   // Previous year comparison
-
   prevYearSameMonth Decimal? // Same month previous year
-
-  yearOnYearGrowth Decimal? // YoY growth percentage
-
-  // Breakdown by nature of receipt
-
-  mf_fees Decimal @default(0)
-
-  lc_fees Decimal @default(0)
-
-  uc_fees Decimal @default(0)
-
-  others_fees Decimal @default(0)
+  yearOnYearGrowth  Decimal? // YoY growth percentage
 
   // Relations
-
   committee Committee? @relation(fields: [committeeId], references: [id])
-
   checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
 
   @@unique([year, month, reportLevel, committeeId, checkpostId])
