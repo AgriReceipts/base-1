@@ -95,8 +95,8 @@ model User {
 
   committee Committee? @relation(fields: [committeeId], references: [id])
 
-  receipts           Receipt[]
-  superVisorTargets  Target[]
+  receipts Receipt[]
+
   committeeAnalytics CommitteeMonthlyAnalytics[]
 
   @@index([username])
@@ -155,8 +155,6 @@ model Checkpost {
   Target Target[]
 
   DailyAnalytics DailyAnalytics[]
-
-  CommitteeMonthlyAnalytics CommitteeMonthlyAnalytics[]
 
   MonthlyReport MonthlyReport[]
 
@@ -334,8 +332,6 @@ model Target {
   // Relations
   committee Committee  @relation(fields: [committeeId], references: [id], onDelete: Cascade)
   checkpost Checkpost? @relation(fields: [checkpostId], references: [id], onDelete: Cascade)
-  User      User?      @relation(fields: [userId], references: [id])
-  userId    String?
 
   // This new unique constraint correctly handles all cases without needing custom SQL.
   @@unique([year, month, committeeId, type, checkpostId])
@@ -437,9 +433,7 @@ model CommodityOverallAnalytics {
 model CommitteeMonthlyAnalytics {
   id String @id @default(uuid())
 
-  committeeId  String
-  checkPostId  String?
-  superVisorId String?
+  committeeId String
 
   year  Int
   month Int
@@ -455,8 +449,7 @@ model CommitteeMonthlyAnalytics {
   checkpostMarketFees Decimal @default(0)
   otherFees           Decimal @default(0)
 
-  marketFeeTarget  Decimal? // Monthly market fee target
-  totalValueTarget Decimal? // Monthly total value target
+  marketFeeTarget Decimal? // Monthly market fee target
 
   uniqueTraders     Int @default(0)
   uniqueCommodities Int @default(0)
@@ -464,9 +457,10 @@ model CommitteeMonthlyAnalytics {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  committee Committee  @relation(fields: [committeeId], references: [id])
-  Checkpost Checkpost? @relation(fields: [checkPostId], references: [id])
-  User      User?      @relation(fields: [superVisorId], references: [id])
+  committee Committee @relation(fields: [committeeId], references: [id])
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
 
   @@unique([committeeId, year, month])
   @@index([committeeId, year, month])

@@ -1,4 +1,3 @@
-import {Request, Response} from 'express';
 import {handlePrismaError} from '../../utils/helpers';
 import {z} from 'zod';
 import {
@@ -8,6 +7,7 @@ import {
 } from '../../types/target';
 import prisma from '../../utils/database';
 import {Prisma} from '@prisma/client';
+import {Request, Response} from 'express';
 
 // Set Target(s) - Can handle single target or array of targets
 export const setTarget = async (req: Request, res: Response) => {
@@ -21,7 +21,6 @@ export const setTarget = async (req: Request, res: Response) => {
       try {
         return setTargetSchema.parse(target);
       } catch (error) {
-        // Provide more context on validation failure
         if (error instanceof z.ZodError) {
           throw new Error(
             `Validation failed for target at index ${index}: ${error.issues
@@ -33,51 +32,50 @@ export const setTarget = async (req: Request, res: Response) => {
       }
     });
 
+    // Collect unique committee/year/month combinations to update analytics efficiently.
+    const affectedAnalytics = new Map<
+      string,
+      {committeeId: string; year: number; month: number}
+    >();
+    for (const target of validatedTargets) {
+      const key = `${target.committeeId}-${target.year}-${target.month}`;
+      if (!affectedAnalytics.has(key)) {
+        affectedAnalytics.set(key, {
+          committeeId: target.committeeId,
+          year: target.year,
+          month: target.month,
+        });
+      }
+    }
+
     const result = await prisma.$transaction(async (tx) => {
+      // Step 1: Create or update all individual Target records
       const createdTargets: Array<
         Prisma.TargetGetPayload<{include: {committee: true; checkpost: true}}>
       > = [];
 
-      for (const targetData of validatedTargets) {
-        // Validate business logic based on type
-        if (
-          targetData.type === TargetType.CHECKPOST &&
-          !targetData.checkpostId
-        ) {
-          throw new Error('checkpostId is required when type is CHECKPOST');
-        }
-
-        if (
-          targetData.type !== TargetType.CHECKPOST &&
-          targetData.checkpostId
-        ) {
-          throw new Error(
-            'checkpostId should only be provided when type is CHECKPOST'
-          );
-        }
-
-        // Find existing target using the new unique constraint
+      for (const target of validatedTargets) {
+        // Check if target already exists
         const existingTarget = await tx.target.findFirst({
           where: {
-            year: targetData.year,
-            month: targetData.month,
-            committeeId: targetData.committeeId,
-            type: targetData.type,
-            checkpostId: targetData.checkpostId || null,
+            committeeId: target.committeeId,
+            checkpostId: target.checkpostId || null,
+            year: target.year,
+            month: target.month,
+            type: target.type,
+            isActive: true,
           },
         });
 
-        let target;
+        let targetRecord;
 
         if (existingTarget) {
           // Update existing target
-          target = await tx.target.update({
+          targetRecord = await tx.target.update({
             where: {id: existingTarget.id},
             data: {
-              marketFeeTarget: targetData.marketFeeTarget,
-              setBy: targetData.setBy,
-              notes: targetData.notes,
-              isActive: true,
+              marketFeeTarget: target.marketFeeTarget,
+              updatedAt: new Date(),
             },
             include: {
               committee: true,
@@ -86,16 +84,16 @@ export const setTarget = async (req: Request, res: Response) => {
           });
         } else {
           // Create new target
-          target = await tx.target.create({
+          targetRecord = await tx.target.create({
             data: {
-              year: targetData.year,
-              month: targetData.month,
-              committeeId: targetData.committeeId,
-              checkpostId: targetData.checkpostId || null,
-              marketFeeTarget: targetData.marketFeeTarget || 0,
-              type: targetData.type,
-              setBy: targetData.setBy,
-              notes: targetData.notes || null,
+              committeeId: target.committeeId,
+              checkpostId: target.checkpostId || null,
+              year: target.year,
+              month: target.month,
+              type: target.type,
+              marketFeeTarget: target.marketFeeTarget,
+              isActive: true,
+              setBy: req.user?.username || '', // Add the user ID who is setting the target, fallback to empty string if user not found
             },
             include: {
               committee: true,
@@ -104,7 +102,45 @@ export const setTarget = async (req: Request, res: Response) => {
           });
         }
 
-        createdTargets.push(target);
+        createdTargets.push(targetRecord);
+      }
+
+      // Step 2: Update analytics using ONLY the overall committee target.
+      for (const {committeeId, year, month} of affectedAnalytics.values()) {
+        // Find the specific overall committee target for this month.
+        const committeeTarget = await tx.target.findFirst({
+          where: {
+            committeeId,
+            year,
+            month,
+            type: TargetType.OVERALL_COMMITTEE, // Explicitly find the COMMITTEE target
+            isActive: true,
+          },
+        });
+
+        // Use the committee target's value, or 0 if it doesn't exist.
+        const marketFeeTargetForAnalytics =
+          committeeTarget?.marketFeeTarget?.toNumber() || 0;
+
+        // Upsert the analytics record with the correct target value.
+        await tx.committeeMonthlyAnalytics.upsert({
+          where: {
+            committeeId_year_month: {
+              committeeId,
+              year,
+              month,
+            },
+          },
+          update: {
+            marketFeeTarget: marketFeeTargetForAnalytics,
+          },
+          create: {
+            committeeId,
+            year,
+            month,
+            marketFeeTarget: marketFeeTargetForAnalytics,
+          },
+        });
       }
 
       return createdTargets;
@@ -114,7 +150,7 @@ export const setTarget = async (req: Request, res: Response) => {
       message: `Successfully set ${result.length} target${
         result.length > 1 ? 's' : ''
       }.`,
-      data: isArray ? result : result[0], // Return single object if input was single
+      data: isArray ? result : result[0],
     });
   } catch (error) {
     console.error('Error setting target:', error);
@@ -123,11 +159,9 @@ export const setTarget = async (req: Request, res: Response) => {
         .status(400)
         .json({message: 'Validation error', errors: error.errors});
     }
-    // Handle custom business logic errors
     if (error instanceof Error && error.message.includes('checkpostId')) {
       return res.status(400).json({message: error.message});
     }
-    // Assuming you have a standard Prisma error handler
     return handlePrismaError(res, error);
   }
 };
@@ -138,7 +172,6 @@ export const getTargets = async (req: Request, res: Response) => {
     const validatedData = getTargetsSchema.parse(req.query);
     const startYear = validatedData.year;
 
-    // Base conditions that apply to all parts of the query
     const baseWhere: any = {
       isActive: true,
       type: validatedData.type,
@@ -146,27 +179,16 @@ export const getTargets = async (req: Request, res: Response) => {
 
     if (validatedData.committeeId) {
       baseWhere.committeeId = validatedData.committeeId;
-
       if (validatedData.checkPostId) {
         baseWhere.checkpostId = validatedData.checkPostId;
       }
     }
 
-    // Combine base conditions with the financial year logic
     const whereClause = {
       ...baseWhere,
-      // This OR condition defines the financial year
       OR: [
-        // Condition 1: Records from April (month 4) to December of the starting year
-        {
-          year: startYear,
-          month: {gte: 4}, // gte = Greater Than or Equal To
-        },
-        // Condition 2: Records from January to March (month 3) of the next year
-        {
-          year: startYear + 1,
-          month: {lte: 3}, // lte = Less Than or Equal To
-        },
+        {year: startYear, month: {gte: 4}},
+        {year: startYear + 1, month: {lte: 3}},
       ],
     };
 
@@ -177,7 +199,7 @@ export const getTargets = async (req: Request, res: Response) => {
         checkpost: {select: {id: true, name: true}},
       },
       orderBy: [
-        {year: 'asc'}, // Sort by year first, then month
+        {year: 'asc'},
         {month: 'asc'},
         {committeeId: 'asc'},
         {checkpostId: 'asc'},
@@ -197,43 +219,82 @@ export const getTargets = async (req: Request, res: Response) => {
   }
 };
 
-// Delete Target (Soft delete by setting isActive to false)
+// UPDATED: Delete Target and update analytics
 export const deleteTarget = async (req: Request, res: Response) => {
   try {
     const {id} = req.params;
-    console.log('the id is', id);
 
     if (!id || typeof id !== 'string') {
-      return res.status(400).json({
-        message: 'Please send a valid target ID',
-      });
+      return res.status(400).json({message: 'A valid target ID is required'});
     }
 
-    // Validate that the target exists
-    const existingTarget = await prisma.target.findUnique({
-      where: {id},
-    });
-
-    if (!existingTarget) {
-      return res.status(404).json({
-        message: 'Target not found',
+    await prisma.$transaction(async (tx) => {
+      // Step 1: Find the target to be deleted.
+      const targetToDelete = await tx.target.findUnique({
+        where: {id},
       });
-    }
 
-    // Soft delete the target
-    await prisma.target.update({
-      where: {id},
-      data: {
-        isActive: false,
-        updatedAt: new Date(),
-      },
+      if (!targetToDelete) {
+        throw new Error('Target not found');
+      }
+
+      if (!targetToDelete.isActive) {
+        // Target is already inactive, nothing to do.
+        return;
+      }
+
+      // Step 2: Soft delete the target.
+      await tx.target.update({
+        where: {id},
+        data: {isActive: false, updatedAt: new Date()},
+      });
+
+      const {committeeId, year, month} = targetToDelete;
+
+      // MODIFIED Step 3: Find the specific overall committee target.
+      const committeeTarget = await tx.target.findFirst({
+        where: {
+          committeeId,
+          year,
+          month,
+          type: TargetType.OVERALL_COMMITTEE, // Explicitly find the COMMITTEE target
+          isActive: true, // Ensure it's active
+        },
+      });
+
+      // Use the committee target's value, or 0 if it no longer exists or is inactive.
+      const newMarketFeeTarget =
+        committeeTarget?.marketFeeTarget?.toNumber() || 0;
+
+      // Step 4: Upsert the analytics record with the new correct total.
+      await tx.committeeMonthlyAnalytics.upsert({
+        where: {
+          committeeId_year_month: {
+            committeeId,
+            year,
+            month,
+          },
+        },
+        update: {
+          marketFeeTarget: newMarketFeeTarget,
+        },
+        create: {
+          committeeId,
+          year,
+          month,
+          marketFeeTarget: newMarketFeeTarget,
+        },
+      });
     });
 
     res.status(200).json({
-      message: 'Target deleted successfully',
+      message: 'Target deleted and analytics updated successfully',
     });
   } catch (error) {
     console.error('Error deleting target:', error);
+    if (error instanceof Error && error.message === 'Target not found') {
+      return res.status(404).json({message: error.message});
+    }
     return handlePrismaError(res, error);
   }
 };
