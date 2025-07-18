@@ -1,9 +1,9 @@
 import {Request, Response} from 'express';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../../utils/database';
 import {handlePrismaError} from '../../utils/helpers';
 import {RegisterUserInput, RegisterUserSchema} from '../../types/auth';
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Private (only to admin)
@@ -55,14 +55,11 @@ export const registerUser = async (req: Request, res: Response) => {
       committeeId = committee.id;
     }
 
-    // Hash password
-    const passwordHash = await bcrypt.hash(data.password, 12);
-
-    //  Create user
+    //  Create user (storing password in plaintext)
     const newUser = await prisma.user.create({
       data: {
         username: data.username,
-        passwordHash,
+        password: data.password, // Store plaintext password
         name: data.name,
         role: data.role,
         designation: data.designation,
@@ -108,10 +105,10 @@ export const registerUser = async (req: Request, res: Response) => {
     return handlePrismaError(res, error);
   }
 };
+
 // @desc    Logs in existing user
 // @route   POST /api/auth/login
 // @access  Public
-
 export const login = async (req: Request, res: Response) => {
   try {
     const {username, password} = req.body;
@@ -149,17 +146,15 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-    if (!isPasswordValid) {
+    // Verify password (direct comparison since no hashing)
+    if (password !== user.password) {
       return res.status(401).json({
         message: 'Invalid credentials',
       });
     }
 
-    // Return user data (excluding password hash)
-    const {passwordHash, ...userWithoutPassword} = user;
+    // Return user data (excluding password)
+    const {password: userPassword, ...userWithoutPassword} = user;
 
     // Generate JWT token
     const jwtSecret = process.env.JWT_SECRET;
@@ -182,6 +177,50 @@ export const login = async (req: Request, res: Response) => {
       message: 'Login successful',
       user: userWithoutPassword,
       token,
+    });
+  } catch (error) {
+    return handlePrismaError(res, error);
+  }
+};
+
+// @desc    Get all users with their details
+// @route   GET /api/auth/users
+// @access  Private (only to admin)
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        username: true,
+        password: true, // Include plaintext password
+        role: true,
+        name: true,
+        designation: true,
+        isActive: true,
+        committee: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        username: 'asc',
+      },
+    });
+
+    // Format the response to match requested structure
+    const formattedUsers = users.map((user) => ({
+      username: user.username,
+      committeeName: user.committee?.name || null,
+      password: user.password,
+      role: user.role,
+      name: user.name,
+      designation: user.designation,
+      isActive: user.isActive,
+    }));
+
+    res.status(200).json({
+      message: 'Users retrieved successfully',
+      users: formattedUsers,
     });
   } catch (error) {
     return handlePrismaError(res, error);

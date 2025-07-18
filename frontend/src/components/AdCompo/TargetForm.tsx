@@ -269,7 +269,6 @@ export const TargetForm: React.FC<TargetFormProps> = ({
   committee,
   year,
   currentUser,
-  existingTargets,
   onSave,
   onCancel,
   loading,
@@ -350,6 +349,7 @@ export const TargetForm: React.FC<TargetFormProps> = ({
   const handleSupervisorDistroChange = (total: number) => {
     setSupervisorDistroTotal(total);
     if (selectedMonth === 'all') {
+      // When distributing across all months, divide evenly
       setSupervisorTargets(
         MONTHS.map((m) => ({
           month: m.value,
@@ -357,12 +357,14 @@ export const TargetForm: React.FC<TargetFormProps> = ({
         }))
       );
     } else {
-      const monthIndex = supervisorTargets.findIndex(
-        (t) => t.month === selectedMonth
+      // When setting for a specific month, only update that month
+      setSupervisorTargets((prev) =>
+        prev.map((target) =>
+          target.month === selectedMonth
+            ? {...target, marketFeeTarget: total}
+            : target
+        )
       );
-      if (monthIndex !== -1) {
-        handleSupervisorMonthlyChange(monthIndex, total);
-      }
     }
   };
 
@@ -372,6 +374,7 @@ export const TargetForm: React.FC<TargetFormProps> = ({
   ) => {
     setCheckpostDistroTotals((prev) => ({...prev, [checkpostId]: total}));
     if (selectedMonth === 'all') {
+      // When distributing across all months, divide evenly
       setCheckpostTargets((prev) => ({
         ...prev,
         [checkpostId]: MONTHS.map((m) => ({
@@ -380,12 +383,15 @@ export const TargetForm: React.FC<TargetFormProps> = ({
         })),
       }));
     } else {
-      const monthIndex = (checkpostTargets[checkpostId] || []).findIndex(
-        (t) => t.month === selectedMonth
-      );
-      if (monthIndex !== -1) {
-        handleCheckpostMonthlyChange(checkpostId, monthIndex, total);
-      }
+      // When setting for a specific month, only update that month
+      setCheckpostTargets((prev) => ({
+        ...prev,
+        [checkpostId]: (prev[checkpostId] || []).map((target) =>
+          target.month === selectedMonth
+            ? {...target, marketFeeTarget: total}
+            : target
+        ),
+      }));
     }
   };
 
@@ -416,59 +422,82 @@ export const TargetForm: React.FC<TargetFormProps> = ({
     e.preventDefault();
     const targets: Omit<Target, 'id'>[] = [];
 
-    // FIXED: Create overall committee targets for each month
-    supervisorTargets.forEach((target) => {
-      const calendarYear = getCalendarYear(year, target.month);
+    // Determine which months to process based on selection
+    const monthsToProcess =
+      selectedMonth === 'all'
+        ? MONTHS
+        : MONTHS.filter((m) => m.value === selectedMonth);
+
+    // Create overall committee targets for selected month(s)
+    monthsToProcess.forEach((month) => {
+      const supervisorTarget = supervisorTargets.find(
+        (t) => t.month === month.value
+      );
+      const calendarYear = getCalendarYear(year, month.value);
 
       // Calculate total for this month across all checkposts
       const monthlyCheckpostTotal = Object.values(checkpostTargets)
         .flat()
-        .filter((t) => t.month === target.month)
+        .filter((t) => t.month === month.value)
         .reduce((sum, t) => sum + t.marketFeeTarget, 0);
 
       // Overall committee target = supervisor target + all checkpost targets for this month
       const overallMonthlyTarget =
-        target.marketFeeTarget + monthlyCheckpostTotal;
+        (supervisorTarget?.marketFeeTarget || 0) + monthlyCheckpostTotal;
 
-      // Create overall committee target
-      targets.push({
-        year: calendarYear,
-        month: target.month,
-        committeeId: committee.id,
-        marketFeeTarget: overallMonthlyTarget,
-        setBy: currentUser,
-        type: TargetType.OVERALL_COMMITTEE, // Overall committee target
-      });
+      // Only create target if there's a non-zero value
+      if (overallMonthlyTarget > 0) {
+        targets.push({
+          year: calendarYear,
+          month: month.value,
+          committeeId: committee.id,
+          marketFeeTarget: overallMonthlyTarget,
+          setBy: currentUser,
+          type: TargetType.OVERALL_COMMITTEE,
+        });
+      }
     });
 
     // Create individual monthly targets for supervisor (committee office)
-    supervisorTargets.forEach((target) => {
-      const calendarYear = getCalendarYear(year, target.month);
+    monthsToProcess.forEach((month) => {
+      const supervisorTarget = supervisorTargets.find(
+        (t) => t.month === month.value
+      );
+      const calendarYear = getCalendarYear(year, month.value);
 
-      targets.push({
-        year: calendarYear,
-        month: target.month,
-        committeeId: committee.id,
-        marketFeeTarget: target.marketFeeTarget,
-        setBy: currentUser,
-        type: TargetType.COMMITTEE_OFFICE,
-      });
-    });
-
-    // Add checkpost targets
-    Object.entries(checkpostTargets).forEach(([cpId, checkpost_targets]) => {
-      checkpost_targets.forEach((target) => {
-        const calendarYear = getCalendarYear(year, target.month);
-
+      // Only create target if there's a non-zero value
+      if (supervisorTarget && supervisorTarget.marketFeeTarget > 0) {
         targets.push({
           year: calendarYear,
-          month: target.month,
+          month: month.value,
           committeeId: committee.id,
-          checkpostId: cpId,
-          marketFeeTarget: target.marketFeeTarget,
+          marketFeeTarget: supervisorTarget.marketFeeTarget,
           setBy: currentUser,
-          type: TargetType.CHECKPOST,
+          type: TargetType.COMMITTEE_OFFICE,
         });
+      }
+    });
+
+    // Add checkpost targets for selected month(s)
+    Object.entries(checkpostTargets).forEach(([cpId, checkpost_targets]) => {
+      monthsToProcess.forEach((month) => {
+        const checkpostTarget = checkpost_targets.find(
+          (t) => t.month === month.value
+        );
+        const calendarYear = getCalendarYear(year, month.value);
+
+        // Only create target if there's a non-zero value
+        if (checkpostTarget && checkpostTarget.marketFeeTarget > 0) {
+          targets.push({
+            year: calendarYear,
+            month: month.value,
+            committeeId: committee.id,
+            checkpostId: cpId,
+            marketFeeTarget: checkpostTarget.marketFeeTarget,
+            setBy: currentUser,
+            type: TargetType.CHECKPOST,
+          });
+        }
       });
     });
 

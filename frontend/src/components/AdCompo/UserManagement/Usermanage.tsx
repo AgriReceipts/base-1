@@ -85,7 +85,7 @@ const RegisterForm: React.FC = () => {
         delete payload.committeeName;
       }
 
-      await api.post('http://localhost:3000/api/auth/register', payload);
+      await api.post('auth/register', payload);
 
       // MODIFICATION: Display username and password in the success message
       const successText = `User registered! Credentials: Username: ${data.username}, Password: ${data.password}`;

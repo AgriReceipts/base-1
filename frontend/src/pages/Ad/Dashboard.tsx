@@ -18,11 +18,12 @@ import {
   FiBarChart,
 } from 'react-icons/fi';
 
-import Usermanage from '../../components/AdCompo/Usermanage';
+import Usermanage from '../../components/AdCompo/UserManagement/Usermanage.tsx';
 
 import {TargetManager} from '@/components/AdCompo/TargetManager';
 import {useAuthStore} from '@/stores/authStore';
 import DistrictAnalysis from '@/components/AdCompo/Districtanalysis.tsx';
+import UserPage from '@/components/AdCompo/UserManagement/UserPage.tsx';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -79,7 +80,7 @@ export default function SupervisorDashboard() {
       case 'targetManagement':
         return <TargetManager currentUser={user?.name || 'ad'} />;
       case 'userManagement':
-        return <Usermanage />;
+        return <UserPage />;
       case 'viewReports':
         return <Reports />;
       default:
@@ -106,8 +107,6 @@ export default function SupervisorDashboard() {
           <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
             <Nav onToggleSidebar={toggleSidebar} />
           </div>
-
-         
 
           <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
             {renderContent()}

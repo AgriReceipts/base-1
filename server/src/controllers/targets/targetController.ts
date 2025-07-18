@@ -105,42 +105,55 @@ export const setTarget = async (req: Request, res: Response) => {
         createdTargets.push(targetRecord);
       }
 
-      // Step 2: Update analytics using ONLY the overall committee target.
+      // Step 2: Update analytics ONLY for committee-level targets
       for (const {committeeId, year, month} of affectedAnalytics.values()) {
-        // Find the specific overall committee target for this month.
-        const committeeTarget = await tx.target.findFirst({
-          where: {
-            committeeId,
-            year,
-            month,
-            type: TargetType.OVERALL_COMMITTEE, // Explicitly find the COMMITTEE target
-            isActive: true,
-          },
-        });
+        // Only update analytics if we're dealing with a committee-level target
+        const hasCommitteeTarget = validatedTargets.some(
+          (target) =>
+            target.committeeId === committeeId &&
+            target.year === year &&
+            target.month === month &&
+            target.type === TargetType.OVERALL_COMMITTEE
+        );
 
-        // Use the committee target's value, or 0 if it doesn't exist.
-        const marketFeeTargetForAnalytics =
-          committeeTarget?.marketFeeTarget?.toNumber() || 0;
-
-        // Upsert the analytics record with the correct target value.
-        await tx.committeeMonthlyAnalytics.upsert({
-          where: {
-            committeeId_year_month: {
+        if (hasCommitteeTarget) {
+          // Find the specific overall committee target for this month.
+          const committeeTarget = await tx.target.findFirst({
+            where: {
               committeeId,
               year,
               month,
+              type: TargetType.OVERALL_COMMITTEE, // Explicitly find the COMMITTEE target
+              isActive: true,
             },
-          },
-          update: {
-            marketFeeTarget: marketFeeTargetForAnalytics,
-          },
-          create: {
-            committeeId,
-            year,
-            month,
-            marketFeeTarget: marketFeeTargetForAnalytics,
-          },
-        });
+          });
+
+          // Only update if we found the committee target
+          if (committeeTarget) {
+            const marketFeeTargetForAnalytics =
+              committeeTarget.marketFeeTarget?.toNumber() || 0;
+
+            // Upsert the analytics record with the correct target value.
+            await tx.committeeMonthlyAnalytics.upsert({
+              where: {
+                committeeId_year_month: {
+                  committeeId,
+                  year,
+                  month,
+                },
+              },
+              update: {
+                marketFeeTarget: marketFeeTargetForAnalytics,
+              },
+              create: {
+                committeeId,
+                year,
+                month,
+                marketFeeTarget: marketFeeTargetForAnalytics,
+              },
+            });
+          }
+        }
       }
 
       return createdTargets;
@@ -249,42 +262,45 @@ export const deleteTarget = async (req: Request, res: Response) => {
         data: {isActive: false, updatedAt: new Date()},
       });
 
-      const {committeeId, year, month} = targetToDelete;
+      const {committeeId, year, month, type} = targetToDelete;
 
-      // MODIFIED Step 3: Find the specific overall committee target.
-      const committeeTarget = await tx.target.findFirst({
-        where: {
-          committeeId,
-          year,
-          month,
-          type: TargetType.OVERALL_COMMITTEE, // Explicitly find the COMMITTEE target
-          isActive: true, // Ensure it's active
-        },
-      });
-
-      // Use the committee target's value, or 0 if it no longer exists or is inactive.
-      const newMarketFeeTarget =
-        committeeTarget?.marketFeeTarget?.toNumber() || 0;
-
-      // Step 4: Upsert the analytics record with the new correct total.
-      await tx.committeeMonthlyAnalytics.upsert({
-        where: {
-          committeeId_year_month: {
+      // Step 3: Only update analytics if we deleted a committee-level target
+      if (type === TargetType.OVERALL_COMMITTEE) {
+        // Find if there's still an active committee target for this month
+        const committeeTarget = await tx.target.findFirst({
+          where: {
             committeeId,
             year,
             month,
+            type: TargetType.OVERALL_COMMITTEE,
+            isActive: true,
           },
-        },
-        update: {
-          marketFeeTarget: newMarketFeeTarget,
-        },
-        create: {
-          committeeId,
-          year,
-          month,
-          marketFeeTarget: newMarketFeeTarget,
-        },
-      });
+        });
+
+        // Use the committee target's value, or 0 if it no longer exists or is inactive.
+        const newMarketFeeTarget =
+          committeeTarget?.marketFeeTarget?.toNumber() || 0;
+
+        // Step 4: Upsert the analytics record with the new correct total.
+        await tx.committeeMonthlyAnalytics.upsert({
+          where: {
+            committeeId_year_month: {
+              committeeId,
+              year,
+              month,
+            },
+          },
+          update: {
+            marketFeeTarget: newMarketFeeTarget,
+          },
+          create: {
+            committeeId,
+            year,
+            month,
+            marketFeeTarget: newMarketFeeTarget,
+          },
+        });
+      }
     });
 
     res.status(200).json({

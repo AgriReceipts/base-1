@@ -132,12 +132,12 @@ async function main() {
 
   console.log(`✅ Created ${users.length} users and ${traders.length} traders`);
 
-  // ==================== SEED TARGETS ====================
-  console.log('🎯 Seeding targets...');
+  // // ==================== SEED TARGETS ====================
+  // console.log('🎯 Seeding targets...');
 
-  await seedTargets(prisma, SEED_CONFIG, users, createdCommittees);
+  // await seedTargets(prisma, SEED_CONFIG, users, createdCommittees);
 
-  console.log('✅ Targets seeded successfully');
+  // console.log('✅ Targets seeded successfully');
 
   // ==================== SEED RECEIPTS AND ANALYTICS ====================
   console.log('🧾 Seeding receipts and live analytics...');

@@ -10,8 +10,8 @@ export async function seedUsersAndTraders(
 ) {
   console.log('   Creating users and traders...');
 
-  // Hash password once
-  const hashedPassword = await bcrypt.hash(userPassword, 10);
+  // // Hash password once
+  // const hashedPassword = await bcrypt.hash(userPassword, 10);
 
   // ==================== CREATE USERS ====================
   const users = [];
@@ -24,7 +24,7 @@ export async function seedUsersAndTraders(
     const user = await prisma.user.create({
       data: {
         username,
-        passwordHash: hashedPassword,
+        password: userPassword,
         name: `Assistant Director ${i}`,
         role: UserRole.ad,
         designation: 'Assistant Director',
@@ -46,7 +46,7 @@ export async function seedUsersAndTraders(
     const deoUser = await prisma.user.create({
       data: {
         username: deoUsername,
-        passwordHash: hashedPassword,
+        password: userPassword,
         name: `DEO ${committee.name}`,
         role: UserRole.deo,
         designation: 'Data Entry Operator',
@@ -61,7 +61,7 @@ export async function seedUsersAndTraders(
     const supervisorUser = await prisma.user.create({
       data: {
         username: supervisorUsername,
-        passwordHash: hashedPassword,
+        password: userPassword,
         name: `Supervisor ${committee.name}`,
         role: UserRole.supervisor,
         designation: 'Supervisor',
@@ -76,7 +76,7 @@ export async function seedUsersAndTraders(
     const secretaryUser = await prisma.user.create({
       data: {
         username: secretaryUsername,
-        passwordHash: hashedPassword,
+        password: userPassword,
         name: `Secretary ${committee.name}`,
         role: UserRole.secretary,
         designation: 'Secretary',

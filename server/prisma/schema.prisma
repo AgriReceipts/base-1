@@ -75,7 +75,7 @@ model User {
 
   username String @unique
 
-  passwordHash String
+  password String
 
   name String
 

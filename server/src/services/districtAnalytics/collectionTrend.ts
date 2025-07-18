@@ -10,10 +10,15 @@ export const getCommitteeDoubleBarChartData = async ({
   const date = new Date();
   const currentYear = date.getFullYear();
 
+  // If comparison year is same as current year, use previous year instead
+  const actualComparisonFyStart =
+    comparisonFyStart === currentYear ? currentYear - 1 : comparisonFyStart;
+
   const [currentYearPart1, currentYearPart2] =
     getFinancialYearRange(currentYear);
-  const [comparisonYearPart1, comparisonYearPart2] =
-    getFinancialYearRange(comparisonFyStart);
+  const [comparisonYearPart1, comparisonYearPart2] = getFinancialYearRange(
+    actualComparisonFyStart
+  );
 
   // Fetch data for current financial year
   const currentYearData = await prisma.committeeMonthlyAnalytics.groupBy({
@@ -114,7 +119,8 @@ export const getCommitteeDoubleBarChartData = async ({
       month: month.name,
       monthNumber: month.number,
       [`FY${currentYear}-${currentYear + 1}`]: currentYearValue,
-      [`FY${comparisonFyStart}-${comparisonFyStart + 1}`]: comparisonYearValue,
+      [`FY${actualComparisonFyStart}-${actualComparisonFyStart + 1}`]:
+        comparisonYearValue,
       currentYear: currentYearValue,
       comparisonYear: comparisonYearValue,
     };
@@ -124,7 +130,9 @@ export const getCommitteeDoubleBarChartData = async ({
     data: chartData,
     labels: {
       currentYear: `FY${currentYear}-${currentYear + 1}`,
-      comparisonYear: `FY${comparisonFyStart}-${comparisonFyStart + 1}`,
+      comparisonYear: `FY${actualComparisonFyStart}-${
+        actualComparisonFyStart + 1
+      }`,
     },
     totals: {
       currentYear: chartData.reduce((sum, item) => sum + item.currentYear, 0),

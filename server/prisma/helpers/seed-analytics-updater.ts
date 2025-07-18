@@ -175,7 +175,6 @@ async function updateCommitteeAnalytics(
     },
     create: {
       committeeId,
-      checkPostId: null, // Committee-level record
       year,
       month,
       totalReceipts: allAggregates.totalReceipts,

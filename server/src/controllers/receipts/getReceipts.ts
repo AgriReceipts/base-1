@@ -105,6 +105,7 @@ export const getAllReceipts = async (req: Request, res: Response) => {
           },
           payeeName: true,
           value: true,
+          feesPaid: true,
           natureOfReceipt: true,
           receiptSignedBy: true, // Renamed from signedBy for clarity
           receiptDate: true,
@@ -155,6 +156,7 @@ export const getReceiptById = async (req: Request, res: Response) => {
         receiptDate: true,
         payeeName: true,
         value: true,
+        feesPaid: true,
         natureOfReceipt: true,
         quantity: true,
         unit: true,

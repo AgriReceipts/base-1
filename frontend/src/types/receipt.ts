@@ -118,6 +118,7 @@ export interface DetailedReceipt {
   };
   payeeName: string;
   value: number;
+  feesPaid: number;
   natureOfReceipt: string;
   receiptSignedBy: string;
   committee: {
