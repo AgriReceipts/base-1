@@ -1,8 +1,8 @@
-import {Request, Response} from 'express';
-import jwt from 'jsonwebtoken';
-import prisma from '../../utils/database';
-import {handlePrismaError} from '../../utils/helpers';
-import {RegisterUserInput, RegisterUserSchema} from '../../types/auth';
+import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import prisma from "../../utils/database";
+import { handlePrismaError } from "../../utils/helpers";
+import { RegisterUserInput, RegisterUserSchema } from "../../types/auth";
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -14,7 +14,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     if (!parsed.success) {
       return res.status(400).json({
-        message: 'Validation failed',
+        message: "Validation failed",
         errors: parsed.error.flatten().fieldErrors,
       });
     }
@@ -23,32 +23,32 @@ export const registerUser = async (req: Request, res: Response) => {
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: {username: data.username},
+      where: { username: data.username },
     });
 
     if (existingUser) {
       return res.status(409).json({
-        message: 'Username already exists',
+        message: "Username already exists",
       });
     }
 
     // Validate committee
     let committeeId: string | null = null;
 
-    if (data.role !== 'ad') {
+    if (data.role !== "ad") {
       if (!data.committeeName) {
         return res
           .status(400)
-          .json({message: 'committeeName is required for non-AD users'});
+          .json({ message: "committeeName is required for non-AD users" });
       }
 
       const committee = await prisma.committee.findUnique({
-        where: {name: data.committeeName},
+        where: { name: data.committeeName },
       });
 
       if (!committee) {
         return res.status(400).json({
-          message: 'Invalid committee, does not exist',
+          message: "Invalid committee, does not exist",
         });
       }
 
@@ -81,7 +81,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     // Generate JWT
     const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) throw new Error('JWT_SECRET not defined');
+    if (!jwtSecret) throw new Error("JWT_SECRET not defined");
 
     const token = jwt.sign(
       {
@@ -91,12 +91,12 @@ export const registerUser = async (req: Request, res: Response) => {
         committee: newUser.committee,
       },
       jwtSecret,
-      {expiresIn: '24h'}
+      { expiresIn: "24h" },
     );
 
     // Respond
     res.status(201).json({
-      message: 'User registered successfully',
+      message: "User registered successfully",
       user: newUser.username,
       password: data.password,
       token,
@@ -111,18 +111,18 @@ export const registerUser = async (req: Request, res: Response) => {
 // @access  Public
 export const login = async (req: Request, res: Response) => {
   try {
-    const {username, password} = req.body;
+    const { username, password } = req.body;
 
     // Validate input
     if (!username || !password) {
       return res.status(400).json({
-        message: 'Username and password are required',
+        message: "Username and password are required",
       });
     }
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: {username},
+      where: { username },
       include: {
         committee: {
           select: {
@@ -135,31 +135,31 @@ export const login = async (req: Request, res: Response) => {
 
     if (!user) {
       return res.status(401).json({
-        message: 'Invalid credentials',
+        message: "Invalid credentials",
       });
     }
 
     // Check if user is active
     if (!user.isActive) {
       return res.status(403).json({
-        message: 'Account is deactivated',
+        message: "Account is deactivated",
       });
     }
 
     // Verify password (direct comparison since no hashing)
     if (password !== user.password) {
       return res.status(401).json({
-        message: 'Invalid credentials',
+        message: "Invalid credentials",
       });
     }
 
     // Return user data (excluding password)
-    const {password: userPassword, ...userWithoutPassword} = user;
+    const { password: userPassword, ...userWithoutPassword } = user;
 
     // Generate JWT token
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not defined in environment variables');
+      throw new Error("JWT_SECRET is not defined in environment variables");
     }
 
     const token = jwt.sign(
@@ -170,11 +170,11 @@ export const login = async (req: Request, res: Response) => {
         committee: user.committee,
       },
       jwtSecret,
-      {expiresIn: '24h'}
+      { expiresIn: "24h" },
     );
 
     res.status(200).json({
-      message: 'Login successful',
+      message: "Login successful",
       user: userWithoutPassword,
       token,
     });
@@ -189,13 +189,16 @@ export const login = async (req: Request, res: Response) => {
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany({
+      where: {
+        isActive: true,
+      },
       select: {
+        id: true,
         username: true,
         password: true, // Include plaintext password
         role: true,
         name: true,
         designation: true,
-        isActive: true,
         committee: {
           select: {
             name: true,
@@ -203,24 +206,54 @@ export const getAllUsers = async (req: Request, res: Response) => {
         },
       },
       orderBy: {
-        username: 'asc',
+        username: "asc",
       },
     });
 
     // Format the response to match requested structure
     const formattedUsers = users.map((user) => ({
+      id: user.id,
       username: user.username,
       committeeName: user.committee?.name || null,
       password: user.password,
       role: user.role,
       name: user.name,
       designation: user.designation,
-      isActive: user.isActive,
     }));
 
     res.status(200).json({
-      message: 'Users retrieved successfully',
+      message: "Users retrieved successfully",
       users: formattedUsers,
+    });
+  } catch (error) {
+    return handlePrismaError(res, error);
+  }
+};
+
+// @desc    SoftDelete(set status to inactive)
+// @route   /auth/delete/:id
+// @access  Private (only to admin)
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(401).json({
+        message: "User id is required",
+      });
+    }
+    const userId = id as string;
+
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        isActive: false,
+      },
+    });
+    return res.status(200).json({
+      message: "User deleted successfully  ",
     });
   } catch (error) {
     return handlePrismaError(res, error);

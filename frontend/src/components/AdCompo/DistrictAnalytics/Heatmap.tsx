@@ -1,4 +1,4 @@
-import type {HeatMapRes} from '@/types/districtAnalytics';
+import type { HeatMapRes } from "@/types/districtAnalytics";
 
 export interface HeatmapComponentProps {
   data: HeatMapRes[];
@@ -11,18 +11,18 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
 }) => {
   // Define months in chronological order (April to March)
   const months = [
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-    'January',
-    'February',
-    'March',
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+    "January",
+    "February",
+    "March",
   ];
 
   // Get committee names from data
@@ -47,18 +47,20 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
   const totalHeight = headerHeight + heatmapHeight + legendHeight;
 
   return (
-    <div className='w-full overflow-x-auto'>
+    <div className="w-full overflow-x-auto">
       <svg
-        width='100%'
+        width="100%"
         height={totalHeight}
         viewBox={`0 0 ${totalWidth} ${totalHeight}`}
-        className={`min-w-[${totalWidth}px]`}>
+        className={`min-w-[${totalWidth}px]`}
+      >
         {/* Title */}
         <text
           x={totalWidth / 2}
-          y='25'
-          textAnchor='middle'
-          className='text-lg fill-gray-700 font-semibold'>
+          y="25"
+          textAnchor="middle"
+          className="text-lg fill-gray-700 font-semibold"
+        >
           Achievement Percentage by Committee and Month
         </text>
 
@@ -67,9 +69,10 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
           <text
             key={`month-${index}`}
             x={leftMargin + index * (cellWidth + cellSpacing) + cellWidth / 2}
-            y='60'
-            textAnchor='middle'
-            className='text-sm fill-gray-600 font-medium'>
+            y="60"
+            textAnchor="middle"
+            className="text-sm fill-gray-600 font-medium"
+          >
             {month.substring(0, 3)} {/* Show abbreviated month names */}
           </text>
         ))}
@@ -85,8 +88,9 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
               cellHeight / 2 +
               4
             }
-            textAnchor='end'
-            className='text-sm fill-gray-600 font-medium'>
+            textAnchor="end"
+            className="text-sm fill-gray-600 font-medium"
+          >
             {committee.length > 25
               ? `${committee.substring(0, 22)}...`
               : committee}
@@ -106,9 +110,10 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
                   width={cellWidth}
                   height={cellHeight}
                   fill={getColor(value)}
-                  stroke='#fff'
-                  strokeWidth='1'
-                  rx='4'>
+                  stroke="#fff"
+                  strokeWidth="1"
+                  rx="4"
+                >
                   <title>{`${committee.committeeName} - ${month}: ${value}%`}</title>
                 </rect>
 
@@ -126,21 +131,23 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
                       cellHeight / 2 +
                       4
                     }
-                    textAnchor='middle'
-                    className='text-xs fill-gray-600 '>
+                    textAnchor="middle"
+                    className="text-xs fill-gray-600 "
+                  >
                     {value}%
                   </text>
                 )}
               </g>
             );
-          })
+          }),
         )}
 
         {/* Color legend - positioned below heatmap with proper spacing */}
         <text
           x={leftMargin}
           y={headerHeight + heatmapHeight + 40}
-          className='text-sm fill-gray-700 font-medium'>
+          className="text-sm fill-gray-700 font-medium"
+        >
           Performance Scale:
         </text>
 
@@ -151,27 +158,26 @@ export const HeatmapComponent: React.FC<HeatmapComponentProps> = ({
           const textX = rectX + cellWidth / 2;
           const textY = rectY + 35; // Moved text closer to rectangle
 
-          console.log(`Legend ${index}: value=${value}, color=${color}`); // Debug log
-
           return (
             <g key={`legend-${index}`}>
               <rect
                 x={rectX}
                 y={rectY}
                 width={cellWidth}
-                height='25'
-                fill={color || '#d1d5db'}
-                stroke='#9ca3af'
-                strokeWidth='1'
-                rx='4'
+                height="25"
+                fill={color || "#d1d5db"}
+                stroke="#9ca3af"
+                strokeWidth="1"
+                rx="4"
               />
               <text
                 x={textX}
                 y={textY}
-                textAnchor='middle'
-                fill='#374151'
-                fontSize='12'
-                fontWeight='500'>
+                textAnchor="middle"
+                fill="#374151"
+                fontSize="12"
+                fontWeight="500"
+              >
                 {value}%
               </text>
             </g>
