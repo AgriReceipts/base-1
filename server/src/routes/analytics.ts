@@ -1,8 +1,6 @@
 import {Router} from 'express';
-
 import {authenticateUser} from '../middleware/auth';
 import {getCommitteAnalytics} from '../controllers/analytics/commities';
-
 import {getDailyAnalytics} from '../controllers/analytics/daily';
 import {
   getTopTradersAnalytics,
@@ -15,16 +13,15 @@ import {
 //import {cacheMiddleware} from '../middleware/cacheMiddleware';
 import {authorizeRoles} from '../middleware/roleAccess';
 import {getDistrictAnalyticsController} from '../controllers/analytics/district';
-import {w} from '@faker-js/faker/dist/airline-CLphikKp';
+import {getOverviewData} from '../controllers/analytics/overview';
 
 const analyticsRoutes = Router();
 
 analyticsRoutes.use(authenticateUser);
 //analyticsRoutes.use(cacheMiddleware());
-
 //overview endpoint
 
-analyticsRoutes.get('/overview/:committeeId');
+analyticsRoutes.get('/overview/:committeeId', getOverviewData);
 //committeAnalytics Endpoints
 analyticsRoutes.get(
   '/committee/:committeeId/:year/:month',

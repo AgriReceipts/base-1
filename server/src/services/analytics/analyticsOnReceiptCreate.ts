@@ -41,10 +41,53 @@ export const updateAnalyticsOnReceiptCreate = async (
     receiptDate.getDate()
   );
 
-  // 1. UPDATE DAILY ANALYTICS
-  // This logic is assumed to be correct based on the DailyAnalytics model (not provided).
-  // It uses dynamic keys to update different fee and location buckets.
-  // Note: This part is left as-is from your original code.
+  // 1. UPDATE DAILY ANALYTICS - FIXED
+  // Build the update payload dynamically
+  const dailyUpdatePayload: Prisma.DailyAnalyticsUpdateInput = {
+    totalReceipts: {increment: 1},
+    totalValue: {increment: value},
+    totalQuantity: {increment: totalWeightKg},
+  };
+
+  // Only increment market fees if nature is 'mf'
+  if (natureOfReceipt === 'mf') {
+    dailyUpdatePayload.marketFees = {increment: feesPaid};
+
+    // Increment the correct location-specific fee counter
+    if (collectionLocation === 'office') {
+      dailyUpdatePayload.officeFees = {increment: feesPaid};
+    } else if (collectionLocation === 'checkpost') {
+      dailyUpdatePayload.checkpostFees = {increment: feesPaid};
+    } else if (collectionLocation === 'other') {
+      dailyUpdatePayload.otherFees = {increment: feesPaid};
+    }
+  }
+
+  // Build the create payload
+  const dailyCreatePayload: Prisma.DailyAnalyticsCreateInput = {
+    receiptDate: day,
+    committee: {connect: {id: committeeId}},
+    totalReceipts: 1,
+    totalValue: value,
+    totalQuantity: totalWeightKg,
+    marketFees: natureOfReceipt === 'mf' ? feesPaid : 0,
+    officeFees:
+      natureOfReceipt === 'mf' && collectionLocation === 'office'
+        ? feesPaid
+        : 0,
+    checkpostFees:
+      natureOfReceipt === 'mf' && collectionLocation === 'checkpost'
+        ? feesPaid
+        : 0,
+    otherFees:
+      natureOfReceipt === 'mf' && collectionLocation === 'other' ? feesPaid : 0,
+  };
+
+  // Only connect checkpost if collection location is 'checkpost' and checkpostId is provided
+  if (collectionLocation === 'checkpost' && checkpostId) {
+    dailyCreatePayload.checkpost = {connect: {id: checkpostId}};
+  }
+
   await tx.dailyAnalytics.upsert({
     where: {
       receiptDate_committeeId: {
@@ -52,26 +95,8 @@ export const updateAnalyticsOnReceiptCreate = async (
         committeeId,
       },
     },
-    update: {
-      totalReceipts: {increment: 1},
-      totalValue: {increment: value},
-      marketFees: {increment: feesPaid},
-      totalQuantity: {increment: totalWeightKg},
-      [`${natureOfReceipt}_fees`]: {increment: feesPaid},
-      [`${collectionLocation}Fees`]: {increment: feesPaid},
-    },
-    create: {
-      receiptDate: day,
-      committeeId,
-      checkpostId,
-      totalReceipts: 1,
-      totalValue: value,
-      marketFees: feesPaid,
-      totalQuantity: totalWeightKg,
-      officeFees: collectionLocation === 'office' ? feesPaid : 0,
-      checkpostFees: collectionLocation === 'checkpost' ? feesPaid : 0,
-      otherFees: collectionLocation === 'other' ? feesPaid : 0,
-    },
+    update: dailyUpdatePayload,
+    create: dailyCreatePayload,
   });
 
   // 2. UPDATE TRADER MONTHLY & OVERALL ANALYTICS

@@ -1,158 +1,165 @@
-import type { Committee, Target } from "@/types/targets";
-import { Trash } from "lucide-react";
-import React from "react";
+import React from 'react';
+import {Trash2} from 'lucide-react';
+import {TargetType, type Committee, type Target} from '@/types/targets';
+import {TargetTypeName} from '@/types/targets'; // Assuming you have this mapping
 
 interface TargetListProps {
   targets: Target[];
   loading: boolean;
   committee?: Committee;
-  selectedCheckpost: string; // ✅ Added selectedCheckpost prop
   year: number;
-  deleteTarget: (id: string) => void;
+  type: TargetType;
+  deleteTarget: (id: string) => Promise<void>;
 }
 
-const MONTH_NAMES = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+// Helper function to format the 'marketFeeTarget' string into Indian currency format
+const formatCurrency = (value: string | number) => {
+  const numberValue = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(numberValue)) {
+    return 'N/A';
+  }
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+  }).format(numberValue);
+};
+
+// Helper to get month name from number (1-indexed)
+const getMonthName = (monthNumber: number) => {
+  const date = new Date();
+  date.setMonth(monthNumber - 1);
+  return date.toLocaleString('en-US', {month: 'long'});
+};
 
 export const TargetList: React.FC<TargetListProps> = ({
   targets,
   loading,
   committee,
-  selectedCheckpost, // ✅ Destructure selectedCheckpost
   year,
+  type,
   deleteTarget,
 }) => {
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className='flex justify-center items-center p-10'>
+        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+        <p className='ml-4 text-gray-600'>Loading Targets...</p>
       </div>
     );
   }
 
-  // ✅ Determine what targets to display based on selectedCheckpost
-  const displayTargets = (() => {
-    if (!selectedCheckpost || selectedCheckpost === "all") {
-      // Show only committee-level targets when "All Checkposts" is selected
-      return targets.filter((target) => !target.checkpost);
-    } else {
-      // Show checkpost-specific targets + committee-level targets for specific checkpost
-      const checkpostTargets = targets.filter(
-        (target) => target.checkpost?.id === selectedCheckpost,
-      );
-      const committeeLevelTargets = targets.filter(
-        (target) => !target.checkpost,
-      );
-      return [...checkpostTargets, ...committeeLevelTargets];
-    }
-  })();
-
-  // ✅ Check if we have checkpost-specific targets when filtering by specific checkpost
-  const hasCheckpostTargets =
-    selectedCheckpost && selectedCheckpost !== "all"
-      ? targets.some((target) => target.checkpost?.id === selectedCheckpost)
-      : true;
-
-  const checkpostName =
-    selectedCheckpost && selectedCheckpost !== "all"
-      ? committee?.checkposts?.find((cp) => cp.id === selectedCheckpost)?.name
-      : null;
-
-  if (displayTargets.length === 0) {
+  if (!targets.length) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        No targets found for {committee?.name}
-        {checkpostName && ` - ${checkpostName}`} in {year}-{year + 1}
+      <div className='text-center p-10 border-2 border-dashed rounded-lg mt-4 bg-gray-50'>
+        <h3 className='text-lg font-semibold text-gray-700'>
+          No Targets Found
+        </h3>
+        <p className='text-gray-500 mt-2'>
+          There are no targets set for the selected criteria.
+        </p>
       </div>
     );
   }
 
-  // ✅ Get display name for header
-  const getDisplayName = () => {
-    if (selectedCheckpost && selectedCheckpost !== "all") {
-      const checkpostName = committee?.checkposts?.find(
-        (cp) => cp.id === selectedCheckpost,
-      )?.name;
-      return `${committee?.name} - ${checkpostName}`;
-    }
-    return committee?.name;
-  };
+  // Create a display-friendly name for the target type
+  const typeDisplayName = TargetTypeName[type] || 'Targets';
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">
-        Existing Targets - {getDisplayName()} ({year}-{year + 1})
-      </h2>
+    <div className='mt-8'>
+      <div className='mb-4 p-4 bg-blue-100/40 rounded-lg border border-blue-300'>
+        <h2 className='text-xl font-bold text-gray-800'>
+          {/* Updated title to be more generic if committee is not present */}
+          {typeDisplayName} Targets {committee ? `for ${committee.name}` : ''}
+        </h2>
+        <p className='text-md text-gray-600'>
+          Financial Year: {year} - {year + 1}
+        </p>
+      </div>
 
-      {/* ✅ Show message when no checkpost-specific targets found */}
-      {selectedCheckpost &&
-        selectedCheckpost !== "all" &&
-        !hasCheckpostTargets && (
-          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded">
-            No specific targets found for {checkpostName}. Showing
-            committee-level targets below.
-          </div>
-        )}
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead className="bg-gray-50">
+      <div className='overflow-x-auto bg-white rounded-lg shadow'>
+        <table className='min-w-full divide-y divide-gray-200'>
+          <thead className='bg-green-50'>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope='col'
+                className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Month
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Checkpost
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {/* Conditionally render Checkpost Name header */}
+              {type === TargetType.CHECKPOST && (
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Checkpost Name
+                </th>
+              )}
+              <th
+                scope='col'
+                className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Market Fee Target
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope='col'
+                className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Set By
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
+              <th
+                scope='col'
+                className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Last Updated
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Notes
+              <th
+                scope='col'
+                className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {displayTargets.map((target) => (
-              <tr key={target.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {MONTH_NAMES[target.month - 1]}
+          <tbody className='bg-white divide-y divide-gray-200'>
+            {targets.map((target) => (
+              <tr
+                key={target.id}
+                className='hover:bg-gray-50 transition-colors'>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <div className='text-sm font-medium text-gray-900'>
+                    {getMonthName(target.month)} {target.year}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {target.checkpost?.name || "Committee Level"}
+                {/* Conditionally render Checkpost Name data cell */}
+                {type === TargetType.CHECKPOST && (
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <div className='text-sm text-gray-900'>
+                      {target.checkpost?.name || 'N/A'}
+                    </div>
+                  </td>
+                )}
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <div className='text-sm text-gray-800'>
+                    {formatCurrency(target.marketFeeTarget)}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ₹{target.marketFeeTarget.toLocaleString()}
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <div className='text-sm text-gray-500'>{target.setBy}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {target.setBy}
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <div className='text-sm text-gray-500'>
+                    {new Date(target.updatedAt || Date.now()).toLocaleString(
+                      'en-IN',
+                      {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      }
+                    )}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <Trash
-                    className="text-red-500 ml-5 cursor-pointer"
-                    onClick={() => target.id && deleteTarget(target.id)}
-                  />
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                  {target.notes || "No notes"}
+                <td className='px-6 py-4 whitespace-nowrap text-right'>
+                  <button
+                    onClick={() => deleteTarget(target.id)}
+                    className='p-2 text-red-400 rounded-full hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                    title='Delete Target'>
+                    <Trash2 className='h-5 w-5' />
+                  </button>
                 </td>
               </tr>
             ))}

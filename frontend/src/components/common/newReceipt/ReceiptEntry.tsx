@@ -9,6 +9,7 @@ import api, {isAxiosError} from '@/lib/axiosInstance';
 import FormReceipt from './FormReceipt';
 import {useAuthStore} from '@/stores/authStore';
 import useInitialData from '@/hooks/useInititalData';
+import toast from 'react-hot-toast';
 
 // Define types for better readability and maintenance
 type FormData = Omit<z.infer<typeof CreateReceiptSchema>, 'receiptDate'>;
@@ -28,15 +29,13 @@ const getInitialFormData = (committeeId?: string): FormData => ({
   payeeAddress: '',
   commodity: '',
   newCommodityName: '',
-  // @ts-ignore
-  quantity: '',
+  quantity: 0,
   unit: 'kilograms',
+  weightPerBag: undefined,
   natureOfReceipt: 'mf',
   natureOtherText: '',
-  // @ts-ignore
-  value: '',
-  // @ts-ignore
-  feesPaid: '',
+  value: 0,
+  feesPaid: 0,
   vehicleNumber: '',
   invoiceNumber: '',
   collectionLocation: 'office',
@@ -68,9 +67,12 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
       const {receiptDate, ...rest} = receiptToEdit;
       setFormData(rest as FormData);
       setDate(new Date(receiptDate));
+      // Set commodity search to match the commodity value
+      setCommoditySearch(rest.commodity || '');
     } else {
       setFormData(getInitialFormData(committee?.id));
       setDate(new Date());
+      setCommoditySearch('');
     }
   }, [receiptToEdit, committee]);
 
@@ -107,30 +109,65 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
     if (!validation.success) {
       const errors = validation.error.flatten().fieldErrors;
       console.error('Validation Errors:', errors);
-      // Show the first error message
+
+      // Find the first error message
       const firstError = Object.values(errors)[0]?.[0];
-      setErrorMessage(
-        firstError || 'Please fill all required fields correctly'
-      );
+      const errorMsg =
+        firstError || 'Please fill all required fields correctly';
+
+      // Show error toast
+      toast.error(errorMsg, {
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#FEE2E2',
+          color: '#B91C1C',
+          border: '1px solid #F87171',
+        },
+      });
+
+      // Set error message for form highlighting
+      setErrorMessage(errorMsg);
       setLoading(false);
+
+      // Find the first field with an error and focus it
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        const element = document.getElementById(firstErrorField);
+        if (element) {
+          element.scrollIntoView({behavior: 'smooth', block: 'center'});
+          setTimeout(() => element.focus(), 500);
+        }
+      }
+
       return;
     }
 
     try {
       if (isEditing) {
         await api.put(`/receipts/${receiptToEdit.id}`, validation.data);
+        toast.success('Receipt updated successfully!');
         setIsSuccessDialogOpen(true);
       } else {
         await api.post('/receipts/createReceipt', validation.data);
+        toast.success('Receipt created successfully!');
         setIsSuccessDialogOpen(true);
         handleReset();
       }
     } catch (error) {
+      let errorMsg = 'An error occurred while saving the receipt.';
+
       if (isAxiosError(error) && error.response?.data?.message) {
-        setErrorMessage(error.response.data.message);
-      } else {
-        setErrorMessage('An error occurred while saving the receipt.');
+        errorMsg = error.response.data.message;
       }
+
+      // Show error toast for server errors
+      toast.error(errorMsg, {
+        duration: 5000,
+        position: 'top-center',
+      });
+
+      setErrorMessage(errorMsg);
     } finally {
       setLoading(false);
     }

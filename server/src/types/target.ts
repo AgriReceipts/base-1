@@ -6,11 +6,11 @@ export enum TargetType {
   CHECKPOST = 'CHECKPOST', // The sub-target for a specific checkpost
 }
 export const setTargetSchema = z.object({
-  year: z.number().min(2020).max(2050),
-  month: z.number().min(1).max(12),
+  year: z.coerce.number().min(2020).max(2050),
+  month: z.coerce.number().min(1).max(12),
   committeeId: z.string().min(1, 'Committee ID is required'),
   checkpostId: z.string().optional().nullable(),
-  marketFeeTarget: z.number().min(0),
+  marketFeeTarget: z.coerce.number().min(0),
   type: z.nativeEnum(TargetType),
   setBy: z.string().min(1, "Setter's ID is required"),
   notes: z.string().optional().nullable(),

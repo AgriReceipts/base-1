@@ -1,5 +1,6 @@
 import {z} from 'zod';
 
+// Export as a value, not just a type
 export const CreateReceiptSchema = z
   .object({
     receiptDate: z.string().min(1, 'Receipt date is required'),
@@ -42,7 +43,8 @@ export const CreateReceiptSchema = z
   })
   .refine(
     (data) => {
-      if (data.commodity === 'Other') {
+      // Fix case sensitivity issue - check for both 'Other' and 'other'
+      if (data.commodity === 'Other' || data.commodity === 'other') {
         return !!data.newCommodityName?.trim();
       }
       return true;

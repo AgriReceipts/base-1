@@ -1,7 +1,7 @@
 import axios, {isAxiosError} from 'axios';
 import {useAuthStore} from '@/stores/authStore';
 import {toast} from 'react-hot-toast';
-import type {Target} from '@/types/targets';
+import type {Target, TargetType} from '@/types/targets';
 
 //this automatically sets the jwt in the auth header for each request, and also checks for session expiration in each response and logsout the user if the session is expired
 
@@ -38,12 +38,14 @@ export const targetService = {
   async getTargets({
     year,
     committeeId,
+    type,
   }: {
     year: number;
     committeeId?: string;
+    type: TargetType;
   }): Promise<Target[]> {
     const response = await api.get('/targets/getTargets', {
-      params: {year, committeeId},
+      params: {year, committeeId, type},
     });
     return response.data;
   },
