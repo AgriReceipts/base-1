@@ -1,5 +1,5 @@
-import api from '@/lib/axiosInstance';
-import {useState, useEffect} from 'react';
+import api from "@/lib/axiosInstance";
+import { useState, useEffect } from "react";
 
 interface ChartData {
   date: string;
@@ -7,31 +7,24 @@ interface ChartData {
 }
 
 interface CurrentMonthData {
-  totalFeesPaid: number;
-  totalReceipts: number;
-  totalValue: number;
-  marketFees: number;
-  officeFees: number;
-  checkpostFees: number;
-  otherFees: number;
-  uniqueCommodities: number;
-  uniqueTraders: number;
+  totalValue: number | null;
+  marketFees: number | null;
+  officeFees: number | null;
+  checkpostMarketFees: number | null;
+  otherFees: number | null;
 }
-interface allTimeData {
+interface currentFinancialYearData {
+  fyPeriod: string;
   totalFees: number;
   totalCheckpostFees: number;
   totalOfficeFees: number;
   otalOtherFees: number;
 }
-interface LocationData {
-  name: string;
-  value: number;
-}
 
 interface CommitteeAnalyticsData {
   currentMonth: CurrentMonthData | null;
-  allTime: allTimeData | null;
   chartData: ChartData[] | null;
+  currentFinancialYear: currentFinancialYearData;
   locationData: LocationData[] | null;
   allTimeLocationData: LocationData[] | null;
 }
@@ -48,6 +41,10 @@ interface UseCommitteeAnalyticsReturn {
   error: string | null;
   refetch: () => void;
 }
+interface LocationData {
+  name: string;
+  value: number;
+}
 
 export const useCommitteeAnalytics = ({
   committeeId,
@@ -60,7 +57,7 @@ export const useCommitteeAnalytics = ({
 
   const fetchData = async () => {
     if (!committeeId || !year || !month) {
-      setError('Missing required parameters');
+      setError("Missing required parameters");
       setLoading(false);
       return;
     }
@@ -70,7 +67,7 @@ export const useCommitteeAnalytics = ({
       setError(null);
 
       const response = await api.get(
-        `/analytics/committee/${committeeId}/${year}/${month}`
+        `analytics/committee/${committeeId}/${year}/${month}`,
       );
 
       // Process location data from current month data
@@ -78,35 +75,39 @@ export const useCommitteeAnalytics = ({
       if (response.data.currentMonth) {
         locationData.push(
           {
-            name: 'Office',
+            name: "Office",
             value: Number(response.data.currentMonth.officeFees) || 0,
           },
           {
-            name: 'Checkpost',
-            value: Number(response.data.currentMonth.checkpostFees) || 0,
+            name: "Checkpost",
+            value: Number(response.data.currentMonth.checkpostMarketFees) || 0,
           },
           {
-            name: 'Other',
+            name: "Other",
             value: Number(response.data.currentMonth.otherFees) || 0,
-          }
+          },
         );
       }
 
       const allTimeLocationData: LocationData[] = [];
-      if (response.data.allTime) {
+      if (response.data.currentFinancialYear) {
         allTimeLocationData.push(
           {
-            name: 'Office',
-            value: Number(response.data.allTime.totalOfficeFees) || 0,
+            name: "Office",
+            value:
+              Number(response.data.currentFinancialYear.totalOfficeFees) || 0,
           },
           {
-            name: 'Checkpost',
-            value: Number(response.data.allTime.totalCheckpostFees) || 0,
+            name: "Checkpost",
+            value:
+              Number(response.data.currentFinancialYear.totalCheckpostFees) ||
+              0,
           },
           {
-            name: 'Other',
-            value: Number(response.data.allTime.totalOtherFees) || 0,
-          }
+            name: "Other",
+            value:
+              Number(response.data.currentFinancialYear.totalOtherFees) || 0,
+          },
         );
       }
 
@@ -119,7 +120,7 @@ export const useCommitteeAnalytics = ({
       setError(
         err.response?.data?.message ||
           err.message ||
-          'Failed to fetch analytics'
+          "Failed to fetch analytics",
       );
       setData(null);
     } finally {

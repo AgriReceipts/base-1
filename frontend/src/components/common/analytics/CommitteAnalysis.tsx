@@ -107,9 +107,9 @@ export default function CommitteeAnalysis() {
     if (!committeeData) return 0;
 
     if (locationTimeFrame === "month") {
-      return committeeData.currentMonth?.totalFeesPaid || 0;
+      return committeeData.currentMonth?.marketFees || 0;
     } else {
-      return committeeData.allTime?.totalFees || 0;
+      return committeeData.currentFinancialYear?.totalFees || 0;
     }
   }, [committeeData, locationTimeFrame]);
 
@@ -153,7 +153,10 @@ export default function CommitteeAnalysis() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 w-full">
           <div className="h-64 md:h-80 w-full flex items-center justify-center">
             {committeeData?.chartData ? (
-              <AreaChartComponent data={committeeData.chartData} />
+              <AreaChartComponent
+                data={committeeData.chartData}
+                year={committeeData.currentFinancialYear.fyPeriod}
+              />
             ) : (
               <div className="text-gray-500">No chart data available</div>
             )}
@@ -184,7 +187,7 @@ export default function CommitteeAnalysis() {
                 }`}
                 onClick={() => setLocationTimeFrame("all")}
               >
-                All Time
+                Current Financial Year
               </button>
             </div>
           </div>

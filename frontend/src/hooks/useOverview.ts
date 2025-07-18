@@ -43,7 +43,6 @@ export const useOverview = ({
 
     try {
       const result = await api.get(`analytics/overview/${committeeId}`);
-      console.log("The result is", result);
       if (result.data) {
         // Note: keeping the typo as it exists in your API
         setData(result.data);
