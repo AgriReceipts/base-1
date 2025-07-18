@@ -6,15 +6,7 @@ import {
 
 /**
  * Encapsulates all database writes for a single day's batch of receipts for one committee.
- * This includes:
- * 1. Creating the Receipts.
- * 2. Upserting DailyAnalytics.
- * 3. Upserting CommitteeMonthlyAnalytics.
- * 4. Upserting TraderMonthlyAnalytics and TraderOverallAnalytics.
- * 5. Upserting CommodityMonthlyAnalytics and CommodityOverallAnalytics.
- *
- * Note: Operations are performed sequentially without transactions for seed script performance.
- * Data integrity is sacrificed for speed during seeding process.
+ * This version is updated to work with the simplified analytics schema focusing on market fees.
  */
 export async function processDayBatch(
   prisma: PrismaClient,
@@ -22,7 +14,6 @@ export async function processDayBatch(
   receiptDate: Date,
   receipts: any[]
 ): Promise<void> {
-  // If there are no receipts to process for this day, exit early.
   if (receipts.length === 0) {
     return;
   }
@@ -31,11 +22,11 @@ export async function processDayBatch(
     // 1. Create all receipts for this batch
     await prisma.receipt.createMany({
       data: receipts,
-      skipDuplicates: true, // Good practice
+      skipDuplicates: true,
     });
 
     const year = receiptDate.getFullYear();
-    const month = receiptDate.getMonth() + 1; // JS months are 0-11
+    const month = receiptDate.getMonth() + 1;
 
     // Calculate the aggregate analytics for the current batch of receipts
     const analytics = calculateDayAnalytics(receipts, receiptDate, committeeId);
@@ -52,21 +43,15 @@ export async function processDayBatch(
       update: {
         totalReceipts: {increment: analytics.totalReceipts},
         totalValue: {increment: analytics.totalValue},
-        totalFeesPaid: {increment: analytics.totalFeesPaid},
+        marketFees: {increment: analytics.marketFees},
         totalQuantity: {increment: analytics.totalQuantity},
-        mf_fees: {increment: analytics.mf_fees},
-        lc_fees: {increment: analytics.lc_fees},
-        uc_fees: {increment: analytics.uc_fees},
-        others_fees: {increment: analytics.others_fees},
         officeFees: {increment: analytics.officeFees},
         checkpostFees: {increment: analytics.checkpostFees},
         otherFees: {increment: analytics.otherFees},
-        // Note: Unique counts cannot be incremented this way. They are only set on creation.
-        // A full recalculation would be needed to update them, which is too slow for this process.
       },
     });
 
-    // 3. Update Committee-level Monthly Analytics
+    // 3. Update Committee-level Monthly Analytics (and its checkposts)
     await updateCommitteeAnalytics(prisma, committeeId, year, month, receipts);
 
     // 4. Update Trader-level Monthly and Overall Analytics
@@ -86,81 +71,62 @@ export async function processDayBatch(
       `Error processing day batch for committee ${committeeId} on ${receiptDate.toISOString()}:`,
       error
     );
-    throw error; // Re-throw to allow caller to handle
+    throw error;
   }
 }
 
 /**
- * Calculates the daily aggregate values from a batch of receipts.
- * This function is now correctly called by `processDayBatch`.
+ * Calculates daily aggregates with field names matching the DailyAnalytics schema.
  */
 function calculateDayAnalytics(
   receipts: any[],
   receiptDate: Date,
   committeeId: string
 ): any {
-  const totalReceipts = receipts.length;
-
-  const totalValue = receipts.reduce(
-    (sum, r) => sum + parseFloat(r.value.toString()),
-    0
+  // Filter for market fee receipts first
+  const marketFeeReceipts = receipts.filter(
+    (r) => r.natureOfReceipt === NatureOfReceipt.mf
   );
 
-  const totalFeesPaid = receipts.reduce(
+  const marketFees = marketFeeReceipts.reduce(
     (sum, r) => sum + parseFloat(r.feesPaid.toString()),
     0
   );
 
+  // Calculate market fee breakdown by location
+  const officeFees = marketFeeReceipts
+    .filter((r) => r.collectionLocation === CollectionLocation.office)
+    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
+
+  const checkpostFees = marketFeeReceipts
+    .filter((r) => r.collectionLocation === CollectionLocation.checkpost)
+    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
+
+  const otherFees = marketFeeReceipts
+    .filter((r) => r.collectionLocation === CollectionLocation.other)
+    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
+
+  // Calculate overall totals from all receipts
+  const totalReceipts = receipts.length;
+  const totalValue = receipts.reduce(
+    (sum, r) => sum + parseFloat(r.value.toString()),
+    0
+  );
   const totalQuantity = receipts.reduce(
     (sum, r) => sum + parseFloat(r.totalWeightKg?.toString() || '0'),
     0
   );
-
-  const mf_fees = receipts
-    .filter((r) => r.natureOfReceipt === NatureOfReceipt.mf)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-
-  const lc_fees = receipts
-    .filter((r) => r.natureOfReceipt === NatureOfReceipt.lc)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-
-  const uc_fees = receipts
-    .filter((r) => r.natureOfReceipt === NatureOfReceipt.uc)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-
-  const others_fees = receipts
-    .filter((r) => r.natureOfReceipt === NatureOfReceipt.others)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-
-  const officeFees = receipts
-    .filter((r) => r.collectionLocation === CollectionLocation.office)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-
-  const checkpostFees = receipts
-    .filter((r) => r.collectionLocation === CollectionLocation.checkpost)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-
-  const otherFees = receipts
-    .filter((r) => r.collectionLocation === CollectionLocation.other)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-
   const uniqueTraders = new Set(receipts.map((r) => r.traderId)).size;
-
   const uniqueCommodities = new Set(receipts.map((r) => r.commodityId)).size;
 
-  // The returned object matches the structure needed by Prisma's `dailyAnalytics.create`.
   return {
     receiptDate,
     committeeId,
-    checkpostId: null, // Set to null for committee-level daily analytics
+    checkpostId: null,
     totalReceipts,
     totalValue,
-    totalFeesPaid,
+    marketFees,
     totalQuantity,
-    mf_fees,
-    lc_fees,
-    uc_fees,
-    others_fees,
     officeFees,
     checkpostFees,
     otherFees,
@@ -169,197 +135,112 @@ function calculateDayAnalytics(
   };
 }
 
+/**
+ * Updates CommitteeMonthlyAnalytics for the committee and for each checkpost.
+ * The table uses a unique constraint on (committeeId, year, month) so we need to
+ * aggregate all data for the committee into a single record.
+ */
 async function updateCommitteeAnalytics(
-  tx: any,
+  prisma: any,
   committeeId: string,
   year: number,
   month: number,
   receipts: any[]
 ) {
-  const totalReceipts = receipts.length;
-  const totalValue = receipts.reduce(
-    (sum, r) => sum + parseFloat(r.value.toString()),
-    0
-  );
-  const totalFeesPaid = receipts.reduce(
-    (sum, r) => sum + parseFloat(r.feesPaid.toString()),
-    0
-  );
-  const marketFees = receipts
-    .filter((r) => r.natureOfReceipt === NatureOfReceipt.mf)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-  const officeFees = receipts
-    .filter((r) => r.collectionLocation === CollectionLocation.office)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-  const checkpostFees = receipts
-    .filter((r) => r.collectionLocation === CollectionLocation.checkpost)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-  const otherFees = receipts
-    .filter((r) => r.collectionLocation === CollectionLocation.other)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
+  // Calculate aggregates for all receipts (committee + all checkposts combined)
+  const allAggregates = calculateAggregates(receipts);
 
-  // Note: These unique counts are for the *current batch* only.
-  // They are correct for the 'create' part of the upsert.
-  const uniqueTraders = new Set(receipts.map((r) => r.traderId)).size;
-  const uniqueCommodities = new Set(
-    receipts.map((r) => r.commodityId).filter(Boolean)
-  ).size;
-
-  // Get target values for this committee and month
-  const target = await tx.target.findFirst({
+  // Get committee-level target - using the correct Target model structure
+  const committeeTarget = await prisma.target.findFirst({
     where: {
       committeeId,
       year,
       month,
-      checkpostId: null, // Committee-level target
+      checkpostId: null,
       isActive: true,
+      type: 'OVERALL_COMMITTEE', // Assuming TargetType enum has COMMITTEE value
     },
-    select: {
-      marketFeeTarget: true,
-      totalValueTarget: true,
-    },
+    select: {marketFeeTarget: true},
   });
 
-  // Committee-level monthly analytics (checkPostId is null)
-  await tx.committeeMonthlyAnalytics.upsert({
-    where: {committeeId_year_month: {committeeId, year, month}},
+  // Since the unique constraint is on (committeeId, year, month), we create/update
+  // a single record that represents the entire committee's monthly analytics
+  await prisma.committeeMonthlyAnalytics.upsert({
+    where: {
+      committeeId_year_month: {
+        committeeId,
+        year,
+        month,
+      },
+    },
     create: {
       committeeId,
-      checkPostId: null, // Committee-level analytics
+      checkPostId: null, // Committee-level record
       year,
       month,
-      totalReceipts,
-      totalValue,
-      totalFeesPaid,
-      marketFees,
-      officeFees,
-      checkpostFees,
-      otherFees,
-      marketFeeTarget: target?.marketFeeTarget || null,
-      totalValueTarget: target?.totalValueTarget || null,
-      uniqueTraders,
-      uniqueCommodities,
+      totalReceipts: allAggregates.totalReceipts,
+      totalValue: allAggregates.totalValue,
+      marketFees: allAggregates.marketFees,
+      officeFees: allAggregates.officeMarketFees,
+      checkpostMarketFees: allAggregates.checkpostMarketFees,
+      otherFees: allAggregates.otherMarketFees,
+      marketFeeTarget: committeeTarget?.marketFeeTarget || null,
+      uniqueTraders: allAggregates.uniqueTraders,
+      uniqueCommodities: allAggregates.uniqueCommodities,
     },
     update: {
-      totalReceipts: {increment: totalReceipts},
-      totalValue: {increment: totalValue},
-      totalFeesPaid: {increment: totalFeesPaid},
-      marketFees: {increment: marketFees},
-      officeFees: {increment: officeFees},
-      checkpostFees: {increment: checkpostFees},
-      otherFees: {increment: otherFees},
-      // Update target values if they exist
-      marketFeeTarget: target?.marketFeeTarget || undefined,
-      totalValueTarget: target?.totalValueTarget || undefined,
-      // Note: We do NOT increment unique counts as it would be incorrect.
-      // A full recalculation is too slow for a seeder. This is the correct approach.
+      totalReceipts: {increment: allAggregates.totalReceipts},
+      totalValue: {increment: allAggregates.totalValue},
+      marketFees: {increment: allAggregates.marketFees},
+      officeFees: {increment: allAggregates.officeMarketFees},
+      checkpostMarketFees: {increment: allAggregates.checkpostMarketFees},
+      otherFees: {increment: allAggregates.otherMarketFees},
+      marketFeeTarget: committeeTarget?.marketFeeTarget || undefined,
     },
   });
 
-  // Also update checkpost-specific analytics if receipts have checkpost data
-  const checkpostGroups = new Map<string, any[]>();
-  receipts.forEach((receipt) => {
-    if (receipt.checkpostId) {
-      if (!checkpostGroups.has(receipt.checkpostId)) {
-        checkpostGroups.set(receipt.checkpostId, []);
-      }
-      checkpostGroups.get(receipt.checkpostId)!.push(receipt);
-    }
-  });
+  // Note: If you need checkpost-specific analytics, you would need a separate
+  // table (e.g., CheckpostMonthlyAnalytics) since CommitteeMonthlyAnalytics
+  // has a unique constraint that prevents multiple records per committee/month
+}
 
-  // Create/update checkpost-specific monthly analytics
-  for (const [checkpostId, checkpostReceipts] of checkpostGroups) {
-    const checkpostTotalReceipts = checkpostReceipts.length;
-    const checkpostTotalValue = checkpostReceipts.reduce(
+/**
+ * Helper to calculate aggregates for a given batch of receipts.
+ * Used by updateCommitteeAnalytics for both committee and checkpost level.
+ */
+function calculateAggregates(receipts: any[]) {
+  const marketFeeReceipts = receipts.filter(
+    (r) => r.natureOfReceipt === NatureOfReceipt.mf
+  );
+
+  return {
+    totalReceipts: receipts.length,
+    totalValue: receipts.reduce(
       (sum, r) => sum + parseFloat(r.value.toString()),
       0
-    );
-    const checkpostTotalFeesPaid = checkpostReceipts.reduce(
+    ),
+    marketFees: marketFeeReceipts.reduce(
       (sum, r) => sum + parseFloat(r.feesPaid.toString()),
       0
-    );
-    const checkpostMarketFees = checkpostReceipts
-      .filter((r) => r.natureOfReceipt === NatureOfReceipt.mf)
-      .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-    const checkpostOfficeFees = checkpostReceipts
+    ),
+    officeMarketFees: marketFeeReceipts
       .filter((r) => r.collectionLocation === CollectionLocation.office)
-      .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-    const checkpostCheckpostFees = checkpostReceipts
+      .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0),
+    checkpostMarketFees: marketFeeReceipts
       .filter((r) => r.collectionLocation === CollectionLocation.checkpost)
-      .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-    const checkpostOtherFees = checkpostReceipts
+      .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0),
+    otherMarketFees: marketFeeReceipts
       .filter((r) => r.collectionLocation === CollectionLocation.other)
-      .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-
-    const checkpostUniqueTraders = new Set(
-      checkpostReceipts.map((r) => r.traderId)
-    ).size;
-    const checkpostUniqueCommodities = new Set(
-      checkpostReceipts.map((r) => r.commodityId).filter(Boolean)
-    ).size;
-
-    // Get checkpost-specific target
-    const checkpostTarget = await tx.target.findFirst({
-      where: {
-        committeeId,
-        year,
-        month,
-        checkpostId,
-        isActive: true,
-      },
-      select: {
-        marketFeeTarget: true,
-        totalValueTarget: true,
-      },
-    });
-
-    // Create a separate record for checkpost-specific analytics
-    // Note: Using a different approach that doesn't conflict with the committee-level unique constraint
-    await tx.committeeMonthlyAnalytics.upsert({
-      where: {
-        // We need to create a unique constraint that includes checkPostId
-        // Since the schema only has @@unique([committeeId, year, month])
-        // We'll need to handle this differently
-        committeeId_year_month: {
-          committeeId: committeeId, // Keep same committeeId
-          year,
-          month,
-        },
-      },
-      create: {
-        committeeId,
-        checkPostId: checkpostId,
-        year,
-        month,
-        totalReceipts: checkpostTotalReceipts,
-        totalValue: checkpostTotalValue,
-        totalFeesPaid: checkpostTotalFeesPaid,
-        marketFees: checkpostMarketFees,
-        officeFees: checkpostOfficeFees,
-        checkpostFees: checkpostCheckpostFees,
-        otherFees: checkpostOtherFees,
-        marketFeeTarget: checkpostTarget?.marketFeeTarget || null,
-        totalValueTarget: checkpostTarget?.totalValueTarget || null,
-        uniqueTraders: checkpostUniqueTraders,
-        uniqueCommodities: checkpostUniqueCommodities,
-      },
-      update: {
-        totalReceipts: {increment: checkpostTotalReceipts},
-        totalValue: {increment: checkpostTotalValue},
-        totalFeesPaid: {increment: checkpostTotalFeesPaid},
-        marketFees: {increment: checkpostMarketFees},
-        officeFees: {increment: checkpostOfficeFees},
-        checkpostFees: {increment: checkpostCheckpostFees},
-        otherFees: {increment: checkpostOtherFees},
-        marketFeeTarget: checkpostTarget?.marketFeeTarget || undefined,
-        totalValueTarget: checkpostTarget?.totalValueTarget || undefined,
-      },
-    });
-  }
+      .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0),
+    uniqueTraders: new Set(receipts.map((r) => r.traderId)).size,
+    uniqueCommodities: new Set(
+      receipts.map((r) => r.commodityId).filter(Boolean)
+    ).size,
+  };
 }
 
 async function updateTraderAnalytics(
-  tx: any,
+  prisma: any,
   committeeId: string,
   year: number,
   month: number,
@@ -390,8 +271,7 @@ async function updateTraderAnalytics(
       0
     );
 
-    // Upsert Monthly Trader Analytics
-    await tx.traderMonthlyAnalytics.upsert({
+    await prisma.traderMonthlyAnalytics.upsert({
       where: {
         traderId_committeeId_year_month: {traderId, committeeId, year, month},
       },
@@ -413,8 +293,7 @@ async function updateTraderAnalytics(
       },
     });
 
-    // Upsert Overall Trader Analytics
-    await tx.traderOverallAnalytics.upsert({
+    await prisma.traderOverallAnalytics.upsert({
       where: {traderId_committeeId: {traderId, committeeId}},
       create: {
         traderId,
@@ -431,15 +310,14 @@ async function updateTraderAnalytics(
         totalValue: {increment: totalValue},
         totalFeesPaid: {increment: totalFeesPaid},
         totalQuantity: {increment: totalQuantity},
-        lastTransactionDate: receiptDate, // Always update the last transaction date
-        // Note: firstTransactionDate should only be set on creation, not updated
+        lastTransactionDate: receiptDate,
       },
     });
   }
 }
 
 async function updateCommodityAnalytics(
-  tx: any,
+  prisma: any,
   committeeId: string,
   year: number,
   month: number,
@@ -469,8 +347,7 @@ async function updateCommodityAnalytics(
       0
     );
 
-    // Upsert Monthly Commodity Analytics
-    await tx.commodityMonthlyAnalytics.upsert({
+    await prisma.commodityMonthlyAnalytics.upsert({
       where: {
         commodityId_committeeId_year_month: {
           commodityId,
@@ -497,8 +374,7 @@ async function updateCommodityAnalytics(
       },
     });
 
-    // Upsert Overall Commodity Analytics
-    await tx.commodityOverallAnalytics.upsert({
+    await prisma.commodityOverallAnalytics.upsert({
       where: {commodityId_committeeId: {commodityId, committeeId}},
       create: {
         commodityId,
@@ -516,212 +392,4 @@ async function updateCommodityAnalytics(
       },
     });
   }
-}
-
-// Additional utility functions for analytics
-
-/**
- * Recalculates unique counts for a specific month (expensive operation)
- * Use sparingly, typically only for data corrections
- */
-export async function recalculateMonthlyUniqueCount(
-  prisma: PrismaClient,
-  committeeId: string,
-  year: number,
-  month: number
-) {
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0);
-
-  const receipts = await prisma.receipt.findMany({
-    where: {
-      committeeId,
-      receiptDate: {
-        gte: startDate,
-        lte: endDate,
-      },
-    },
-    select: {
-      traderId: true,
-      commodityId: true,
-      checkpostId: true,
-    },
-  });
-
-  const uniqueTraders = new Set(receipts.map((r) => r.traderId)).size;
-  const uniqueCommodities = new Set(
-    receipts.map((r) => r.commodityId).filter(Boolean)
-  ).size;
-
-  // Update committee-level analytics (where checkPostId is null)
-  await prisma.committeeMonthlyAnalytics.updateMany({
-    where: {
-      committeeId,
-      year,
-      month,
-      checkPostId: null, // Only update committee-level records
-    },
-    data: {uniqueTraders, uniqueCommodities},
-  });
-
-  // Update checkpost-specific analytics
-  const checkpostGroups = new Map<string, any[]>();
-  receipts.forEach((receipt) => {
-    if (receipt.checkpostId) {
-      if (!checkpostGroups.has(receipt.checkpostId)) {
-        checkpostGroups.set(receipt.checkpostId, []);
-      }
-      checkpostGroups.get(receipt.checkpostId)!.push(receipt);
-    }
-  });
-
-  for (const [checkpostId, checkpostReceipts] of checkpostGroups) {
-    const checkpostUniqueTraders = new Set(
-      checkpostReceipts.map((r) => r.traderId)
-    ).size;
-    const checkpostUniqueCommodities = new Set(
-      checkpostReceipts.map((r) => r.commodityId).filter(Boolean)
-    ).size;
-
-    await prisma.committeeMonthlyAnalytics.updateMany({
-      where: {
-        committeeId,
-        checkPostId: checkpostId,
-        year,
-        month,
-      },
-      data: {
-        uniqueTraders: checkpostUniqueTraders,
-        uniqueCommodities: checkpostUniqueCommodities,
-      },
-    });
-  }
-}
-
-/**
- * Gets analytics summary for a committee and date range
- */
-export async function getAnalyticsSummary(
-  prisma: PrismaClient,
-  committeeId: string,
-  startDate: Date,
-  endDate: Date
-) {
-  const dailyAnalytics = await prisma.dailyAnalytics.findMany({
-    where: {
-      committeeId,
-      receiptDate: {
-        gte: startDate,
-        lte: endDate,
-      },
-    },
-    orderBy: {receiptDate: 'asc'},
-  });
-
-  const monthlyAnalytics = await prisma.committeeMonthlyAnalytics.findMany({
-    where: {
-      committeeId,
-      year: {
-        gte: startDate.getFullYear(),
-        lte: endDate.getFullYear(),
-      },
-    },
-    orderBy: [{year: 'asc'}, {month: 'asc'}],
-  });
-
-  return {
-    dailyAnalytics,
-    monthlyAnalytics,
-    summary: {
-      totalReceipts: dailyAnalytics.reduce(
-        (sum, day) => sum + day.totalReceipts,
-        0
-      ),
-      totalValue: dailyAnalytics.reduce(
-        (sum, day) => sum + Number(day.totalValue),
-        0
-      ),
-      totalFeesPaid: dailyAnalytics.reduce(
-        (sum, day) => sum + Number(day.totalFeesPaid),
-        0
-      ),
-      totalQuantity: dailyAnalytics.reduce(
-        (sum, day) => sum + Number(day.totalQuantity),
-        0
-      ),
-    },
-  };
-}
-
-/**
- * Helper function to handle checkpost-specific analytics separately
- * This approach avoids the unique constraint conflict
- */
-export async function createCheckpostAnalytics(
-  prisma: PrismaClient,
-  committeeId: string,
-  checkpostId: string,
-  year: number,
-  month: number,
-  receipts: any[]
-) {
-  const checkpostReceipts = receipts.filter(
-    (r) => r.checkpostId === checkpostId
-  );
-
-  if (checkpostReceipts.length === 0) return;
-
-  const totalReceipts = checkpostReceipts.length;
-  const totalValue = checkpostReceipts.reduce(
-    (sum, r) => sum + parseFloat(r.value.toString()),
-    0
-  );
-  const totalFeesPaid = checkpostReceipts.reduce(
-    (sum, r) => sum + parseFloat(r.feesPaid.toString()),
-    0
-  );
-  const marketFees = checkpostReceipts
-    .filter((r) => r.natureOfReceipt === NatureOfReceipt.mf)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-  const officeFees = checkpostReceipts
-    .filter((r) => r.collectionLocation === CollectionLocation.office)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-  const checkpostFees = checkpostReceipts
-    .filter((r) => r.collectionLocation === CollectionLocation.checkpost)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-  const otherFees = checkpostReceipts
-    .filter((r) => r.collectionLocation === CollectionLocation.other)
-    .reduce((sum, r) => sum + parseFloat(r.feesPaid.toString()), 0);
-
-  const uniqueTraders = new Set(checkpostReceipts.map((r) => r.traderId)).size;
-  const uniqueCommodities = new Set(
-    checkpostReceipts.map((r) => r.commodityId).filter(Boolean)
-  ).size;
-
-  // Get checkpost-specific target
-  const target = await prisma.target.findFirst({
-    where: {
-      committeeId,
-      year,
-      month,
-      checkpostId,
-      isActive: true,
-    },
-    select: {
-      marketFeeTarget: true,
-      totalValueTarget: true,
-    },
-  });
-
-  // Since we can't have duplicate (committeeId, year, month) records,
-  // we'll need to either:
-  // 1. Use a different approach for checkpost data, or
-  // 2. Modify the schema to allow checkpost-specific records
-
-  // For now, let's store checkpost data separately using updateMany
-  // This requires the schema to be modified to allow null checkPostId in the unique constraint
-  // or create separate records with different logic
-
-  // Alternative approach: Store in a separate table or use a composite key
-  // that includes checkPostId in the unique constraint
 }

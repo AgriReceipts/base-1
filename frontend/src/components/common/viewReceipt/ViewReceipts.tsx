@@ -207,7 +207,7 @@ const ViewReceipts = () => {
 
   return (
     <div className='min-h-screen w-full bg-gradient-to-br from-blue-50 to-white p-4 md:p-8'>
-      <div className='max-w-7xl mx-auto'>
+      <div className='max-w-full mx-auto'>
         {/* Header Section */}
         <div className='mb-8'>
           <h1 className='text-3xl font-bold text-gray-800 mb-2'>

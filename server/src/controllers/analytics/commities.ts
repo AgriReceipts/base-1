@@ -35,7 +35,6 @@ export const getCommitteAnalytics = async (req: Request, res: Response) => {
         },
       },
       select: {
-        totalFeesPaid: true,
         totalValue: true,
         marketFees: true,
         officeFees: true,

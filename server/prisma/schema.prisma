@@ -62,6 +62,12 @@ enum CollectionLocation {
   other
 }
 
+enum TargetType {
+  OVERALL_COMMITTEE // The total target for the entire committee
+  COMMITTEE_OFFICE // The sub-target for office-based supervisors
+  CHECKPOST // The sub-target for a specific checkpost
+}
+
 // Models
 
 model User {
@@ -311,34 +317,29 @@ model Target {
 
   year  Int
   month Int
+  type  TargetType // Explicitly define the type of target
 
-  committeeId  String
-  checkpostId  String? // Optional: for checkpost-specific targets
-  superVisorId String?
+  committeeId String
+  checkpostId String? // Should ONLY be present if type is CHECKPOST
 
-  // Target amounts
-  marketFeeTarget  Decimal
-  totalValueTarget Decimal? // Optional: target for total trade value
+  marketFeeTarget Decimal
 
   // Metadata
-  setBy    String // User who set the target (AD)
-  isActive Boolean @default(true)
-  notes    String?
-
+  setBy     String // User who set the target (e.g., AD's user ID)
+  isActive  Boolean  @default(true)
+  notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  committee Committee  @relation(fields: [committeeId], references: [id])
-  checkpost Checkpost? @relation(fields: [checkpostId], references: [id])
-  User      User?      @relation(fields: [superVisorId], references: [id])
+  committee Committee  @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+  checkpost Checkpost? @relation(fields: [checkpostId], references: [id], onDelete: Cascade)
+  User      User?      @relation(fields: [userId], references: [id])
+  userId    String?
 
-  // One target per committee/checkpost per month
-  @@unique([year, month, committeeId, checkpostId, superVisorId, isActive])
-  @@index([committeeId, year])
-  @@index([checkpostId, year])
-  @@index([superVisorId, year])
-  @@index([year, month])
+  // This new unique constraint correctly handles all cases without needing custom SQL.
+  @@unique([year, month, committeeId, type, checkpostId])
+  @@index([committeeId, year, month, type])
 }
 
 // Analytics

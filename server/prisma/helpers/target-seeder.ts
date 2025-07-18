@@ -1,4 +1,4 @@
-import {PrismaClient, UserRole} from '@prisma/client';
+import {PrismaClient, UserRole, TargetType} from '@prisma/client';
 import {faker} from '@faker-js/faker';
 
 export async function seedTargets(
@@ -11,35 +11,37 @@ export async function seedTargets(
 
   const adUsers = users.filter((user) => user.role === UserRole.ad);
   if (adUsers.length === 0) {
-    console.log('     ⚠️  No AD users found, skipping target creation');
+    console.log('     ⚠️  No AD users found, skipping target creation.');
     return;
   }
 
-  // --- 💡 CONTEXT-BASED CONFIGURATION (ADJUST THESE VALUES) ---
-  const BASELINE_COMMITTEE_TOTAL_VALUE = 250_000_000; // Avg. monthly total value for a committee
-  const MARKET_FEE_PERCENTAGE = 0.01; // e.g., 1% of total value
-  const VARIANCE = 0.3; // Allows values to fluctuate by +/- 30%
+  // --- 💡 CONFIGURATION ---
+  const BASELINE_COMMITTEE_TOTAL_VALUE = 250_000_000; // 25 Crore
+  const MARKET_FEE_PERCENTAGE = 0.01; // 1%
+  const VARIANCE = 0.3; // +/- 30%
   // ---
 
   const targets = [];
   const startDate = new Date(config.dateRange.startDate);
   const endDate = new Date(config.dateRange.endDate);
 
+  // Generate a list of all months in the date range
   const months = [];
   let currentMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
   const lastMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
   while (currentMonth <= lastMonth) {
     months.push({
       year: currentMonth.getFullYear(),
-      month: currentMonth.getMonth() + 1,
+      month: currentMonth.getMonth() + 1, // Prisma uses 1-12 for month
     });
     currentMonth.setMonth(currentMonth.getMonth() + 1);
   }
 
   console.log(
-    `     Creating targets for ${months.length} months across ${committees.length} committees`
+    `     Creating targets for ${months.length} months across ${committees.length} committees...`
   );
 
+  // Fetch all checkposts at once for efficiency
   const checkposts = await prisma.checkpost.findMany({
     where: {committeeId: {in: committees.map((c) => c.id)}},
     select: {id: true, name: true, committeeId: true},
@@ -60,79 +62,90 @@ export async function seedTargets(
     for (const {year, month} of months) {
       const setByUser = faker.helpers.arrayElement(adUsers);
 
-      // 1. Generate a realistic base target for the committee for the month
+      // 1. Generate the OVERALL target for the entire committee
       const committeeTotalValueTarget = faker.number.int({
         min: BASELINE_COMMITTEE_TOTAL_VALUE * (1 - VARIANCE),
         max: BASELINE_COMMITTEE_TOTAL_VALUE * (1 + VARIANCE),
       });
 
-      // 2. Derive the market fee target from the total value target
       const committeeMarketFeeTarget = Math.round(
         committeeTotalValueTarget *
           faker.number.float({
-            min: MARKET_FEE_PERCENTAGE * 0.9, // Add slight variance to the fee %
+            min: MARKET_FEE_PERCENTAGE * 0.9,
             max: MARKET_FEE_PERCENTAGE * 1.1,
           })
       );
 
-      // Create the committee-level target
       targets.push({
         year,
         month,
+        type: TargetType.OVERALL_COMMITTEE,
         committeeId: committee.id,
         checkpostId: null,
         marketFeeTarget: committeeMarketFeeTarget,
-        totalValueTarget: committeeTotalValueTarget,
         setBy: setByUser.id,
         isActive: true,
-        notes: 'Committee level target',
+        notes: 'Overall target for the entire committee',
       });
 
-      // 3. Distribute a portion of the committee target to checkposts
-      if (committeeCheckposts.length > 0 && faker.datatype.boolean(0.8)) {
-        // Decide what portion of the committee's target is covered by checkposts
-        const portionToDistribute = faker.number.float({min: 0.5, max: 0.9});
+      // 2. Distribute a portion of the committee target to its sub-entities
+      let totalCheckpostFeesAssigned = 0;
+      if (committeeCheckposts.length > 0) {
+        const portionToDistribute = faker.number.float({min: 0.4, max: 0.8});
         let remainingFeeToAssign =
           committeeMarketFeeTarget * portionToDistribute;
-
-        // Shuffle checkposts to assign targets randomly
         const shuffledCheckposts = faker.helpers.shuffle(committeeCheckposts);
 
         for (const checkpost of shuffledCheckposts) {
-          if (remainingFeeToAssign <= 0) break;
+          if (remainingFeeToAssign <= 1000) break; // Stop if remaining amount is negligible
 
-          // Assign a random fraction of the remaining target to this checkpost
           const fraction = faker.number.float({min: 0.2, max: 0.8});
           const checkpostFeeTarget = Math.min(
             remainingFeeToAssign,
             Math.round(remainingFeeToAssign * fraction)
           );
-          remainingFeeToAssign -= checkpostFeeTarget;
 
-          // Derive the checkpost's total value from its fee target
-          const checkpostTotalValueTarget = Math.round(
-            checkpostFeeTarget / MARKET_FEE_PERCENTAGE
-          );
-
-          targets.push({
-            year,
-            month,
-            committeeId: committee.id,
-            checkpostId: checkpost.id,
-            marketFeeTarget: checkpostFeeTarget,
-            totalValueTarget: checkpostTotalValueTarget,
-            setBy: setByUser.id,
-            isActive: true,
-            notes: `Target for ${checkpost.name}`,
-          });
+          if (checkpostFeeTarget > 0) {
+            targets.push({
+              year,
+              month,
+              type: TargetType.CHECKPOST,
+              committeeId: committee.id,
+              checkpostId: checkpost.id,
+              marketFeeTarget: checkpostFeeTarget,
+              setBy: setByUser.id,
+              isActive: true,
+              notes: `Sub-target for checkpost: ${checkpost.name}`,
+            });
+            totalCheckpostFeesAssigned += checkpostFeeTarget;
+            remainingFeeToAssign -= checkpostFeeTarget;
+          }
         }
+      }
+
+      // 3. Assign the rest of the target to the COMMITTEE_OFFICE
+      const officeFeeTarget =
+        committeeMarketFeeTarget - totalCheckpostFeesAssigned;
+
+      if (officeFeeTarget > 0) {
+        targets.push({
+          year,
+          month,
+          type: TargetType.COMMITTEE_OFFICE,
+          committeeId: committee.id,
+          checkpostId: null,
+          marketFeeTarget: officeFeeTarget,
+          setBy: setByUser.id,
+          isActive: true,
+          notes: 'Sub-target for the committee main office',
+        });
       }
     }
   }
 
-  console.log(`     Generated ${targets.length} targets`);
+  console.log(`     Generated ${targets.length} target records.`);
 
-  // Batch creation remains the same
+  // Batch creation for performance
   const batchSize = 100;
   let createdCount = 0;
   for (let i = 0; i < targets.length; i += batchSize) {
@@ -144,14 +157,22 @@ export async function seedTargets(
       });
       createdCount += result.count;
     } catch (error) {
-      console.error(`Error creating targets:`, error);
+      console.error(`Error creating targets batch:`, error);
     }
   }
 
-  console.log(`     ✅ Created ${createdCount} targets`);
-  const committeeTargets = targets.filter((t) => !t.checkpostId).length;
-  const checkpostTargets = targets.filter((t) => t.checkpostId).length;
+  console.log(`     ✅ Created ${createdCount} new targets in the database.`);
+  // Log the breakdown of created targets
+  const overall = targets.filter(
+    (t) => t.type === TargetType.OVERALL_COMMITTEE
+  ).length;
+  const office = targets.filter(
+    (t) => t.type === TargetType.COMMITTEE_OFFICE
+  ).length;
+  const checkpost = targets.filter(
+    (t) => t.type === TargetType.CHECKPOST
+  ).length;
   console.log(
-    `     📊 Committee: ${committeeTargets}, Checkpost: ${checkpostTargets}`
+    `     📊 Breakdown -> Overall: ${overall}, Office: ${office}, Checkpost: ${checkpost}`
   );
 }

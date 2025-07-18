@@ -9,7 +9,7 @@ import {generateMonthlyReports} from './helpers/report-generator';
 // ==================== CONFIGURABLE PARAMETERS ====================
 const SEED_CONFIG = {
   dateRange: {
-    startDate: new Date('2025-04-01'),
+    startDate: new Date('2024-04-01'),
     endDate: new Date('2025-07-01'),
   },
   receipts: {

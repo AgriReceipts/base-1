@@ -25,9 +25,8 @@ export const getDailyAnalytics = async (req: Request, res: Response) => {
       select: {
         totalReceipts: true,
         totalValue: true,
-        totalFeesPaid: true,
+        marketFees: true,
         totalQuantity: true,
-        mf_fees: true,
         officeFees: true,
         checkpostFees: true,
         otherFees: true,

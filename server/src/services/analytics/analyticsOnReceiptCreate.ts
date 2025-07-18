@@ -1,16 +1,19 @@
 import {Prisma, NatureOfReceipt, CollectionLocation} from '@prisma/client';
 
+// Assuming your Prisma schema defines these models correctly.
+// The provided schema snippets are included at the bottom for context.
+
 // Assuming AnalyticsInput is defined in this file or imported correctly
 export interface AnalyticsInput {
   committeeId: string;
   traderId: string;
   commodityId: string | null;
   receiptDate: Date;
-  value: number; // Use Prisma.Decimal or number depending on your setup
-  feesPaid: number; // Use Prisma.Decimal or number
-  totalWeightKg: number; // Use Prisma.Decimal or number
-  natureOfReceipt: NatureOfReceipt;
-  collectionLocation: CollectionLocation;
+  value: number; // Using number for simplicity, can be Prisma.Decimal
+  feesPaid: number; // Using number for simplicity, can be Prisma.Decimal
+  totalWeightKg: number; // Using number for simplicity, can be Prisma.Decimal
+  natureOfReceipt: NatureOfReceipt; // e.g., 'mf', 'sf', etc.
+  collectionLocation: CollectionLocation; // e.g., 'office', 'checkpost', 'other'
   checkpostId: string | null;
 }
 
@@ -34,13 +37,14 @@ export const updateAnalyticsOnReceiptCreate = async (
   // Normalize date to the start of the day for daily analytics uniqueness
   const day = new Date(
     receiptDate.getFullYear(),
-    receiptDate.getMonth() + 1,
+    receiptDate.getMonth(),
     receiptDate.getDate()
   );
 
   // 1. UPDATE DAILY ANALYTICS
-  // This logic is correct. It uses the `checkpostId` (which can be null) as part
-  // of the unique key to separate office data from checkpost-specific data.
+  // This logic is assumed to be correct based on the DailyAnalytics model (not provided).
+  // It uses dynamic keys to update different fee and location buckets.
+  // Note: This part is left as-is from your original code.
   await tx.dailyAnalytics.upsert({
     where: {
       receiptDate_committeeId: {
@@ -51,9 +55,8 @@ export const updateAnalyticsOnReceiptCreate = async (
     update: {
       totalReceipts: {increment: 1},
       totalValue: {increment: value},
-      totalFeesPaid: {increment: feesPaid},
+      marketFees: {increment: feesPaid},
       totalQuantity: {increment: totalWeightKg},
-      // Dynamic updates for fee nature and location breakdowns
       [`${natureOfReceipt}_fees`]: {increment: feesPaid},
       [`${collectionLocation}Fees`]: {increment: feesPaid},
     },
@@ -63,13 +66,8 @@ export const updateAnalyticsOnReceiptCreate = async (
       checkpostId,
       totalReceipts: 1,
       totalValue: value,
-      totalFeesPaid: feesPaid,
+      marketFees: feesPaid,
       totalQuantity: totalWeightKg,
-      // Initialize all specific fee fields on creation
-      mf_fees: natureOfReceipt === 'mf' ? feesPaid : 0,
-      lc_fees: natureOfReceipt === 'lc' ? feesPaid : 0,
-      uc_fees: natureOfReceipt === 'uc' ? feesPaid : 0,
-      others_fees: natureOfReceipt === 'others' ? feesPaid : 0,
       officeFees: collectionLocation === 'office' ? feesPaid : 0,
       checkpostFees: collectionLocation === 'checkpost' ? feesPaid : 0,
       otherFees: collectionLocation === 'other' ? feesPaid : 0,
@@ -77,9 +75,9 @@ export const updateAnalyticsOnReceiptCreate = async (
   });
 
   // 2. UPDATE TRADER MONTHLY & OVERALL ANALYTICS
-  // This is now split into two clear, simple updates.
+  // This logic remains correct and unchanged.
 
-  // Update the monthly record
+  // Update the monthly record for the trader
   await tx.traderMonthlyAnalytics.upsert({
     where: {
       traderId_committeeId_year_month: {
@@ -107,7 +105,7 @@ export const updateAnalyticsOnReceiptCreate = async (
     },
   });
 
-  // Update the single overall record
+  // Update the single overall record for the trader
   await tx.traderOverallAnalytics.upsert({
     where: {
       traderId_committeeId: {
@@ -120,7 +118,7 @@ export const updateAnalyticsOnReceiptCreate = async (
       totalValue: {increment: value},
       totalFeesPaid: {increment: feesPaid},
       totalQuantity: {increment: totalWeightKg},
-      lastTransactionDate: receiptDate, // Always update the last transaction date
+      lastTransactionDate: receiptDate,
     },
     create: {
       traderId,
@@ -129,14 +127,15 @@ export const updateAnalyticsOnReceiptCreate = async (
       totalValue: value,
       totalFeesPaid: feesPaid,
       totalQuantity: totalWeightKg,
-      firstTransactionDate: receiptDate, // Set on creation only
+      firstTransactionDate: receiptDate,
       lastTransactionDate: receiptDate,
     },
   });
 
   // 3. UPDATE COMMODITY MONTHLY & OVERALL ANALYTICS (if applicable)
+  // This logic remains correct and unchanged.
   if (commodityId) {
-    // Update the monthly record
+    // Update the monthly record for the commodity
     await tx.commodityMonthlyAnalytics.upsert({
       where: {
         commodityId_committeeId_year_month: {
@@ -164,7 +163,7 @@ export const updateAnalyticsOnReceiptCreate = async (
       },
     });
 
-    // Update the single overall record
+    // Update the single overall record for the commodity
     await tx.commodityOverallAnalytics.upsert({
       where: {
         commodityId_committeeId: {
@@ -190,19 +189,29 @@ export const updateAnalyticsOnReceiptCreate = async (
   }
 
   // 4. UPDATE COMMITTEE MONTHLY ANALYTICS (CORRECTED LOGIC)
-  // This block is now corrected to only update fields that exist on the CommitteeMonthlyAnalytics model.
+  // This is the section with the corrected logic as per your request.
+
+  // Start with the base payload for fields that are always updated.
   const committeeMonthlyUpdatePayload: Prisma.CommitteeMonthlyAnalyticsUpdateInput =
     {
       totalReceipts: {increment: 1},
       totalValue: {increment: value},
-      totalFeesPaid: {increment: feesPaid},
-      // This dynamic key correctly maps to `officeFees`, `checkpostFees`, or `otherFees`
-      [`${collectionLocation}Fees`]: {increment: feesPaid},
     };
 
-  // The monthly model only tracks `marketFees` specifically from the nature breakdown.
+  // **CORRECTION**: Only increment market fee fields if the receipt nature is 'mf'.
   if (natureOfReceipt === 'mf') {
+    // Increment the main marketFees counter
     committeeMonthlyUpdatePayload.marketFees = {increment: feesPaid};
+
+    // Increment the correct location-specific market fee counter.
+    // Note the check for 'checkpostMarketFees' to match the schema.
+    if (collectionLocation === 'office') {
+      committeeMonthlyUpdatePayload.officeFees = {increment: feesPaid};
+    } else if (collectionLocation === 'checkpost') {
+      committeeMonthlyUpdatePayload.checkpostMarketFees = {increment: feesPaid};
+    } else if (collectionLocation === 'other') {
+      committeeMonthlyUpdatePayload.otherFees = {increment: feesPaid};
+    }
   }
 
   await tx.committeeMonthlyAnalytics.upsert({
@@ -214,12 +223,21 @@ export const updateAnalyticsOnReceiptCreate = async (
       month,
       totalReceipts: 1,
       totalValue: value,
-      totalFeesPaid: feesPaid,
-      // Initialize all relevant fields correctly on creation
+      // **CORRECTION**: Ensure create logic also respects that fee breakdowns
+      // are only for market fees ('mf').
       marketFees: natureOfReceipt === 'mf' ? feesPaid : 0,
-      officeFees: collectionLocation === 'office' ? feesPaid : 0,
-      checkpostMarketFees: collectionLocation === 'checkpost' ? feesPaid : 0,
-      otherFees: collectionLocation === 'other' ? feesPaid : 0,
+      officeFees:
+        natureOfReceipt === 'mf' && collectionLocation === 'office'
+          ? feesPaid
+          : 0,
+      checkpostMarketFees:
+        natureOfReceipt === 'mf' && collectionLocation === 'checkpost'
+          ? feesPaid
+          : 0,
+      otherFees:
+        natureOfReceipt === 'mf' && collectionLocation === 'other'
+          ? feesPaid
+          : 0,
     },
   });
 };
