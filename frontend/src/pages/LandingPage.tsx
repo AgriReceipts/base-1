@@ -314,6 +314,262 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Contributors Section - Creative 3D Morphing Cards */}
+      <section className="relative py-20 bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 overflow-hidden">
+        {/* Animated Background Particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-white rounded-full opacity-30 animate-pulse"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 3}s`
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full border border-purple-500/30 backdrop-blur-sm mb-6">
+              <span className="text-purple-300 text-sm font-semibold">🚀 Meet the Innovation Team</span>
+            </div>
+            <h2 className="text-5xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                Digital Architects
+              </span>
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              The visionary minds behind Andhra Pradesh's agricultural digital transformation
+            </p>
+          </div>
+
+          {/* 3D Morphing Cards Container */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            {/* Contributor 1 - Lead Developer */}
+            <div className="group relative">
+              <div className="relative perspective-1000">
+                <div className="relative w-full h-96 transform-style-preserve-3d transition-all duration-700 group-hover:rotate-y-12 group-hover:rotate-x-6">
+                  {/* Main Card */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 rounded-3xl shadow-2xl transform transition-all duration-700 group-hover:scale-105">
+                    <div className="absolute inset-0 bg-black/20 rounded-3xl"></div>
+                    <div className="relative p-8 h-full flex flex-col justify-between">
+                      {/* Avatar with Glitch Effect */}
+                      <div className="relative mx-auto mb-6">
+                        <div className="w-24 h-24 bg-gradient-to-br from-white/20 to-white/5 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 group-hover:animate-pulse">
+                          <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                            AD
+                          </div>
+                        </div>
+                        {/* Floating Particles */}
+                        <div className="absolute -top-2 -right-2 w-4 h-4 bg-cyan-400 rounded-full animate-bounce opacity-80"></div>
+                        <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-purple-400 rounded-full animate-ping opacity-60"></div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="text-center text-white">
+                        <h3 className="text-2xl font-bold mb-2 group-hover:text-cyan-300 transition-colors">
+                          Alex Developer
+                        </h3>
+                        <p className="text-purple-200 text-sm mb-4 opacity-90">
+                          Lead Full-Stack Engineer
+                        </p>
+                        <p className="text-white/80 text-xs leading-relaxed mb-6">
+                          Architecting scalable solutions for agricultural digital transformation with cutting-edge technology
+                        </p>
+
+                        {/* Social Links with Morphing Effect */}
+                        <div className="flex justify-center space-x-4">
+                          <a
+                            href="https://github.com/alexdev"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group/link relative w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-110 hover:rotate-12"
+                          >
+                            <svg className="w-6 h-6 text-white group-hover/link:text-cyan-300 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-cyan-500/20 to-purple-500/0 rounded-xl opacity-0 group-hover/link:opacity-100 transition-opacity duration-300"></div>
+                          </a>
+                          <a
+                            href="https://linkedin.com/in/alexdev"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group/link relative w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-110 hover:rotate-12"
+                          >
+                            <svg className="w-6 h-6 text-white group-hover/link:text-cyan-300 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-cyan-500/20 to-blue-500/0 rounded-xl opacity-0 group-hover/link:opacity-100 transition-opacity duration-300"></div>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Floating Shadow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-blue-600/20 to-cyan-500/20 rounded-3xl blur-xl transform translate-y-8 group-hover:translate-y-12 transition-transform duration-700"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contributor 2 - UI/UX Designer */}
+            <div className="group relative">
+              <div className="relative perspective-1000">
+                <div className="relative w-full h-96 transform-style-preserve-3d transition-all duration-700 group-hover:rotate-y-12 group-hover:rotate-x-6">
+                  {/* Main Card */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500 via-rose-500 to-orange-500 rounded-3xl shadow-2xl transform transition-all duration-700 group-hover:scale-105">
+                    <div className="absolute inset-0 bg-black/20 rounded-3xl"></div>
+                    <div className="relative p-8 h-full flex flex-col justify-between">
+                      {/* Avatar with Pulse Effect */}
+                      <div className="relative mx-auto mb-6">
+                        <div className="w-24 h-24 bg-gradient-to-br from-white/20 to-white/5 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 group-hover:animate-pulse">
+                          <div className="w-16 h-16 bg-gradient-to-br from-pink-400 to-orange-400 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                            SD
+                          </div>
+                        </div>
+                        {/* Orbiting Elements */}
+                        <div className="absolute top-0 left-1/2 w-2 h-2 bg-orange-400 rounded-full animate-spin origin-bottom transform -translate-x-1/2" style={{transformOrigin: '50% 48px'}}></div>
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-pink-400 rounded-full animate-bounce"></div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="text-center text-white">
+                        <h3 className="text-2xl font-bold mb-2 group-hover:text-orange-300 transition-colors">
+                          Sarah Designer
+                        </h3>
+                        <p className="text-pink-200 text-sm mb-4 opacity-90">
+                          Creative UI/UX Architect
+                        </p>
+                        <p className="text-white/80 text-xs leading-relaxed mb-6">
+                          Crafting intuitive user experiences that bridge technology and human-centered design principles
+                        </p>
+
+                        {/* Social Links */}
+                        <div className="flex justify-center space-x-4">
+                          <a
+                            href="https://github.com/sarahdesigner"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group/link relative w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-110 hover:rotate-12"
+                          >
+                            <svg className="w-6 h-6 text-white group-hover/link:text-orange-300 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-orange-500/20 to-pink-500/0 rounded-xl opacity-0 group-hover/link:opacity-100 transition-opacity duration-300"></div>
+                          </a>
+                          <a
+                            href="https://linkedin.com/in/sarahdesigner"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group/link relative w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-110 hover:rotate-12"
+                          >
+                            <svg className="w-6 h-6 text-white group-hover/link:text-orange-300 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-orange-500/20 to-pink-500/0 rounded-xl opacity-0 group-hover/link:opacity-100 transition-opacity duration-300"></div>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Floating Shadow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 via-rose-500/20 to-orange-500/20 rounded-3xl blur-xl transform translate-y-8 group-hover:translate-y-12 transition-transform duration-700"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contributor 3 - Data Scientist */}
+            <div className="group relative">
+              <div className="relative perspective-1000">
+                <div className="relative w-full h-96 transform-style-preserve-3d transition-all duration-700 group-hover:rotate-y-12 group-hover:rotate-x-6">
+                  {/* Main Card */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl shadow-2xl transform transition-all duration-700 group-hover:scale-105">
+                    <div className="absolute inset-0 bg-black/20 rounded-3xl"></div>
+                    <div className="relative p-8 h-full flex flex-col justify-between">
+                      {/* Avatar with Matrix Effect */}
+                      <div className="relative mx-auto mb-6">
+                        <div className="w-24 h-24 bg-gradient-to-br from-white/20 to-white/5 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 group-hover:animate-pulse">
+                          <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                            MS
+                          </div>
+                        </div>
+                        {/* Data Flow Animation */}
+                        <div className="absolute top-2 right-2 w-1 h-1 bg-cyan-400 rounded-full animate-ping"></div>
+                        <div className="absolute bottom-2 left-2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        <div className="absolute top-1/2 left-0 w-1 h-1 bg-teal-400 rounded-full animate-bounce"></div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="text-center text-white">
+                        <h3 className="text-2xl font-bold mb-2 group-hover:text-cyan-300 transition-colors">
+                          Mike Scientist
+                        </h3>
+                        <p className="text-emerald-200 text-sm mb-4 opacity-90">
+                          Senior Data Analytics Expert
+                        </p>
+                        <p className="text-white/80 text-xs leading-relaxed mb-6">
+                          Transforming agricultural data into actionable insights through advanced machine learning and predictive analytics
+                        </p>
+
+                        {/* Social Links */}
+                        <div className="flex justify-center space-x-4">
+                          <a
+                            href="https://github.com/mikescientist"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group/link relative w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-110 hover:rotate-12"
+                          >
+                            <svg className="w-6 h-6 text-white group-hover/link:text-cyan-300 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-cyan-500/20 to-emerald-500/0 rounded-xl opacity-0 group-hover/link:opacity-100 transition-opacity duration-300"></div>
+                          </a>
+                          <a
+                            href="https://linkedin.com/in/mikescientist"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group/link relative w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-110 hover:rotate-12"
+                          >
+                            <svg className="w-6 h-6 text-white group-hover/link:text-cyan-300 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-cyan-500/20 to-emerald-500/0 rounded-xl opacity-0 group-hover/link:opacity-100 transition-opacity duration-300"></div>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Floating Shadow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-teal-500/20 to-cyan-500/20 rounded-3xl blur-xl transform translate-y-8 group-hover:translate-y-12 transition-transform duration-700"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Team Stats */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="group">
+              <div className="text-4xl font-bold text-white mb-2 group-hover:scale-110 transition-transform duration-300">5+</div>
+              <div className="text-purple-300">Years Combined Experience</div>
+            </div>
+            <div className="group">
+              <div className="text-4xl font-bold text-white mb-2 group-hover:scale-110 transition-transform duration-300">100%</div>
+              <div className="text-purple-300">Government Project Focus</div>
+            </div>
+            <div className="group">
+              <div className="text-4xl font-bold text-white mb-2 group-hover:scale-110 transition-transform duration-300">24/7</div>
+              <div className="text-purple-300">Innovation Commitment</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="relative bg-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
