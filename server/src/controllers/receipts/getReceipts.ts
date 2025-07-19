@@ -1,40 +1,17 @@
-import {Request, Response} from 'express';
-import prisma from '../../utils/database';
-import {Prisma} from '@prisma/client';
-import {ReceiptQueryParams} from '../../types/receipt';
-import {handlePrismaError} from '../../utils/helpers';
+import { Request, Response } from "express";
+import prisma from "../../utils/database";
+import { Prisma } from "@prisma/client";
+import { ReceiptQueryParams } from "../../types/receipt";
+import { handlePrismaError } from "../../utils/helpers";
 
-// @desc    Get a single receipt by receiptNumber
-// @route   GET /api/receipts/getReceiptByRn/:receiptNumber
-// @access  Private
-export const getReceiptByReceiptNumber = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const receiptNumber = req.params.receiptNumber;
-    const receipt = await prisma.receipt.findMany({
-      where: {receiptNumber},
-    });
-
-    if (!receipt) {
-      return res.status(404).json({message: 'Receipt not found'});
-    }
-
-    res.status(200).json(receipt);
-  } catch (error) {
-    console.error('Error fetching receipt by Receipt Number:', error);
-    res.status(500).json({message: 'Server error'});
-  }
-};
 // @desc    Get all receipts with filtering, pagination, and role-based access
 // @route   GET /api/receipts/getAllReceipts
 // @access  Private
 export const getAllReceipts = async (req: Request, res: Response) => {
   try {
     const {
-      page = '1',
-      limit = '10',
+      page = "1",
+      limit = "10",
       search,
       natureOfReceipt,
       committeeId,
@@ -51,9 +28,9 @@ export const getAllReceipts = async (req: Request, res: Response) => {
 
     // 1. Build the dynamic 'where' clause for Prisma
     const where: Prisma.ReceiptWhereInput = {};
-
+    where.cancelled = false;
     // 2. Role-Based Access Control (RBAC)
-    if (user?.role !== 'ad') {
+    if (user?.role !== "ad") {
       // If user is not an Admin, restrict to their own committee
       where.committeeId = user?.committee.id;
     } else if (committeeId) {
@@ -65,8 +42,8 @@ export const getAllReceipts = async (req: Request, res: Response) => {
     // 3. Add other filters to the 'where' clause
     if (search) {
       where.OR = [
-        {receiptNumber: {contains: search, mode: 'insensitive'}},
-        {bookNumber: {contains: search, mode: 'insensitive'}},
+        { receiptNumber: { contains: search, mode: "insensitive" } },
+        { bookNumber: { contains: search, mode: "insensitive" } },
       ];
     }
 
@@ -116,10 +93,10 @@ export const getAllReceipts = async (req: Request, res: Response) => {
           },
         },
         orderBy: {
-          receiptDate: 'desc',
+          receiptDate: "desc",
         },
       }),
-      prisma.receipt.count({where}),
+      prisma.receipt.count({ where }),
     ]);
 
     res.status(200).json({
@@ -142,14 +119,14 @@ export const getAllReceipts = async (req: Request, res: Response) => {
 // @access  Private
 export const getReceiptById = async (req: Request, res: Response) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
 
     if (!id) {
-      return res.status(404).json({message: 'Receipt Id required'});
+      return res.status(404).json({ message: "Receipt Id required" });
     }
 
     const receipt = await prisma.receipt.findUnique({
-      where: {id},
+      where: { id, cancelled: false },
       select: {
         receiptNumber: true,
         bookNumber: true,
@@ -188,10 +165,10 @@ export const getReceiptById = async (req: Request, res: Response) => {
     });
 
     if (!receipt) {
-      return res.status(404).json({message: 'Receipt not found'});
+      return res.status(404).json({ message: "Receipt not found" });
     }
 
-    res.status(200).json({data: receipt});
+    res.status(200).json({ data: receipt });
   } catch (error) {
     handlePrismaError(res, error);
   }

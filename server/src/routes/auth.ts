@@ -7,6 +7,7 @@ import {
   login,
   registerUser,
 } from "../controllers/auth/authController";
+import { w } from "@faker-js/faker/dist/airline-CLphikKp";
 
 const authRoutes = Router();
 
@@ -19,6 +20,6 @@ authRoutes.post(
 authRoutes.post("/login", login);
 authRoutes.get("/users", authenticateUser, authorizeRoles("ad"), getAllUsers);
 //authRoutes.post('/deactivate/:id',deactivate)
-authRoutes.delete("/delete/:id", deleteUser);
+authRoutes.delete("/delete/:id", authenticateUser, deleteUser);
 
 export default authRoutes;

@@ -18,7 +18,7 @@ export const AppRouter: React.FC = () => {
 
   return (
     <div>
-      <Toaster position='top-right' reverseOrder={false} />
+      <Toaster position='top-center' reverseOrder={false} />
       <Routes>
         <Route
           path='/'

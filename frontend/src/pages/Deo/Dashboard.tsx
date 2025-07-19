@@ -1,17 +1,16 @@
-import {useState, useEffect} from 'react';
-import Sidebar from '../../components/common/Sidebar';
-import ViewReceipts from '../../components/common/viewReceipt/ViewReceipts';
-import Reports from '../../components/deocomponents/Reports';
-import {MetricCards} from '../../components/deocomponents/metric-cards';
-import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
-import Overview from '@/components/common/overview/Overview';
-import Nav from '@/components/ui/Nav';
+import { useState, useEffect } from "react";
+import Sidebar from "../../components/common/Sidebar";
+import ViewReceipts from "../../components/common/viewReceipt/ViewReceipts";
+import Reports from "../../components/deocomponents/Reports";
+import ReceiptEntry from "@/components/common/newReceipt/ReceiptEntry";
+import Overview from "@/components/common/overview/Overview";
+import Nav from "@/components/ui/Nav";
 
 export default function DeoDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [activeNav, setActiveNav] = useState(() => {
-    return localStorage.getItem('activeNav') ?? 'overview';
+    return localStorage.getItem("activeNav") ?? "overview";
   });
 
   useEffect(() => {
@@ -22,25 +21,25 @@ export default function DeoDashboard() {
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('activeNav', activeNav);
+    localStorage.setItem("activeNav", activeNav);
   }, [activeNav]);
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
 
   const renderContent = () => {
     switch (activeNav) {
-      case 'overview':
+      case "overview":
         return <Overview onNavigate={setActiveNav} />;
-      case 'addReceipt':
+      case "addReceipt":
         return <ReceiptEntry />;
-      case 'viewReceipts':
+      case "viewReceipts":
         return <ViewReceipts />;
-      case 'reports':
+      case "reports":
         return <Reports />;
       default:
         return <Overview onNavigate={setActiveNav} />;
@@ -48,8 +47,8 @@ export default function DeoDashboard() {
   };
 
   return (
-    <div className='flex flex-col h-screen bg-gray-50 overflow-hidden'>
-      <div className='flex flex-1 overflow-hidden relative'>
+    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <Sidebar
           sidebarVisible={sidebarVisible}
           isMobile={isMobile}
@@ -60,20 +59,21 @@ export default function DeoDashboard() {
 
         <main
           className={`flex flex-col flex-1 overflow-auto h-full transition-all duration-300 ${
-            isMobile && sidebarVisible ? 'ml-0 opacity-50' : 'ml-0'
-          }`}>
-          <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
+            isMobile && sidebarVisible ? "ml-0 opacity-50" : "ml-0"
+          }`}
+        >
+          <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3">
             <Nav onToggleSidebar={toggleSidebar} />
           </div>
-         
-          <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
+
+          <div className="m-2 my-0 flex-1 flex bg-white/50 rounded-2xl">
             {renderContent()}
           </div>
         </main>
 
         {isMobile && sidebarVisible && (
           <div
-            className='fixed inset-0 bg-black/10 z-40 md:hidden'
+            className="fixed inset-0 bg-black/10 z-40 md:hidden"
             onClick={toggleSidebar}
           />
         )}

@@ -1,5 +1,5 @@
-import {NatureOfReceipt} from '@prisma/client';
-import {z} from 'zod';
+import { NatureOfReceipt } from "@prisma/client";
+import { z } from "zod";
 
 export const CreateReceiptSchema = z.object({
   receiptDate: z.string(),
@@ -13,16 +13,16 @@ export const CreateReceiptSchema = z.object({
   commodity: z.string(),
   newCommodityName: z.string().optional(),
   quantity: z.number(),
-  unit: z.enum(['quintals', 'kilograms', 'bags', 'numbers']),
-  weightPerBag: z.number().optional(),
-  totalWeightKg: z.number().optional(),
-  natureOfReceipt: z.enum(['mf', 'lc', 'uc', 'others']),
+  unit: z.enum(["quintals", "kilograms", "bags", "numbers"]),
+  weightPerBag: z.number().positive().optional(),
+  totalWeightKg: z.number().positive().optional(),
+  natureOfReceipt: z.enum(["mf", "lc", "uc", "others"]),
   natureOtherText: z.string().optional(),
-  value: z.number(),
-  feesPaid: z.number(),
+  value: z.number().positive(),
+  feesPaid: z.number().positive(),
   vehicleNumber: z.string().optional(),
   invoiceNumber: z.string().optional(),
-  collectionLocation: z.enum(['office', 'checkpost', 'other']),
+  collectionLocation: z.enum(["office", "checkpost", "other"]),
   officeSupervisor: z.string().optional(),
   checkpostId: z.string().optional(),
   collectionOtherText: z.string().optional(),
@@ -30,7 +30,9 @@ export const CreateReceiptSchema = z.object({
   designation: z.string(),
   committeeId: z.string(),
 });
-
+export const UpdateReceiptSchema = CreateReceiptSchema.extend({
+  id: z.string(),
+});
 export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
 
 // Query parameters for listing receipts

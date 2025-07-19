@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {
   type CreateReceiptRequest,
   CreateReceiptSchema,
-  type EditReceipt,
+  type UpdateReceipt,
 } from '@/types/receipt';
 import api, {isAxiosError} from '@/lib/axiosInstance';
 import FormReceipt from './FormReceipt';
@@ -15,7 +15,7 @@ import toast from 'react-hot-toast';
 type FormData = Omit<z.infer<typeof CreateReceiptSchema>, 'receiptDate'>;
 
 interface ReceiptEntryProps {
-  receiptToEdit?: EditReceipt;
+  receiptToEdit?: UpdateReceipt;
 }
 
 // Helper to generate initial form data, ensuring type safety
