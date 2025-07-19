@@ -13,14 +13,16 @@ const ReceiptModal = ({receiptId, onClose, onDownload}: ReceiptModalProps) => {
   const [receipt, setReceipt] = useState<DetailedReceipt | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-
   useEffect(() => {
     if (!receiptId) return;
     const fetchReceiptDetails = async () => {
       setIsLoading(true);
       setError('');
       try {
-        const response = await api.get(`receipts/getReceipt/${receiptId}`);
+        // Add the query parameter to get the summary view
+        const response = await api.get(
+          `receipts/getReceipt/${receiptId}?view=summary`
+        );
         setReceipt(response.data.data);
       } catch (err) {
         setError('Failed to fetch receipt details. Please try again.');

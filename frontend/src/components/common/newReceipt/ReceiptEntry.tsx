@@ -46,6 +46,73 @@ const getInitialFormData = (committeeId?: string): FormData => ({
   designation: '',
   committeeId: committeeId || '',
 });
+// Add this interface for the API response structure
+interface ApiReceiptResponse {
+  id: string;
+  receiptDate: string;
+  bookNumber: string;
+  receiptNumber: string;
+  payeeName: string;
+  payeeAddress: string;
+  trader: {
+    name: string;
+    address: string;
+  };
+  commodity: {
+    name: string;
+  };
+  quantity: string;
+  unit: string;
+  weightPerBag: number | null;
+  natureOfReceipt: string;
+  natureOtherText: string;
+  value: string;
+  feesPaid: string;
+  vehicleNumber: string;
+  invoiceNumber: string;
+  collectionLocation: string;
+  officeSupervisor: string | null;
+  checkpostId: string | null;
+  collectionOtherText: string;
+  receiptSignedBy: string;
+  designation: string;
+  committeeId: string;
+}
+
+// Helper function to transform API response to form data
+const transformApiResponseToFormData = (
+  apiData: ApiReceiptResponse
+): UpdateReceipt => {
+  return {
+    id: apiData.id,
+    receiptDate: apiData.receiptDate,
+    bookNumber: apiData.bookNumber,
+    receiptNumber: apiData.receiptNumber,
+    traderName: apiData.trader.name,
+    newTraderName: '',
+    traderAddress: apiData.trader.address,
+    payeeName: apiData.payeeName,
+    payeeAddress: apiData.payeeAddress,
+    commodity: apiData.commodity.name,
+    newCommodityName: '',
+    quantity: parseFloat(apiData.quantity),
+    unit: apiData.unit as any, // Cast to your enum type
+    weightPerBag: apiData.weightPerBag || undefined,
+    natureOfReceipt: apiData.natureOfReceipt as any, // Cast to your enum type
+    natureOtherText: apiData.natureOtherText || '',
+    value: parseFloat(apiData.value),
+    feesPaid: parseFloat(apiData.feesPaid),
+    vehicleNumber: apiData.vehicleNumber || '',
+    invoiceNumber: apiData.invoiceNumber || '',
+    collectionLocation: apiData.collectionLocation as any, // Cast to your enum type
+    officeSupervisor: apiData.officeSupervisor || '',
+    checkpostId: apiData.checkpostId || '',
+    collectionOtherText: apiData.collectionOtherText || '',
+    receiptSignedBy: apiData.receiptSignedBy,
+    designation: apiData.designation,
+    committeeId: apiData.committeeId,
+  };
+};
 
 const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
   const {committee} = useAuthStore();
@@ -64,10 +131,13 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
 
   useEffect(() => {
     if (receiptToEdit) {
-      const {receiptDate, ...rest} = receiptToEdit;
+      // If receiptToEdit is coming from API, transform it first
+      const transformedData = transformApiResponseToFormData(
+        receiptToEdit as any
+      );
+      const {receiptDate, ...rest} = transformedData;
       setFormData(rest as FormData);
       setDate(new Date(receiptDate));
-      // Set commodity search to match the commodity value
       setCommoditySearch(rest.commodity || '');
     } else {
       setFormData(getInitialFormData(committee?.id));
@@ -145,7 +215,10 @@ const ReceiptEntry = ({receiptToEdit}: ReceiptEntryProps) => {
 
     try {
       if (isEditing) {
-        await api.put(`/receipts/${receiptToEdit.id}`, validation.data);
+        await api.put(
+          `/receipts/updateReceipt/${receiptToEdit.id}`,
+          validation.data
+        );
         toast.success('Receipt updated successfully!');
         setIsSuccessDialogOpen(true);
       } else {

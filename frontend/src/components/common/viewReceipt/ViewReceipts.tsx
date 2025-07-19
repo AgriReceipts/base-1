@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Eye,
   Loader2,
+  Pencil,
   Search,
   Trash2,
   X,
@@ -15,6 +16,7 @@ import ReceiptModal from './ReceiptModal';
 import type {DetailedReceipt} from '@/types/receipt';
 import toast from 'react-hot-toast';
 import {useDebounce} from 'use-debounce';
+import EditReceiptModal from './EditReceiptModal';
 
 interface Committee {
   id: string;
@@ -36,6 +38,7 @@ const ViewReceipts = () => {
   const {user, committee} = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+  const [receiptToEdit, setReceiptToEdit] = useState<string | null>(null);
   const [receipts, setReceipts] = useState<DetailedReceipt[]>([]);
   const [committees, setCommittees] = useState<Committee[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
@@ -561,7 +564,7 @@ const ViewReceipts = () => {
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                         {receipt.receiptSignedBy}
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
+                      <td className='pl-6 pr-2 py-4 whitespace-nowrap text-right text-sm font-medium'>
                         <button
                           onClick={() => setSelectedReceiptId(receipt.id)}
                           className='text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-100 transition-colors'
@@ -569,7 +572,14 @@ const ViewReceipts = () => {
                           <Eye className='h-5 w-5' />
                         </button>
                       </td>
-                      <td className='px-9'>
+                      <td className='px-2'>
+                        <div
+                          className='w-8 h-8 flex items-center justify-center text-emerald-400 hover:text-emerald-600 hover:bg-emerald-100 rounded-full cursor-pointer transition-colors duration-200'
+                          onClick={() => setReceiptToEdit(receipt.id)}>
+                          <Pencil />
+                        </div>
+                      </td>
+                      <td className='px-2'>
                         <div
                           className='w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-100 rounded-full cursor-pointer transition-colors duration-200'
                           onClick={() => handleDelete(receipt.id)}>
@@ -690,6 +700,13 @@ const ViewReceipts = () => {
             receiptId={selectedReceiptId}
             onClose={() => setSelectedReceiptId(null)}
             onDownload={handleDownload}
+          />
+        )}
+        {/* Update Receipt Modal */}
+        {receiptToEdit && (
+          <EditReceiptModal
+            receiptId={receiptToEdit}
+            onClose={() => setReceiptToEdit(null)}
           />
         )}
         {/* Success Dialog */}

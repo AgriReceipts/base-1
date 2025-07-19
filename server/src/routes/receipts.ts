@@ -21,7 +21,11 @@ receiptRoutes.post(
   authorizeRoles('deo', 'supervisor', 'secretary'),
   createReceipt
 );
-receiptRoutes.put('/updateReceipt', authenticateUser, updateReceiptController);
+receiptRoutes.put(
+  '/updateReceipt/:receiptId',
+  authenticateUser,
+  updateReceiptController
+);
 receiptRoutes.delete(
   '/deleteReceipt/:id',
   authenticateUser,
