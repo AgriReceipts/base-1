@@ -1,14 +1,12 @@
 import {useState, useEffect} from 'react';
 import TraderAnalysis from '../../components/common/analytics/TraderAnalysis';
-import Reports from '../../components/supervisorcomponents/Reports';
-
-import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ReceiptEntry from '@/components/common/newReceipt/ReceiptEntry';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
 import CommitteeAnalysis from '@/components/common/analytics/CommitteAnalysis';
+import ComingSoon from '@/components/common/Reports';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -48,7 +46,7 @@ export default function SupervisorDashboard() {
       case 'viewReceipts':
         return <ViewReceipts />;
       case 'reports':
-        return <Reports />;
+        return <ComingSoon />;
       default:
         return <Overview onNavigate={setActiveNav} />;
     }
@@ -72,8 +70,6 @@ export default function SupervisorDashboard() {
           <div className='sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3'>
             <Nav onToggleSidebar={toggleSidebar} />
           </div>
-
-         
 
           <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
             {renderContent()}

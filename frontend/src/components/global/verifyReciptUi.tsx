@@ -69,7 +69,7 @@ const VefrifyForm: React.FC<VefrifyFormProps> = ({
           <div className='flex items-center justify-between h-20'>
             <a
               className='flex items-center group'
-              href='/login'
+              href='/'
               aria-label='Go to login'>
               <div className='flex-shrink-0 transition-all duration-200 group-hover:scale-105'>
                 <div className='flex items-center justify-center w-12 h-12 bg-primary-100 rounded-xl shadow-inner'>

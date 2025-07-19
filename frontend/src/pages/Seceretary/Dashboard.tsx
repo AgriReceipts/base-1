@@ -1,8 +1,5 @@
 import {useState, useEffect} from 'react';
 
-import Reports from '../../components/supervisorcomponents/Reports';
-
-import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
 import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry';
 import Overview from '@/components/common/overview/Overview';
@@ -11,6 +8,7 @@ import Nav from '@/components/ui/Nav';
 import {TargetManager} from '@/components/AdCompo/TargetManager';
 import {useAuthStore} from '@/stores/authStore';
 import CommitteeAnalysis from '@/components/common/analytics/CommitteAnalysis';
+import ComingSoon from '@/components/common/Reports';
 
 export default function SecretaryDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -51,7 +49,7 @@ export default function SecretaryDashboard() {
       case 'targetManagement':
         return <TargetManager currentUser={user?.name || 'secretary'} />;
       case 'reports':
-        return <Reports />;
+        return <ComingSoon />;
       default:
         return <Overview onNavigate={setActiveNav} />;
     }
@@ -86,7 +84,6 @@ export default function SecretaryDashboard() {
             <Nav onToggleSidebar={toggleSidebar} />
           </div>
 
-          
           <div className='m-2 my-0 flex-1 flex bg-white/50 rounded-2xl'>
             {renderContent()}
           </div>

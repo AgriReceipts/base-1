@@ -189,7 +189,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     clipRule='evenodd'
                   />
                 </svg>
-                Committee Information
+                Agri Committee Information
               </h3>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div>
@@ -202,7 +202,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                 </div>
                 <div>
                   <label className='block text-sm font-medium text-gray-600 mb-1'>
-                    Available Checkposts
+                    Checkposts
                   </label>
                   <div className='bg-white p-2 rounded border border-gray-300 min-h-10'>
                     {availableCheckposts.length > 0 ? (
@@ -296,7 +296,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
             </section>
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-              {/* Trader/Farmer Details */}
+              {/* Trader Details */}
               <div className='bg-blue-50 rounded p-4 border border-blue-100'>
                 <h3 className='text-base font-semibold text-gray-700 mb-3 flex items-center'>
                   <svg
@@ -305,14 +305,14 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     viewBox='0 0 20 20'>
                     <path d='M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z' />
                   </svg>
-                  Trader/Farmer Details
+                  Payee details Details
                 </h3>
                 <div className='space-y-4'>
                   <div>
                     <label
                       htmlFor='traderName'
                       className='block text-sm font-medium text-gray-600 mb-1'>
-                      Trader/Farmer Name<span className='text-red-600'>*</span>
+                      Payee Name<span className='text-red-600'>*</span>
                     </label>
                     <div className='relative w-full group'>
                       <input
@@ -322,7 +322,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                         onChange={(e) =>
                           onFormChange('traderName', e.target.value)
                         }
-                        placeholder='Search and select trader'
+                        placeholder='Search and select Payee'
                         className='w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
                         required
                       />
@@ -387,7 +387,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                         </label>
                         <textarea
                           id='traderAddress'
-                          placeholder='Enter trader address'
+                          placeholder='Enter payee address'
                           value={formData.traderAddress || ''}
                           onChange={(e) =>
                             onFormChange('traderAddress', e.target.value)
@@ -410,19 +410,19 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     viewBox='0 0 20 20'>
                     <path d='M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z' />
                   </svg>
-                  Payee Details
+                  Farmer/Trader Details
                 </h3>
                 <div className='space-y-4'>
                   <div>
                     <label
                       htmlFor='payeeName'
                       className='block text-sm font-medium text-gray-600 mb-1'>
-                      Payee Name<span className='text-red-600'>*</span>
+                      Farmer Name<span className='text-red-600'>*</span>
                     </label>
                     <input
                       type='text'
                       id='payeeName'
-                      placeholder='Enter payee name'
+                      placeholder='Enter Farmer/Trader name'
                       value={formData.payeeName || ''}
                       onChange={(e) =>
                         onFormChange('payeeName', e.target.value)
@@ -434,11 +434,11 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                     <label
                       htmlFor='payeeAddress'
                       className='block text-sm font-medium text-gray-600 mb-1'>
-                      Payee Address
+                      Farmer/Trader Address
                     </label>
                     <textarea
                       id='payeeAddress'
-                      placeholder='Enter payee address'
+                      placeholder='Enter  address'
                       value={formData.payeeAddress || ''}
                       onChange={(e) =>
                         onFormChange('payeeAddress', e.target.value)

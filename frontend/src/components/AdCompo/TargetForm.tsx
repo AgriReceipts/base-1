@@ -1,7 +1,5 @@
 import React, {useState, useEffect, useMemo} from 'react';
 import {
-  ChevronDown,
-  ChevronUp,
   Users,
   MapPin,
   Save,
@@ -50,7 +48,6 @@ const MONTHS = [
 
 const formatToShortScale = (num: number): string => {
   if (isNaN(num) || num === 0) return '₹0';
-  if (num >= 10_000_000) return `₹${(num / 10_000_000).toFixed(2)} Cr`;
   if (num >= 100_000) return `₹${(num / 100_000).toFixed(2)} L`;
   return `₹${num.toLocaleString('en-IN')}`;
 };
@@ -190,8 +187,6 @@ const TargetBreakdownSection: React.FC<TargetBreakdownSectionProps> = ({
   onMonthlyTargetChange,
   selectedMonth,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const selectedMonthData =
     selectedMonth !== 'all'
       ? monthlyTargets.find((t) => t.month === selectedMonth)
@@ -204,17 +199,6 @@ const TargetBreakdownSection: React.FC<TargetBreakdownSectionProps> = ({
           {icon}
           <h3 className='text-lg font-semibold text-gray-800'>{title}</h3>
         </div>
-        <button
-          type='button'
-          onClick={() => setIsExpanded(!isExpanded)}
-          className='flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800'>
-          {isExpanded ? (
-            <ChevronUp className='h-4 w-4' />
-          ) : (
-            <ChevronDown className='h-4 w-4' />
-          )}
-          {isExpanded ? 'Collapse' : 'Expand'}
-        </button>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-2'>
         <div>
@@ -252,13 +236,12 @@ const TargetBreakdownSection: React.FC<TargetBreakdownSectionProps> = ({
           </div>
         </div>
       </div>
-      {isExpanded && (
-        <MonthlyInputsGrid
-          targets={monthlyTargets}
-          onTargetChange={onMonthlyTargetChange}
-          selectedMonth={selectedMonth}
-        />
-      )}
+
+      <MonthlyInputsGrid
+        targets={monthlyTargets}
+        onTargetChange={onMonthlyTargetChange}
+        selectedMonth={selectedMonth}
+      />
     </div>
   );
 };

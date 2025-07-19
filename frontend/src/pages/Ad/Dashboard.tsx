@@ -1,29 +1,21 @@
 import {useState, useEffect} from 'react';
-
-import Reports from '../../components/supervisorcomponents/Reports';
-import {MetricCards} from '../../components/supervisorcomponents/metric-cards';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
-import ReceiptEntry from '../../components/common/newReceipt/ReceiptEntry.tsx';
-
 import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
 import {
-  FiHome,
   FiBarChart2,
   FiFileText,
-  FiPlusSquare,
   FiTarget,
   FiUsers,
   FiBarChart,
 } from 'react-icons/fi';
 
-import Usermanage from '../../components/AdCompo/UserManagement/Usermanage.tsx';
-
 import {TargetManager} from '@/components/AdCompo/TargetManager';
 import {useAuthStore} from '@/stores/authStore';
 import DistrictAnalysis from '@/components/AdCompo/Districtanalysis.tsx';
 import UserPage from '@/components/AdCompo/UserManagement/UserPage.tsx';
+import ComingSoon from '@/components/common/Reports';
 
 export default function SupervisorDashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -53,28 +45,21 @@ export default function SupervisorDashboard() {
 
   // New navigation fields for AD with icons
   const navItems = [
-    {key: 'overview', label: 'Overview', icon: <FiHome />},
-    {key: 'addReceipt', label: 'Add Receipt', icon: <FiPlusSquare />},
-    {key: 'allReceipts', label: 'All Receipts', icon: <FiFileText />},
     {
       key: 'districtAnalysis',
       label: 'District Analysis',
       icon: <FiBarChart2 />,
     },
+    {key: 'allReceipts', label: 'All Receipts', icon: <FiFileText />},
     {key: 'targetManagement', label: 'Target Management', icon: <FiTarget />},
-
     {key: 'userManagement', label: 'User Management', icon: <FiUsers />},
     {key: 'viewReports', label: 'View Reports', icon: <FiBarChart />},
   ];
 
   const renderContent = () => {
     switch (activeNav) {
-      case 'overview':
-        return <Overview onNavigate={setActiveNav} />;
       case 'districtAnalysis':
         return <DistrictAnalysis />;
-      case 'addReceipt':
-        return <ReceiptEntry />;
       case 'allReceipts':
         return <ViewReceipts />;
       case 'targetManagement':
@@ -82,7 +67,7 @@ export default function SupervisorDashboard() {
       case 'userManagement':
         return <UserPage />;
       case 'viewReports':
-        return <Reports />;
+        return <ComingSoon />;
       default:
         return <Overview onNavigate={setActiveNav} />;
     }

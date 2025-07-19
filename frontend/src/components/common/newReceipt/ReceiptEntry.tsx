@@ -30,7 +30,7 @@ const getInitialFormData = (committeeId?: string): FormData => ({
   commodity: '',
   newCommodityName: '',
   quantity: 0,
-  unit: 'kilograms',
+  unit: 'quintals',
   weightPerBag: undefined,
   natureOfReceipt: 'mf',
   natureOtherText: '',

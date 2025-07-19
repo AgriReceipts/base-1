@@ -76,8 +76,11 @@ const ReceiptModal = ({receiptId, onClose, onDownload}: ReceiptModalProps) => {
                   label='Committee'
                   value={receipt.committee?.name || 'N/A'}
                 />
-                <InfoItem label='Trader Name' value={receipt.trader?.name} />
-                <InfoItem label='Payee Name' value={receipt.payeeName} />
+                <InfoItem label='Payee Name' value={receipt.trader?.name} />
+                <InfoItem
+                  label='Farmer/Trader Name'
+                  value={receipt.payeeName}
+                />
                 <InfoItem
                   label='Value (INR)'
                   value={`₹ ${Number(receipt.value).toLocaleString()}`}

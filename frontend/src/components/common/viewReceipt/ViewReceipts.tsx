@@ -480,13 +480,9 @@ const ViewReceipts = () => {
                   <th
                     scope='col'
                     className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Trader
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Payee
                   </th>
+
                   <th
                     scope='col'
                     className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
@@ -497,11 +493,7 @@ const ViewReceipts = () => {
                     className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Type
                   </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Signed By
-                  </th>
+
                   <th
                     scope='col'
                     className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
@@ -535,11 +527,7 @@ const ViewReceipts = () => {
                           {receipt.trader?.name || '-'}
                         </div>
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap'>
-                        <div className='text-sm text-gray-900'>
-                          {receipt.payeeName}
-                        </div>
-                      </td>
+
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='text-sm font-medium text-gray-900'>
                           ₹{Number(receipt.feesPaid).toLocaleString('en-IN')}
@@ -561,9 +549,7 @@ const ViewReceipts = () => {
                             : 'Other'}
                         </span>
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {receipt.receiptSignedBy}
-                      </td>
+
                       <td className='pl-6 pr-2 py-4 whitespace-nowrap text-right text-sm font-medium'>
                         <button
                           onClick={() => setSelectedReceiptId(receipt.id)}

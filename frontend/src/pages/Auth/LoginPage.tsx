@@ -1,6 +1,7 @@
 import {Card, CardContent} from '../../components/ui/Card';
 import LoginForm from '../../components/Authcompo/LoginForm';
 import {FiShield, FiUsers, FiBarChart, FiFileText} from 'react-icons/fi';
+import logo from '../../assets/logo-ap.png';
 
 const LoginPage = () => {
   const features = [
@@ -27,7 +28,32 @@ const LoginPage = () => {
   ];
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-primary-50 via-white to-neutral-50 flex items-center justify-center p-4'>
+    <div className='min-h-screen bg-gradient-to-br from-primary-50 via-white to-neutral-50 flex flex-col items-center justify-center '>
+      {/* Header */}
+      <header className='bg-white shadow-md border-b border-gray-200 sticky top-0 z-20 w-full'>
+        <div className='max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='flex items-center justify-between h-20'>
+            <a
+              className='flex items-center group'
+              href='/'
+              aria-label='Go to login'>
+              <div className='flex-shrink-0 transition-all duration-200 group-hover:scale-105'>
+                <div className='flex items-center justify-center w-12 h-12 bg-primary-100 rounded-xl shadow-inner'>
+                  <img src={logo} alt='Ap logo' className='h-8 w-auto' />
+                </div>
+              </div>
+              <div className='ml-4'>
+                <h1 className='text-xl font-bold text-gray-900 tracking-tight'>
+                  AMC Receipt System
+                </h1>
+                <p className='text-sm text-gray-600 font-medium'>
+                  Agricultural Market Committee Receipt Management
+                </p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </header>
       <div className='max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
         {/* Left side - Hero content */}
         <div className='space-y-8'>
