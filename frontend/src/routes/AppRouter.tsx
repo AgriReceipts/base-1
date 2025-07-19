@@ -6,6 +6,7 @@ import {useAuthStore} from '../stores/authStore';
 import {LoadingScreen} from '../components/ui/LoadingScreen';
 import {Toaster} from 'react-hot-toast';
 import VerifyReceipt from '../components/global/verifyReceipt';
+import LandingPage from '@/pages/LandingPage/LandingPage';
 
 export const AppRouter: React.FC = () => {
   const {role, isInitialized, initialize} = useAuthStore();
@@ -23,11 +24,7 @@ export const AppRouter: React.FC = () => {
         <Route
           path='/'
           element={
-            role ? (
-              <Navigate to='/dashboard' replace />
-            ) : (
-              <Navigate to='/login' replace />
-            )
+            role ? <Navigate to='/dashboard' replace /> : <LandingPage />
           }
         />
         <Route path='/login' element={<LoginPage />} />
