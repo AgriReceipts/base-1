@@ -87,6 +87,7 @@ export default function Sidebar({
       }, [role]);
 
   const handleLogout = (): void => {
+    localStorage.removeItem('activeNav');
     logout();
     navigate('/login');
   };

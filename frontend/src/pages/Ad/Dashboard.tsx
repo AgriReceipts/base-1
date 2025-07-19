@@ -69,7 +69,7 @@ export default function SupervisorDashboard() {
       case 'viewReports':
         return <ComingSoon />;
       default:
-        return <Overview onNavigate={setActiveNav} />;
+        return <DistrictAnalysis />;
     }
   };
 

@@ -36,6 +36,7 @@ const LoginForm = () => {
         // Handle login error
         console.error('Login failed:', result.error);
       }
+      localStorage.removeItem('activeNav');
 
       switch (result.decoded?.role) {
         case 'deo':
