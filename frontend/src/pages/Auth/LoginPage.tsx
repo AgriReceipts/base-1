@@ -28,7 +28,7 @@ const LoginPage = () => {
   ];
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-primary-50 via-white to-neutral-50 flex flex-col items-center justify-center '>
+    <div className='min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex flex-col items-center justify-center'>
       {/* Header */}
       <header className='bg-white shadow-md border-b border-gray-200 sticky top-0 z-20 w-full'>
         <div className='max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -54,9 +54,9 @@ const LoginPage = () => {
           </div>
         </div>
       </header>
-      <div className='max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
+      <div className='max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-20 items-start py-12 px-2 sm:px-6'>
         {/* Left side - Hero content */}
-        <div className='space-y-8'>
+        <div className='space-y-8 flex flex-col justify-center h-full'>
           <div className='space-y-4'>
             <h1 className='text-4xl lg:text-5xl font-bold text-neutral-900 leading-tight'>
               AMC Receipt
@@ -89,25 +89,8 @@ const LoginPage = () => {
             ))}
           </div>
 
-          {/* Verify Receipt Quick Link Card */}
-          <a
-            href='/verifyReceipt'
-            className='flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm border border-primary-300 hover:shadow-md transition cursor-pointer'>
-            <div className='flex items-center justify-center w-10 h-10 bg-primary-100 rounded-lg flex-shrink-0'>
-              <FiFileText className='text-primary-600' size={20} />
-            </div>
-            <div className='space-y-1'>
-              <h3 className='font-semibold text-primary-800 text-sm'>
-                Verify Receipt
-              </h3>
-              <p className='text-primary-700 text-sm leading-relaxed'>
-                Instantly validate a receipt number and book number from any
-                device.
-              </p>
-            </div>
-          </a>
-
           {/* Demo credentials */}
+          {/*
           <Card className='bg-primary-50 border-primary-200'>
             <CardContent className='space-y-3'>
               <div className='bg-blue-50 p-4 rounded-lg border border-blue-100'>
@@ -157,10 +140,11 @@ const LoginPage = () => {
               </div>
             </CardContent>
           </Card>
+          */}
         </div>
 
         {/* Right side - Login form */}
-        <div className='flex items-center justify-center'>
+        <div className='flex items-center justify-center h-full'>
           <div className='w-full max-w-md'>
             <LoginForm />
           </div>
