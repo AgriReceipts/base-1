@@ -1,8 +1,11 @@
-import {useState, useEffect, useRef} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {motion, useAnimation} from 'framer-motion';
-import {useInView} from 'react-intersection-observer';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, useAnimation } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 import logo from '../../assets/logo-ap.png';
+import { ShieldCheckIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
+import { DocumentIcon, EyeIcon, BoltIcon, ChartBarIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 
 type Receipt = {
   id: string;
@@ -14,11 +17,12 @@ type Receipt = {
   status: 'verified' | 'pending' | 'rejected';
 };
 
-// Header Component
+// Header Component with Collapsing Menu
 const Header = () => {
   const navigate = useNavigate();
   const controls = useAnimation();
   const [scrolled, setScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,56 +45,127 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [controls]);
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
     <motion.header
-      initial={{backgroundColor: 'rgba(255, 255, 255, 0)'}}
-      animate={controls}
+      initial={{ y: -60, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.7, ease: 'easeOut' }}
       className={`fixed w-full z-50 transition-all duration-300 ${
         scrolled ? 'py-2' : 'py-4'
-      }`}>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center'>
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <motion.div
-          initial={{opacity: 0, x: -20}}
-          animate={{opacity: 1, x: 0}}
-          transition={{delay: 0.2}}
-          className='flex items-center space-x-3 cursor-pointer'
-          onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-          <img
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center space-x-3 cursor-pointer"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <motion.img
             src={logo}
             className={`${
-              scrolled ? 'h-8' : 'h-10'
-            } transition-all duration-300 w-auto`}
-            alt='AgriLedger'
+              scrolled ? 'h-8' : 'h-12'
+            } transition-all duration-300 w-auto sm:h-10 md:h-12`}
+            alt="Agri Receipts Logo"
+            whileHover={{ scale: 1.08, rotate: 6 }}
+            transition={{ type: 'spring', stiffness: 300 }}
           />
           <div>
             <h1
               className={`${
                 scrolled ? 'text-lg' : 'text-xl'
-              } font-semibold text-gray-800 transition-all duration-300`}>
-              AgriLedger
+              } font-semibold text-gray-800 transition-all duration-300 sm:text-xl md:text-2xl`}
+            >
+              Agri Receipts
             </h1>
             {!scrolled && (
-              <p className='text-xs text-gray-500'>Market Receipt Management</p>
+              <>
+                <p className="text-xs text-gray-500 hidden sm:block">
+                  Digital Receipts for Agricultural Market Committees
+                </p>
+                <motion.span
+                  className="text-xs text-green-600 font-semibold hidden sm:block"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  Secure. Transparent. Efficient.
+                </motion.span>
+              </>
             )}
           </div>
         </motion.div>
+        <div className="flex items-center">
         <motion.div
-          initial={{opacity: 0, x: 20}}
-          animate={{opacity: 1, x: 0}}
-          transition={{delay: 0.3}}
-          className='flex space-x-4'>
-          <button
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="hidden md:flex space-x-4"
+          >
+            <motion.button
+              whileHover={{ scale: 1.07 }}
+              whileTap={{ scale: 0.97 }}
             onClick={() => navigate('/verifyReceipt')}
-            className='px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md border border-gray-200 transition-all hover:shadow-sm'>
+              className="px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-50 rounded-md border border-green-200 transition-all hover:shadow-sm"
+            >
             Verify Receipt
-          </button>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.07, boxShadow: '0 4px 16px 0 rgba(16, 185, 129, 0.15)' }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate('/login')}
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-emerald-700 rounded-md shadow-sm transition-all hover:shadow-md"
+            >
+              Sign In
+            </motion.button>
+          </motion.div>
           <button
-            onClick={() => navigate('/login')}
-            className='px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md shadow-sm transition-all hover:shadow-md'>
+            className="md:hidden p-2 text-gray-600 hover:text-gray-800"
+            onClick={toggleMenu}
+          >
+            {isMenuOpen ? (
+              <XMarkIcon className="w-6 h-6" />
+            ) : (
+              <Bars3Icon className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+      </div>
+      {isMenuOpen && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="md:hidden bg-white shadow-lg"
+        >
+          <div className="flex flex-col items-center py-4 space-y-4">
+          <button
+              onClick={() => {
+                navigate('/verifyReceipt');
+                setIsMenuOpen(false);
+              }}
+              className="w-full text-center px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-50"
+            >
+              Verify Receipt
+            </button>
+            <button
+              onClick={() => {
+                navigate('/login');
+                setIsMenuOpen(false);
+              }}
+              className="w-full text-center px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-emerald-700"
+            >
             Sign In
           </button>
-        </motion.div>
       </div>
+        </motion.div>
+      )}
     </motion.header>
   );
 };
@@ -98,7 +173,8 @@ const Header = () => {
 // Hero Component
 const Hero = () => {
   const controls = useAnimation();
-  const [ref, inView] = useInView({threshold: 0.1});
+  const [ref, inView] = useInView({ threshold: 0.1 });
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (inView) {
@@ -107,60 +183,67 @@ const Hero = () => {
   }, [controls, inView]);
 
   const variants = {
-    visible: {opacity: 1, y: 0},
-    hidden: {opacity: 0, y: 50},
+    visible: { opacity: 1, y: 0 },
+    hidden: { opacity: 0, y: 50 },
   };
 
   return (
     <section
       ref={ref}
-      className='min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 pt-20'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center'>
-        <motion.div
-          initial='hidden'
-          animate={controls}
-          variants={variants}
-          transition={{duration: 0.6}}>
-          <motion.h1
-            className='text-5xl md:text-6xl font-bold text-gray-900 mb-6'
-            variants={variants}>
-            <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600'>
-              Digital Agricultural Receipts
+      className="min-h-[80vh] flex items-center justify-center bg-[#f3fcf6] pt-16 sm:pt-20"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pr-12 lg:pr-20 py-12 sm:py-16 flex flex-col lg:flex-row items-center justify-between gap-8">
+        {/* Left: Texts */}
+        <div className="w-full lg:w-1/2 flex flex-col items-start text-left">
+          {/* Badge */}
+          <div className="mb-2">
+            <span className="inline-flex items-center px-4 py-1 rounded-full bg-green-100 text-green-700 font-medium text-sm">
+              <span className="mr-2">🌱</span>
+              Agricultural Innovation
             </span>
-          </motion.h1>
-          <motion.p
-            className='text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-10'
-            variants={variants}
-            transition={{delay: 0.2}}>
-            Transform your agricultural transactions with blockchain-verified
-            digital receipts and advanced analytics.
-          </motion.p>
-          <motion.div
-            className='flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4'
-            variants={variants}
-            transition={{delay: 0.4}}>
-            <button className='px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105'>
-              Get Started
-            </button>
-            <button className='px-8 py-4 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all transform hover:scale-105'>
-              Live Demo
-            </button>
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          initial={{opacity: 0, scale: 0.8}}
-          animate={{opacity: 1, scale: 1}}
-          transition={{delay: 0.6, duration: 0.5}}
-          className='mt-20 mx-auto max-w-4xl'>
-          <div className='relative rounded-2xl shadow-2xl overflow-hidden border border-gray-200'>
-            <div className='absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400'></div>
-            <img
-              src='https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-              alt='Farmers using AgriLedger'
-              className='w-full h-auto'
-            />
           </div>
+          {/* Heading */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+            <span className="block text-gray-900">Empowering</span>
+            <span className="block">
+              <span className="text-green-600">Agricultural</span>
+            </span>
+            <span className="block text-gray-900">Market Committees</span>
+          </h1>
+          {/* Supporting paragraph */}
+          <p className="text-lg text-gray-500 mb-6 max-w-2xl">
+            Transform your transactions with secure, digital receipts. <br></br>Verify authenticity instantly and build trust across the entire supply chain.
+          </p>
+          {/* Primary action button */}
+          <div>
+            <button
+              className="flex items-center gap-2 px-7 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow transition-all text-lg"
+              onClick={() => navigate('/verifyReceipt')}
+            >
+              <svg className="w-8 h-8 mr-0.5" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2l4-4" /></svg>
+              Verify Receipt
+            </button>
+          </div>
+        </div>
+        {/* Right: Animated Image as before */}
+        <motion.div
+          className="w-full lg:w-1/2 flex justify-center lg:justify-end items-center mt-8 lg:mt-0 mr-8 max-w-[90%]"
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+        >
+          <motion.div
+            className="max-w-md w-full rounded-2xl shadow-2xl overflow-hidden border border-gray-200"
+            animate={{ y: [0, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
+          >
+            <img
+              src="/hybrid-rice.jpeg"
+              alt="Hybrid rice field"
+              className="w-full h-auto"
+            />
+        
+          </motion.div>
         </motion.div>
       </div>
     </section>
@@ -170,7 +253,7 @@ const Hero = () => {
 // Feature: Add Receipts
 const AddReceiptsFeature = () => {
   const controls = useAnimation();
-  const [ref, inView] = useInView({threshold: 0.1});
+  const [ref, inView] = useInView({ threshold: 0.1 });
 
   useEffect(() => {
     if (inView) {
@@ -179,943 +262,329 @@ const AddReceiptsFeature = () => {
   }, [controls, inView]);
 
   const variants = {
-    visible: {opacity: 1, y: 0},
-    hidden: {opacity: 0, y: 50},
+    visible: { opacity: 1, y: 0 },
+    hidden: { opacity: 0, y: 50 },
   };
 
-  const receiptFormVariants = {
-    hidden: {opacity: 0, x: -50},
-    visible: {opacity: 1, x: 0},
-  };
-
-  return (
-    <section
-      ref={ref}
-      className='min-h-screen flex items-center justify-center bg-white py-20'
-      id='add-receipts'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <motion.div
-          initial='hidden'
-          animate={controls}
-          variants={variants}
-          transition={{duration: 0.6}}
-          className='grid grid-cols-1 lg:grid-cols-2 gap-16 items-center'>
-          <div>
-            <motion.h2
-              className='text-4xl font-bold text-gray-900 mb-6'
-              variants={variants}>
-              <span className='bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-500'>
-                Effortless Receipt Creation
-              </span>
-            </motion.h2>
-            <motion.p
-              className='text-xl text-gray-600 mb-8'
-              variants={variants}
-              transition={{delay: 0.2}}>
-              Convert paper transactions to secure digital receipts in seconds
-              with our intuitive interface.
-            </motion.p>
-
-            <motion.ul
-              className='space-y-4'
-              variants={variants}
-              transition={{delay: 0.4}}>
-              <li className='flex items-start'>
-                <div className='flex-shrink-0 bg-green-100 p-2 rounded-full'>
-                  <svg
-                    className='h-5 w-5 text-green-600'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'>
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth='2'
-                      d='M5 13l4 4L19 7'
-                    />
-                  </svg>
+  const FeatureSection = ({
+    title,
+    description,
+    visual,
+    subPoints,
+    reverse,
+  }: {
+    title: string;
+    description: string;
+    visual: React.ReactNode;
+    subPoints?: string[];
+    reverse?: boolean;
+  }) => (
+    <section className="py-12 sm:py-16 bg-gradient-to-br from-green-50 to-emerald-50">
+      <div
+        className={`max-w-7xl mx-auto flex flex-col ${
+          reverse ? 'lg:flex-row-reverse' : 'lg:flex-row'
+        } items-center gap-8 sm:gap-12 px-4 sm:px-6 lg:px-8`}
+      >
+        <div className="w-full lg:w-1/2 flex justify-center mb-6 lg:mb-0">
+          {visual}
                 </div>
-                <p className='ml-3 text-gray-700'>
-                  Scan or manually enter receipt details
-                </p>
+        <div className="w-full lg:w-1/2">
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-gray-900">
+            {title}
+          </h3>
+          <p className="text-base sm:text-lg text-gray-600 mb-4">{description}</p>
+          {subPoints && (
+            <ul className="space-y-2 sm:space-y-3 mt-4">
+              {subPoints.map((point, idx) => (
+                <li key={idx} className="flex items-start text-gray-700 text-sm sm:text-base">
+                  <CheckCircleIcon className="w-4 sm:w-5 h-4 sm:h-5 text-green-500 flex-shrink-0 mt-0.5 mr-2" />
+                  <span>{point}</span>
               </li>
-              <li className='flex items-start'>
-                <div className='flex-shrink-0 bg-green-100 p-2 rounded-full'>
-                  <svg
-                    className='h-5 w-5 text-green-600'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'>
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth='2'
-                      d='M5 13l4 4L19 7'
-                    />
-                  </svg>
-                </div>
-                <p className='ml-3 text-gray-700'>AI-powered data extraction</p>
-              </li>
-              <li className='flex items-start'>
-                <div className='flex-shrink-0 bg-green-100 p-2 rounded-full'>
-                  <svg
-                    className='h-5 w-5 text-green-600'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'>
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth='2'
-                      d='M5 13l4 4L19 7'
-                    />
-                  </svg>
-                </div>
-                <p className='ml-3 text-gray-700'>
-                  Blockchain-verified digital records
-                </p>
-              </li>
-              <li className='flex items-start'>
-                <div className='flex-shrink-0 bg-green-100 p-2 rounded-full'>
-                  <svg
-                    className='h-5 w-5 text-green-600'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'>
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth='2'
-                      d='M5 13l4 4L19 7'
-                    />
-                  </svg>
-                </div>
-                <p className='ml-3 text-gray-700'>
-                  Instant sharing with counterparties
-                </p>
-              </li>
-            </motion.ul>
-          </div>
-
-          <motion.div
-            variants={receiptFormVariants}
-            transition={{delay: 0.6}}
-            className='relative'>
-            <div className='absolute -inset-4 bg-gradient-to-r from-green-400 to-teal-400 rounded-2xl opacity-20 blur-lg'></div>
-            <div className='relative bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200'>
-              <div className='bg-gradient-to-r from-green-500 to-teal-500 p-4 text-white'>
-                <h3 className='text-lg font-semibold'>New Digital Receipt</h3>
-              </div>
-              <div className='p-6'>
-                <div className='space-y-4'>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>
-                      Transaction Date
-                    </label>
-                    <div className='relative'>
-                      <input
-                        type='date'
-                        className='w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500'
-                        defaultValue={new Date().toISOString().split('T')[0]}
-                      />
-                    </div>
-                  </div>
-
-                  <div className='grid grid-cols-2 gap-4'>
-                    <div>
-                      <label className='block text-sm font-medium text-gray-700 mb-1'>
-                        Buyer
-                      </label>
-                      <input
-                        type='text'
-                        className='w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500'
-                        placeholder='Buyer name'
-                      />
-                    </div>
-                    <div>
-                      <label className='block text-sm font-medium text-gray-700 mb-1'>
-                        Seller
-                      </label>
-                      <input
-                        type='text'
-                        className='w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500'
-                        placeholder='Seller name'
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>
-                      Commodity
-                    </label>
-                    <select className='w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500'>
-                      <option>Wheat</option>
-                      <option>Corn</option>
-                      <option>Soybeans</option>
-                      <option>Rice</option>
-                      <option>Coffee</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>
-                      Amount (kg)
-                    </label>
-                    <input
-                      type='number'
-                      className='w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500'
-                      placeholder='1000'
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>
-                      Price per kg
-                    </label>
-                    <input
-                      type='number'
-                      className='w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500'
-                      placeholder='0.50'
-                    />
-                  </div>
-
-                  <div className='pt-4'>
-                    <button className='w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 px-4 rounded-md hover:from-green-600 hover:to-teal-600 transition-all shadow-md hover:shadow-lg'>
-                      Generate Digital Receipt
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-// Feature: View Receipts
-const ViewReceiptsFeature = () => {
-  const controls = useAnimation();
-  const [ref, inView] = useInView({threshold: 0.1});
-  const [activeTab, setActiveTab] = useState<'all' | 'verified' | 'pending'>(
-    'all'
-  );
-
-  // Sample receipt data
-  const receipts: Receipt[] = [
-    {
-      id: 'RCPT-2023-001',
-      date: '2023-06-15',
-      amount: 1500,
-      buyer: 'Global Grains Inc.',
-      seller: 'Sunshine Farms',
-      commodity: 'Wheat',
-      status: 'verified',
-    },
-    {
-      id: 'RCPT-2023-002',
-      date: '2023-06-16',
-      amount: 800,
-      buyer: 'Organic Markets',
-      seller: 'Green Valley',
-      commodity: 'Corn',
-      status: 'verified',
-    },
-    {
-      id: 'RCPT-2023-003',
-      date: '2023-06-17',
-      amount: 1200,
-      buyer: 'Premium Foods',
-      seller: 'Riverbend Farms',
-      commodity: 'Soybeans',
-      status: 'pending',
-    },
-    {
-      id: 'RCPT-2023-004',
-      date: '2023-06-18',
-      amount: 950,
-      buyer: 'Export Partners',
-      seller: 'Mountain View',
-      commodity: 'Rice',
-      status: 'verified',
-    },
-    {
-      id: 'RCPT-2023-005',
-      date: '2023-06-19',
-      amount: 600,
-      buyer: 'Local Co-op',
-      seller: 'Heritage Farms',
-      commodity: 'Coffee',
-      status: 'pending',
-    },
-  ];
-
-  const filteredReceipts = receipts.filter(
-    (receipt) => activeTab === 'all' || receipt.status === activeTab
-  );
-
-  useEffect(() => {
-    if (inView) {
-      controls.start('visible');
-    }
-  }, [controls, inView]);
-
-  const variants = {
-    visible: {opacity: 1, y: 0},
-    hidden: {opacity: 0, y: 50},
-  };
-
-  const receiptCardVariants = {
-    hidden: {opacity: 0, x: 50},
-    visible: {opacity: 1, x: 0},
-  };
-
-  return (
-    <section
-      ref={ref}
-      className='min-h-screen flex items-center justify-center bg-gray-50 py-20'
-      id='view-receipts'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <motion.div
-          initial='hidden'
-          animate={controls}
-          variants={variants}
-          transition={{duration: 0.6}}
-          className='grid grid-cols-1 lg:grid-cols-2 gap-16 items-center'>
-          <motion.div
-            variants={receiptCardVariants}
-            transition={{delay: 0.6}}
-            className='relative'>
-            <div className='absolute -inset-4 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-2xl opacity-20 blur-lg'></div>
-            <div className='relative bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200'>
-              <div className='bg-gradient-to-r from-blue-500 to-indigo-500 p-4 text-white'>
-                <h3 className='text-lg font-semibold'>Receipt Details</h3>
-              </div>
-              <div className='p-6'>
-                <div className='space-y-6'>
-                  <div className='flex justify-between items-center'>
-                    <div>
-                      <p className='text-sm text-gray-500'>Receipt ID</p>
-                      <p className='font-medium'>RCPT-2023-001</p>
-                    </div>
-                    <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800'>
-                      Verified
-                    </span>
-                  </div>
-
-                  <div className='grid grid-cols-2 gap-4'>
-                    <div>
-                      <p className='text-sm text-gray-500'>Buyer</p>
-                      <p className='font-medium'>Global Grains Inc.</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Seller</p>
-                      <p className='font-medium'>Sunshine Farms</p>
-                    </div>
-                  </div>
-
-                  <div className='grid grid-cols-3 gap-4'>
-                    <div>
-                      <p className='text-sm text-gray-500'>Date</p>
-                      <p className='font-medium'>Jun 15, 2023</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Commodity</p>
-                      <p className='font-medium'>Wheat</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Amount</p>
-                      <p className='font-medium'>1,500 kg</p>
-                    </div>
-                  </div>
-
-                  <div className='grid grid-cols-2 gap-4'>
-                    <div>
-                      <p className='text-sm text-gray-500'>Price per kg</p>
-                      <p className='font-medium'>$0.48</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-gray-500'>Total Value</p>
-                      <p className='font-medium'>$720.00</p>
-                    </div>
-                  </div>
-
-                  <div className='pt-2'>
-                    <p className='text-sm text-gray-500'>
-                      Blockchain Verification
-                    </p>
-                    <div className='mt-2 flex items-center'>
-                      <svg
-                        className='h-5 w-5 text-green-500'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'>
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth='2'
-                          d='M5 13l4 4L19 7'
-                        />
-                      </svg>
-                      <span className='ml-2 text-sm text-gray-700'>
-                        Verified on AgriChain (Tx: 0x8a3...f4c2)
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className='pt-4 flex space-x-3'>
-                    <button className='flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all'>
-                      Share
-                    </button>
-                    <button className='flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 transition-all'>
-                      Download PDF
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          <div>
-            <motion.h2
-              className='text-4xl font-bold text-gray-900 mb-6'
-              variants={variants}>
-              <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600'>
-                Comprehensive Receipt Management
-              </span>
-            </motion.h2>
-            <motion.p
-              className='text-xl text-gray-600 mb-8'
-              variants={variants}
-              transition={{delay: 0.2}}>
-              Access, filter, and manage all your agricultural receipts in one
-              secure dashboard.
-            </motion.p>
-
-            <motion.div
-              className='mb-8'
-              variants={variants}
-              transition={{delay: 0.4}}>
-              <div className='flex border-b border-gray-200'>
-                <button
-                  onClick={() => setActiveTab('all')}
-                  className={`py-2 px-4 font-medium text-sm ${
-                    activeTab === 'all'
-                      ? 'text-blue-600 border-b-2 border-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}>
-                  All Receipts
-                </button>
-                <button
-                  onClick={() => setActiveTab('verified')}
-                  className={`py-2 px-4 font-medium text-sm ${
-                    activeTab === 'verified'
-                      ? 'text-blue-600 border-b-2 border-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}>
-                  Verified
-                </button>
-                <button
-                  onClick={() => setActiveTab('pending')}
-                  className={`py-2 px-4 font-medium text-sm ${
-                    activeTab === 'pending'
-                      ? 'text-blue-600 border-b-2 border-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}>
-                  Pending
-                </button>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className='space-y-4 max-h-96 overflow-y-auto pr-2'
-              variants={variants}
-              transition={{delay: 0.6}}>
-              {filteredReceipts.map((receipt, index) => (
-                <motion.div
-                  key={receipt.id}
-                  initial={{opacity: 0, y: 20}}
-                  animate={{opacity: 1, y: 0}}
-                  transition={{delay: 0.1 * index}}
-                  className='bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all cursor-pointer'>
-                  <div className='flex justify-between items-start'>
-                    <div>
-                      <p className='font-medium'>{receipt.id}</p>
-                      <p className='text-sm text-gray-500'>
-                        {receipt.commodity} • {receipt.amount} kg
-                      </p>
-                    </div>
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        receipt.status === 'verified'
-                          ? 'bg-green-100 text-green-800'
-                          : receipt.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                      {receipt.status.charAt(0).toUpperCase() +
-                        receipt.status.slice(1)}
-                    </span>
-                  </div>
-                  <div className='mt-2 flex justify-between text-sm'>
-                    <p className='text-gray-500'>{receipt.date}</p>
-                    <p className='font-medium'>
-                      ${(receipt.amount * 0.5).toFixed(2)}
-                    </p>
-                  </div>
-                </motion.div>
               ))}
-            </motion.div>
-          </div>
-        </motion.div>
-      </div>
+            </ul>
+          )}
+                </div>
+                </div>
     </section>
   );
-};
 
-// Feature: Reports
-const ReportsFeature = () => {
-  const controls = useAnimation();
-  const [ref, inView] = useInView({threshold: 0.1});
-  const [activeReport, setActiveReport] = useState<
-    'sales' | 'purchases' | 'inventory'
-  >('sales');
+  const StaticFormMockup = () => (
+    <div className="w-full max-w-xs sm:max-w-sm bg-gray-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
+      <h4 className="text-base sm:text-lg font-semibold mb-4 text-green-700">
+        New Receipt- AMC Kakinada Rural
+      </h4>
+      <div className="space-y-2 sm:space-y-3">
+                      <input
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+          placeholder="Payee Name"
+          disabled
+        />
+                      <input
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+          placeholder="Farmer/Trader Name"
+          disabled
+        />
+                      <input
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+          placeholder="Commodity"
+          disabled
+        />
+                    <input
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+          placeholder="Fees Paid (mf)"
+          disabled
+        />
+        <button
+          className="w-full mt-2 py-2 bg-green-500 text-white rounded-md font-semibold cursor-not-allowed opacity-70 text-sm"
+          disabled
+        >
+          Generate Receipt
+                    </button>
+                  </div>
+                </div>
+  );
 
-  useEffect(() => {
-    if (inView) {
-      controls.start('visible');
-    }
-  }, [controls, inView]);
-
-  const variants = {
-    visible: {opacity: 1, y: 0},
-    hidden: {opacity: 0, y: 50},
-  };
-
-  const chartVariants = {
-    hidden: {opacity: 0, x: -50},
-    visible: {opacity: 1, x: 0},
-  };
-
-  // Sample data for charts
-  const salesData = [
-    {month: 'Jan', value: 12000},
-    {month: 'Feb', value: 19000},
-    {month: 'Mar', value: 15000},
-    {month: 'Apr', value: 22000},
-    {month: 'May', value: 18000},
-    {month: 'Jun', value: 25000},
-  ];
-
-  const purchasesData = [
-    {month: 'Jan', value: 8000},
-    {month: 'Feb', value: 12000},
-    {month: 'Mar', value: 10000},
-    {month: 'Apr', value: 15000},
-    {month: 'May', value: 11000},
-    {month: 'Jun', value: 18000},
-  ];
-
-  const inventoryData = [
-    {commodity: 'Wheat', amount: 15000},
-    {commodity: 'Corn', amount: 8000},
-    {commodity: 'Soybeans', amount: 12000},
-    {commodity: 'Rice', amount: 6000},
-    {commodity: 'Coffee', amount: 3000},
-  ];
-
-  const currentData =
-    activeReport === 'sales'
-      ? salesData
-      : activeReport === 'purchases'
-      ? purchasesData
-      : inventoryData;
+  const StaticTableMockup = () => (
+    <div className="w-full max-w-xs sm:max-w-sm md:max-w-md bg-gray-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 overflow-x-auto">
+      <h4 className="text-base sm:text-lg font-semibold mb-4 text-green-700">
+        Recent Receipts Updated
+      </h4>
+      <table className="min-w-full text-xs sm:text-sm text-left">
+        <thead>
+          <tr>
+            <th className="px-2 py-1 font-semibold text-gray-700">Book/Receipt Number</th>
+            <th className="px-2 py-1 font-semibold text-gray-700">Payee Details</th>
+            <th className="px-2 py-1 font-semibold text-gray-700">Commodity Details</th>
+            <th className="px-2 py-1 font-semibold text-gray-700">Nature of Receipt</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="px-2 py-1">05-2502</td>
+            <td className="px-2 py-1">Sai Farms</td>
+            <td className="px-2 py-1">Wheat</td>
+            <td className="px-2 py-1 text-green-600 font-semibold">Market Fees</td>
+          </tr>
+          <tr>
+            <td className="px-2 py-1">06-1405</td>
+            <td className="px-2 py-1">Sri Valley</td>
+            <td className="px-2 py-1">Cattle</td>
+            <td className="px-2 py-1 text-yellow-600 font-semibold">User Charges</td>
+          </tr>
+          <tr>
+            <td className="px-2 py-1">RCPT-003</td>
+            <td className="px-2 py-1">Riverbend</td>
+            <td className="px-2 py-1">Rice</td>
+            <td className="px-2 py-1 text-green-600 font-semibold">Market Fees</td>
+          </tr>
+        </tbody>
+      </table>
+              </div>
+  );
 
   return (
     <section
       ref={ref}
-      className='min-h-screen flex items-center justify-center bg-white py-20'
-      id='reports'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+      className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50 py-12 sm:py-16"
+      id="add-receipts"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          initial='hidden'
-          animate={controls}
-          variants={variants}
-          transition={{duration: 0.6}}
-          className='grid grid-cols-1 lg:grid-cols-2 gap-16 items-center'>
-          <div>
-            <motion.h2
-              className='text-4xl font-bold text-gray-900 mb-6'
-              variants={variants}>
-              <span className='bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500'>
-                Powerful Reporting Tools
-              </span>
-            </motion.h2>
-            <motion.p
-              className='text-xl text-gray-600 mb-8'
-              variants={variants}
-              transition={{delay: 0.2}}>
-              Generate comprehensive reports and gain valuable insights into
-              your agricultural transactions.
-            </motion.p>
-
-            <motion.div
-              className='space-y-6'
-              variants={variants}
-              transition={{delay: 0.4}}>
-              <div
-                className={`p-5 rounded-xl cursor-pointer transition-all ${
-                  activeReport === 'sales'
-                    ? 'bg-purple-50 border border-purple-200'
-                    : 'bg-gray-50 hover:bg-gray-100'
-                }`}
-                onClick={() => setActiveReport('sales')}>
-                <div className='flex items-center'>
-                  <div
-                    className={`p-3 rounded-lg ${
-                      activeReport === 'sales'
-                        ? 'bg-purple-100 text-purple-600'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                    <svg
-                      className='h-6 w-6'
-                      fill='none'
-                      stroke='currentColor'
-                      viewBox='0 0 24 24'>
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth='2'
-                        d='M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'
-                      />
-                    </svg>
-                  </div>
-                  <div className='ml-4'>
-                    <h3 className='font-medium text-gray-900'>Sales Reports</h3>
-                    <p className='text-sm text-gray-500 mt-1'>
-                      Track your sales performance over time
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className={`p-5 rounded-xl cursor-pointer transition-all ${
-                  activeReport === 'purchases'
-                    ? 'bg-purple-50 border border-purple-200'
-                    : 'bg-gray-50 hover:bg-gray-100'
-                }`}
-                onClick={() => setActiveReport('purchases')}>
-                <div className='flex items-center'>
-                  <div
-                    className={`p-3 rounded-lg ${
-                      activeReport === 'purchases'
-                        ? 'bg-purple-100 text-purple-600'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                    <svg
-                      className='h-6 w-6'
-                      fill='none'
-                      stroke='currentColor'
-                      viewBox='0 0 24 24'>
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth='2'
-                        d='M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'
-                      />
-                    </svg>
-                  </div>
-                  <div className='ml-4'>
-                    <h3 className='font-medium text-gray-900'>
-                      Purchases Reports
-                    </h3>
-                    <p className='text-sm text-gray-500 mt-1'>
-                      Analyze your procurement patterns
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className={`p-5 rounded-xl cursor-pointer transition-all ${
-                  activeReport === 'inventory'
-                    ? 'bg-purple-50 border border-purple-200'
-                    : 'bg-gray-50 hover:bg-gray-100'
-                }`}
-                onClick={() => setActiveReport('inventory')}>
-                <div className='flex items-center'>
-                  <div
-                    className={`p-3 rounded-lg ${
-                      activeReport === 'inventory'
-                        ? 'bg-purple-100 text-purple-600'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                    <svg
-                      className='h-6 w-6'
-                      fill='none'
-                      stroke='currentColor'
-                      viewBox='0 0 24 24'>
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth='2'
-                        d='M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'
-                      />
-                    </svg>
-                  </div>
-                  <div className='ml-4'>
-                    <h3 className='font-medium text-gray-900'>
-                      Inventory Reports
-                    </h3>
-                    <p className='text-sm text-gray-500 mt-1'>
-                      Monitor your commodity stock levels
-                    </p>
-                  </div>
-                </div>
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="mb-8 text-center"
+        >
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center mb-4">
+            <span className="block text-gray-900">Comprehensive</span>
+            <span className="block text-green-600">Feature Set</span>
+          </h2>
+          <p className="text-base sm:text-lg text-gray-600 mt-4 max-w-2xl mx-auto">
+            Explore the powerful features that make Agri Receipts indispensable for AMC's.
+          </p>
+          <div className="flex justify-center mt-4">
+            <span className="block w-16 sm:w-24 h-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500"></span>
               </div>
             </motion.div>
-          </div>
-
-          <motion.div
-            variants={chartVariants}
-            transition={{delay: 0.6}}
-            className='relative'>
-            <div className='absolute -inset-4 bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl opacity-20 blur-lg'></div>
-            <div className='relative bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 p-6'>
-              <div className='flex justify-between items-center mb-6'>
-                <h3 className='text-lg font-semibold text-gray-900'>
-                  {activeReport === 'sales'
-                    ? 'Sales Performance'
-                    : activeReport === 'purchases'
-                    ? 'Purchases Overview'
-                    : 'Inventory Levels'}
-                </h3>
-                <select className='text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-purple-500 focus:border-purple-500'>
-                  <option>Last 6 Months</option>
-                  <option>Last Year</option>
-                  <option>Last 3 Years</option>
-                </select>
-              </div>
-
-              <div className='h-80'>
-                {/* Chart placeholder - in a real app you would use a charting library like Chart.js */}
-                <div className='h-full flex flex-col justify-end'>
-                  <div className='flex items-end space-x-2 h-64'>
-                    {currentData.map((item, index) => (
-                      <div
-                        key={index}
-                        className='flex-1 flex flex-col items-center'>
-                        <div
-                          className='w-full bg-gradient-to-t from-purple-500 to-pink-400 rounded-t-sm'
-                          style={{
-                            height: `${
-                              (('value' in item ? item.value : item.amount) /
-                                (activeReport === 'inventory'
-                                  ? 20000
-                                  : 30000)) *
-                              100
-                            }%`,
-                          }}></div>
-                        <span className='text-xs text-gray-500 mt-2'>
-                          {activeReport === 'inventory' && 'commodity' in item
-                            ? item.commodity.substring(0, 3)
-                            : 'month' in item
-                            ? item.month
-                            : ''}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className='mt-6 pt-6 border-t border-gray-200'>
-                <div className='flex justify-between'>
-                  <div>
-                    <p className='text-sm text-gray-500'>
-                      Total{' '}
-                      {activeReport === 'sales'
-                        ? 'Sales'
-                        : activeReport === 'purchases'
-                        ? 'Purchases'
-                        : 'Inventory'}
-                    </p>
-                    <p className='text-2xl font-semibold'>
-                      {activeReport === 'sales'
-                        ? '$121,000'
-                        : activeReport === 'purchases'
-                        ? '$74,000'
-                        : '44,000 kg'}
-                    </p>
-                  </div>
-                  <div className='text-right'>
-                    <p className='text-sm text-gray-500'>
-                      {activeReport === 'sales'
-                        ? '12% increase'
-                        : activeReport === 'purchases'
-                        ? '8% increase'
-                        : '5% decrease'}{' '}
-                      from last period
-                    </p>
-                    <p className='text-sm font-medium flex items-center justify-end'>
-                      {activeReport !== 'inventory' ? (
-                        <span className='text-green-500 flex items-center'>
-                          <svg
-                            className='h-4 w-4 mr-1'
-                            fill='none'
-                            stroke='currentColor'
-                            viewBox='0 0 24 24'>
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth='2'
-                              d='M5 10l7-7m0 0l7 7m-7-7v18'
-                            />
-                          </svg>
-                          {activeReport === 'sales' ? '12%' : '8%'}
-                        </span>
-                      ) : (
-                        <span className='text-red-500 flex items-center'>
-                          <svg
-                            className='h-4 w-4 mr-1'
-                            fill='none'
-                            stroke='currentColor'
-                            viewBox='0 0 24 24'>
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth='2'
-                              d='M19 14l-7 7m0 0l-7-7m7 7V3'
-                            />
-                          </svg>
-                          5%
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className='mt-6'>
-                <button className='w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 px-4 rounded-md hover:from-purple-600 hover:to-pink-600 transition-all'>
-                  Export Report
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
+        <FeatureSection
+          title="Create Receipts"
+          description="Easily create digital receipts for every trade. No more paperwork, just a few clicks."
+          visual={<StaticFormMockup />}
+          subPoints={[
+            'Instantly digitize any trade transaction',
+            'Reduce manual errors and paperwork',
+            'Secure, tamper-proof digital records',
+          ]}
+        />
+        <FeatureSection
+          title="View & Manage All Trade Receipts"
+          description="Access, filter, and organize all your trade receipts in one place."
+          visual={<StaticTableMockup />}
+          reverse
+          subPoints={[
+            'Search and filter by payee, commodity, or nature of receipt',
+            'Export receipts for reporting or auditing',
+            'Quickly find any receipt, anytime',
+          ]}
+        />
       </div>
     </section>
   );
 };
 
-// CTA Section
-const CTASection = () => {
+// Why Agri Receipts? Section
+const ImpactSection = () => {
   const controls = useAnimation();
-  const [ref, inView] = useInView({threshold: 0.1});
+    const [ref, inView] = useInView({ threshold: 0.1 });
 
   useEffect(() => {
     if (inView) {
-      controls.start('visible');
+        controls.start("visible");
     }
   }, [controls, inView]);
 
   const variants = {
-    visible: {opacity: 1, y: 0},
-    hidden: {opacity: 0, y: 50},
+      visible: { opacity: 1, y: 0 },
+      hidden: { opacity: 0, y: 50 },
   };
 
   return (
-    <section
-      ref={ref}
-      className='min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 to-purple-900 py-20'
-      id='cta'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
-        <motion.div
-          initial='hidden'
-          animate={controls}
-          variants={variants}
-          transition={{duration: 0.6}}
-          className='max-w-3xl mx-auto'>
-          <motion.h2
-            className='text-4xl md:text-5xl font-bold text-white mb-8'
-            variants={variants}>
-            Ready to transform your agricultural transactions?
-          </motion.h2>
-          <motion.p
-            className='text-xl text-indigo-200 mb-12'
-            variants={variants}
-            transition={{delay: 0.2}}>
-            Join thousands of farmers, cooperatives, and agribusinesses using
-            AgriLedger for secure, verifiable digital receipts.
-          </motion.p>
-
-          <motion.div
-            className='flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4'
-            variants={variants}
-            transition={{delay: 0.4}}>
-            <button className='px-8 py-4 bg-white text-indigo-700 font-medium rounded-lg shadow-lg hover:bg-gray-100 transition-all transform hover:scale-105'>
-              Get Started for Free
-            </button>
-            <button className='px-8 py-4 border-2 border-white text-white font-medium rounded-lg hover:bg-white hover:bg-opacity-10 transition-all transform hover:scale-105'>
-              Schedule a Demo
-            </button>
-          </motion.div>
-
-          <motion.div
-            variants={variants}
-            transition={{delay: 0.6}}
-            className='mt-16 grid grid-cols-2 md:grid-cols-4 gap-8'>
-            <div className='bg-white bg-opacity-10 p-4 rounded-lg backdrop-blur-sm'>
-              <p className='text-3xl font-bold text-white'>15K+</p>
-              <p className='text-indigo-200'>Farmers</p>
+      <section className="bg-white py-12 sm:py-16" id="impact">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center mb-4">
+            <span className="block text-gray-900">Why</span>
+            <span className="block text-green-600">Agri Receipts?</span>
+          </h2>
+          <p className="text-base sm:text-lg text-gray-600 mb-8 sm:mb-12">
+            Discover how Agri Receipts transforms agricultural transactions for everyone involved.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 w-full">
+            <div className="p-4 sm:p-6 bg-green-50 rounded-xl shadow flex flex-col items-center">
+              <DocumentIcon className="w-8 sm:w-10 h-8 sm:h-10 text-green-500 mb-4" />
+              <h3 className="font-semibold text-base sm:text-lg mb-2">Eliminating Paperwork</h3>
+              <p className="text-gray-600 text-sm sm:text-base">Go digital and say goodbye to lost or damaged receipts.</p>
             </div>
-            <div className='bg-white bg-opacity-10 p-4 rounded-lg backdrop-blur-sm'>
-              <p className='text-3xl font-bold text-white'>2M+</p>
-              <p className='text-indigo-200'>Receipts</p>
+            <div className="p-4 sm:p-6 bg-green-50 rounded-xl shadow flex flex-col items-center">
+              <EyeIcon className="w-8 sm:w-10 h-8 sm:h-10 text-green-500 mb-4" />
+              <h3 className="font-semibold text-base sm:text-lg mb-2">Boosting Transparency</h3>
+              <p className="text-gray-600 text-sm sm:text-base">Every transaction is recorded and verifiable, building trust.</p>
             </div>
-            <div className='bg-white bg-opacity-10 p-4 rounded-lg backdrop-blur-sm'>
-              <p className='text-3xl font-bold text-white'>$500M+</p>
-              <p className='text-indigo-200'>Value</p>
+            <div className="p-4 sm:p-6 bg-green-50 rounded-xl shadow flex flex-col items-center">
+              <BoltIcon className="w-8 sm:w-10 h-8 sm:h-10 text-green-500 mb-4" />
+              <h3 className="font-semibold text-base sm:text-lg mb-2">Enhancing Efficiency</h3>
+              <p className="text-gray-600 text-sm sm:text-base">Save time with instant digital receipts and streamlined workflows.</p>
             </div>
-            <div className='bg-white bg-opacity-10 p-4 rounded-lg backdrop-blur-sm'>
-              <p className='text-3xl font-bold text-white'>24/7</p>
-              <p className='text-indigo-200'>Support</p>
+            <div className="p-4 sm:p-6 bg-green-50 rounded-xl shadow flex flex-col items-center">
+              <ChartBarIcon className="w-8 sm:w-10 h-8 sm:h-10 text-green-500 mb-4" />
+              <h3 className="font-semibold text-base sm:text-lg mb-2">Easy Report Generation</h3>
+              <p className="text-gray-600 text-sm sm:text-base">Generate detailed reports for better decision-making.</p>
             </div>
-          </motion.div>
-        </motion.div>
+                  </div>
       </div>
     </section>
   );
 };
 
-// Footer Component
+// Card features for the features section
+const cardFeatures: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  subPoints: string[];
+}[] = [
+  {
+    title: 'Verify Genuinity of Trade Receipts',
+    description: 'Instantly check if a receipt is genuine. Detect fakes and ensure transparency.',
+    icon: <ShieldCheckIcon className="w-10 sm:w-12 h-10 sm:h-12 text-green-500 mb-4" />,
+    subPoints: [
+      'One-click verification for any receipt',
+      'Detect and prevent fraudulent trades',
+      'Build trust with transparent records',
+    ],
+  },
+  {
+    title: 'Insightful Understanding for Committee Officers',
+    description: 'Get actionable insights and overviews tailored for committee-level officers.',
+    icon: <ChartBarIcon className="w-10 sm:w-12 h-10 sm:h-12 text-green-500 mb-4" />,
+    subPoints: [
+      'Visual dashboards for quick analysis',
+      'Monitor committee performance at a glance',
+      'Identify areas for improvement easily',
+    ],
+  },
+  {
+    title: 'Set & Track Targets',
+    description: 'Set, manage, and monitor targets. Track committee progress seamlessly.',
+    icon: <BoltIcon className="w-10 sm:w-12 h-10 sm:h-12 text-yellow-500 mb-4" />,
+    subPoints: [
+      'Define and update targets anytime',
+      'Visualize progress with intuitive charts',
+      'Stay on top of committee goals',
+    ],
+  },
+  {
+    title: 'Easy Reports',
+    description: 'Generate and export detailed reports with a single click.',
+    icon: <DocumentIcon className="w-10 sm:w-12 h-10 sm:h-12 text-purple-500 mb-4" />,
+    subPoints: [
+      'Export data for compliance or review',
+      'Customizable report formats',
+      'Get insights and committe progress easily',
+    ],
+  },
+  {
+    title: 'Understand Trader Trends',
+    description: 'Analyze trading patterns and trends for smarter decision-making.',
+    icon: <EyeIcon className="w-10 sm:w-12 h-10 sm:h-12 text-pink-500 mb-4" />,
+    subPoints: [
+      'Spot emerging trends among traders',
+      'Make data-driven decisions',
+      'Adapt strategies based on real insights',
+    ],
+  },
+  {
+    title: 'Role-Based Access & Security',
+    description: 'Keep your data safe and workflows efficient with robust, role-based access controls.',
+    icon: <LockClosedIcon className="w-10 sm:w-12 h-10 sm:h-12 text-cyan-500 mb-4" />,
+    subPoints: [
+      'Granular permissions for every user type',
+      'Secure authentication for all actions',
+      'Peace of mind for AMC committees',
+    ],
+  },
+];
+
+// Committees array for the committees section
+const committees: string[] = [
+  'Karapa',
+  'Kakinada Rural',
+  'Pithapuram',
+  'Tuni',
+  'Prathipadu',
+  'Jaggampeta',
+  'Peddapuram',
+  'Samalkota',
+  'Kakinada',
+];
 
 // Main Component
 const LandingPage = () => {
-  const [activeSection, setActiveSection] = useState('hero');
-  const sectionRefs = useRef<{[key: string]: HTMLElement | null}>({});
+    const [activeSection, setActiveSection] = useState("hero");
+    const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+    const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 100;
-
       for (const [section, ref] of Object.entries(sectionRefs.current)) {
-        if (
-          ref &&
-          ref.offsetTop <= scrollPosition &&
-          ref.offsetTop + ref.offsetHeight > scrollPosition
-        ) {
+          if (ref && ref.offsetTop <= scrollPosition && ref.offsetTop + ref.offsetHeight > scrollPosition) {
           setActiveSection(section);
           break;
         }
       }
     };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+      window.addEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const registerRef = (section: string, ref: HTMLElement | null) => {
@@ -1125,19 +594,11 @@ const LandingPage = () => {
   };
 
   return (
-    <div className='bg-white'>
+      <div className="bg-white">
       <Header />
-
-      <div className='fixed right-6 top-1/2 transform -translate-y-1/2 z-40 hidden md:block'>
-        <div className='flex flex-col space-y-3'>
-          {[
-            'hero',
-            'add-receipts',
-            'view-receipts',
-            'reports',
-            'blockchain',
-            'cta',
-          ].map((section) => (
+        <div className="fixed right-4 sm:right-6 top-1/2 transform -translate-y-1/2 z-40 hidden sm:block">
+          <div className="flex flex-col space-y-2 sm:space-y-3">
+            {["hero", "impact", "add-receipts", "features", "committees", "footer"].map((section) => (
             <button
               key={section}
               onClick={() => {
@@ -1145,39 +606,213 @@ const LandingPage = () => {
                 if (ref) {
                   window.scrollTo({
                     top: ref.offsetTop - 80,
-                    behavior: 'smooth',
+                      behavior: "smooth",
                   });
                 }
               }}
-              className={`w-3 h-3 rounded-full transition-all ${
-                activeSection === section
-                  ? 'bg-blue-600 scale-125'
-                  : 'bg-gray-300 hover:bg-gray-400'
+                className={`w-2 sm:w-3 h-2 sm:h-3 rounded-full transition-all ${
+                  activeSection === section ? "bg-green-600 scale-125" : "bg-gray-300 hover:bg-gray-400"
               }`}
               aria-label={`Go to ${section} section`}
             />
           ))}
         </div>
       </div>
-
-      <div ref={(ref) => registerRef('hero', ref)}>
+        <div ref={(ref) => registerRef("hero", ref)}>
         <Hero />
       </div>
-
-      <div ref={(ref) => registerRef('add-receipts', ref)}>
+        <div ref={(ref) => registerRef("impact", ref)}>
+          <ImpactSection />
+        </div>
+        <div ref={(ref) => registerRef("add-receipts", ref)}>
         <AddReceiptsFeature />
       </div>
-
-      <div ref={(ref) => registerRef('view-receipts', ref)}>
-        <ViewReceiptsFeature />
+        <div ref={(ref) => registerRef("features", ref)}>
+          <div className="py-12 sm:py-16 bg-gradient-to-br from-green-50 to-emerald-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pr-12 lg:pr-20">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
+                {cardFeatures.map((feature, idx) => (
+                  <motion.div
+                    key={feature.title}
+                    className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 flex flex-col items-center transition-transform hover:-translate-y-2 hover:shadow-2xl"
+                    whileHover={{ scale: 1.05, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <motion.div className="mb-4" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      {feature.icon}
+                    </motion.div>
+                    <h3 className="text-lg sm:text-xl font-bold mb-2 text-center">{feature.title}</h3>
+                    <p className="text-gray-600 text-center mb-4 text-sm sm:text-base">{feature.description}</p>
+                    <ul className="space-y-2">
+                      {feature.subPoints.map((point, i) => (
+                        <li key={i} className="flex items-center text-gray-700 text-sm sm:text-base">
+                          <CheckCircleIcon className="w-4 sm:w-5 h-4 sm:h-5 text-green-500 mr-2" />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                ))}
       </div>
-
-      <div ref={(ref) => registerRef('reports', ref)}>
-        <ReportsFeature />
       </div>
-
-      <div ref={(ref) => registerRef('cta', ref)}>
-        <CTASection />
+          </div>
+        </div>
+        <div ref={(ref) => registerRef("committees", ref)}>
+          <div className="relative py-12 sm:py-16 bg-gradient-to-br from-green-50 to-emerald-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pr-12 lg:pr-20">
+              <div className="text-center mb-12 sm:mb-16">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center mb-4">
+                  <span className="block text-gray-900">Connected</span>
+                  <span className="block text-green-600">Market Ecosystem</span>
+                </h2>
+                <p className="text-base sm:text-lg text-gray-600">
+                  Unified platform serving all Agricultural Market Committees across East Godavari District
+                </p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                {committees.map((committee, index) => (
+                  <motion.div
+                    key={index}
+                    className="group relative bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-white/50"
+                    initial={{ y: 50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <motion.div
+                      className="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <span className="text-white text-base sm:text-lg font-bold">{committee[0]}</span>
+                    </motion.div>
+                    <div className="text-center">
+                      <span className="block text-gray-800 font-semibold text-sm sm:text-lg">{committee}</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div ref={(ref) => registerRef("footer", ref)}>
+          <footer className="bg-gradient-to-br from-green-900 to-emerald-900 text-gray-100 pt-14 pb-3 border-t-2 border-green-800 shadow-inner">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start gap-10">
+    {/* Left: Navigation */}
+    <div className="w-full md:w-1/4 flex flex-col items-start mb-8 md:mb-0">
+      <div className="flex items-center gap-2 mb-4">
+        <svg className="w-6 h-6 text-green-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M3 12h18M3 17h18" />
+        </svg>
+        <span className="text-xl font-bold text-white tracking-wide">Navigation</span>
+      </div>
+      <nav>
+        <ul className="space-y-2 mt-2">
+          <li><a href="#hero" className="text-gray-300 hover:text-green-300 text-sm transition">Home</a></li>
+          <li><a href="#impact" className="text-gray-300 hover:text-green-300 text-sm transition">Why Agri Receipts</a></li>
+          <li><a href="#add-receipts" className="text-gray-300 hover:text-green-300 text-sm transition">Features</a></li>
+          <li><a href="#committees" className="text-gray-300 hover:text-green-300 text-sm transition">Committees</a></li>
+        </ul>
+      </nav>
+    </div>
+    {/* Center: Contributors */}
+    <div className="w-full md:w-2/4 flex flex-col items-center">
+      <div className="flex items-center gap-2 mb-6">
+        <svg className="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <h3 className="text-xl font-bold tracking-wider text-white">Contributors</h3>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-6 w-full justify-center">
+        {/* Contributor 1 */}
+        <div className="flex-1 max-w-xs bg-white/10 rounded-2xl shadow-lg border border-emerald-300 flex flex-col items-center px-6 py-6 mx-auto">
+          <div className="bg-gray-200 w-16 h-16 flex items-center justify-center rounded-full shadow mb-3 text-2xl font-bold text-gray-700">S</div>
+          <span className="text-lg text-white font-semibold mb-1">Srivathsa</span>
+          <span className="text-xs text-gray-300 mb-2">Lead Developer</span>
+          <div className="flex gap-3 mb-2">
+            <a href="https://www.linkedin.com/in/srivathsa252/" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
+              <svg className="w-5 h-5 text-blue-200 hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-9h3v9zm-1.5-10.28c-.97 0-1.75-.79-1.75-1.75s.78-1.75 1.75-1.75 1.75.79 1.75 1.75-.78 1.75-1.75 1.75zm15.5 10.28h-3v-4.5c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.58h-3v-9h2.89v1.23h.04c.4-.75 1.37-1.54 2.82-1.54 3.01 0 3.57 1.98 3.57 4.56v4.75z" /></svg>
+            </a>
+            <a href="https://github.com/srivathsa252" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
+              <svg className="w-5 h-5 text-gray-200 hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.262.82-.582 0-.288-.01-1.05-.015-2.06-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.304-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3.003-.404c1.02.005 2.047.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.873.12 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.803 5.624-5.475 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.898-.015 3.293 0 .322.218.698.825.58C20.565 21.796 24 17.297 24 12c0-6.63-5.37-12-12-12z" /></svg>
+            </a>
+          </div>
+        </div>
+        {/* Contributor 2 */}
+        <div className="flex-1 max-w-xs bg-white/10 rounded-2xl shadow-lg border border-emerald-300 flex flex-col items-center px-6 py-6 mx-auto">
+          <div className="bg-gray-200 w-16 h-16 flex items-center justify-center rounded-full shadow mb-3 text-2xl font-bold text-gray-700">A</div>
+          <span className="text-lg text-white font-semibold mb-1">Ajay</span>
+          <span className="text-xs text-gray-300 mb-2">Full Stack Developer</span>
+          <div className="flex gap-3 mb-2">
+            <a href="https://www.linkedin.com/in/ajay-profile" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
+              <svg className="w-5 h-5 text-blue-200 hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-9h3v9zm-1.5-10.28c-.97 0-1.75-.79-1.75-1.75s.78-1.75 1.75-1.75 1.75.79 1.75 1.75-.78 1.75-1.75 1.75zm15.5 10.28h-3v-4.5c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.58h-3v-9h2.89v1.23h.04c.4-.75 1.37-1.54 2.82-1.54 3.01 0 3.57 1.98 3.57 4.56v4.75z" /></svg>
+            </a>
+            <a href="https://github.com/ajay-v11" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
+              <svg className="w-5 h-5 text-gray-200 hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.262.82-.582 0-.288-.01-1.05-.015-2.06-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.304-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3.003-.404c1.02.005 2.047.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.873.12 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.803 5.624-5.475 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.898-.015 3.293 0 .322.218.698.825.58C20.565 21.796 24 17.297 24 12c0-6.63-5.37-12-12-12z" /></svg>
+            </a>
+          </div>
+        </div>
+        {/* Contributor 3 */}
+        <div className="flex-1 max-w-xs bg-white/10 rounded-2xl shadow-lg border border-emerald-300 flex flex-col items-center px-6 py-6 mx-auto">
+          <div className="bg-gray-200 w-16 h-16 flex items-center justify-center rounded-full shadow mb-3 text-2xl font-bold text-gray-700">S</div>
+          <span className="text-lg text-white font-semibold mb-1">Sasi Kumar</span>
+          <span className="text-xs text-gray-300 mb-2">Full Stack Developer</span>
+          <div className="flex gap-3 mb-2">
+            <a href="https://www.linkedin.com/in/sasi-kumar-kolli-6596b9259/" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
+              <svg className="w-5 h-5 text-blue-200 hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-9h3v9zm-1.5-10.28c-.97 0-1.75-.79-1.75-1.75s.78-1.75 1.75-1.75 1.75.79 1.75 1.75-.78 1.75-1.75 1.75zm15.5 10.28h-3v-4.5c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.58h-3v-9h2.89v1.23h.04c.4-.75 1.37-1.54 2.82-1.54 3.01 0 3.57 1.98 3.57 4.56v4.75z" /></svg>
+            </a>
+            <a href="https://github.com/sasikumar272004e" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
+              <svg className="w-5 h-5 text-gray-200 hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.262.82-.582 0-.288-.01-1.05-.015-2.06-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.304-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3.003-.404c1.02.005 2.047.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.873.12 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.803 5.624-5.475 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.898-.015 3.293 0 .322.218.698.825.58C20.565 21.796 24 17.297 24 12c0-6.63-5.37-12-12-12z" /></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {/* Right: Contact Us */}
+    <div className="w-full md:w-1/4 flex flex-col items-center md:items-end justify-center mt-8 md:mt-0 pr-0 md:pr-12 lg:pr-16">
+      <div className="flex flex-col justify-center h-full w-full md:items-end items-center">
+        <div className="flex items-center gap-2 mb-2">
+          <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2m18 0v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8m18 0l-9 6l-9-6" />
+          </svg>
+          <h3 className="text-xl md:text-2xl font-bold text-white text-right">Contact Us</h3>
+        </div>
+        <div className="w-8 h-1 bg-green-500 rounded mb-4 self-end md:self-end"></div>
+        <p className="text-sm text-gray-200 mb-4 max-w-xs text-center md:text-right">
+          For any suggestions, feel free to reach out to us via email.
+        </p>
+        <a
+          href="mailto:agrireceipts@gmail.com"
+          className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition-all w-full max-w-md mb-3 justify-center text-center"
+          aria-label="Send us an email"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2m18 0v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8m18 0l-9 6l-9-6" />
+          </svg>
+          Send Email
+        </a>
+        <div className="flex items-center gap-2 w-full justify-center">
+          <button
+            className="block text-sm font-semibold text-gray-200 break-all text-center px-4 py-1 w-full max-w-md mx-auto bg-white/10 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 transition-all text-center"
+            style={{ cursor: 'pointer' }}
+            aria-label="Copy email address"
+            onClick={() => {
+              navigator.clipboard.writeText('agrireceipts@gmail.com');
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }}
+          >
+            agrireceipts@gmail.com
+          </button>
+          {copied && <span className="text-green-400 text-lg">✔</span>}
+        </div>
+      </div>
+    </div>
+  </div>
+  {/* Copyright line at the very bottom */}
+  <div className="w-full pt-6 mt-8 border-t border-green-800 text-center text-xs text-gray-400 tracking-wide">
+    © {new Date().getFullYear()} Agri Receipts. All rights reserved.
+  </div>
+</footer>
       </div>
     </div>
   );
