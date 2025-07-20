@@ -13,8 +13,8 @@ interface TargetManagerProps {
 }
 
 export const TargetManager: React.FC<TargetManagerProps> = ({currentUser}) => {
-  const {user, committee} = useAuthStore();
-  const isAdmin = user?.designation === 'ad';
+  const {role, committee} = useAuthStore();
+  const isAdmin = role === 'ad';
 
   const {detailedCommittee} = useInitialData();
   const committees: Committee[] = detailedCommittee ?? [];
@@ -30,10 +30,10 @@ export const TargetManager: React.FC<TargetManagerProps> = ({currentUser}) => {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin && committee?.id) {
+    if (committee?.id) {
       setSelectedCommittee(committee.id);
     }
-  }, [isAdmin, committee]);
+  }, [committee]);
 
   const {targets, loading, error, saveTargets, deleteTarget} = useTargets(
     selectedYear,
@@ -84,7 +84,7 @@ export const TargetManager: React.FC<TargetManagerProps> = ({currentUser}) => {
 
         {/* Committee and Year Selection */}
         <div className='flex gap-4 mb-4 flex-wrap'>
-          {/* Committee Selection - Only show for admin users */}
+          {/* Committee Selection - Only for Admin */}
           {isAdmin && (
             <div className='flex-1 min-w-[250px]'>
               <label className='block text-sm font-medium text-gray-700 mb-2'>

@@ -35,7 +35,7 @@ interface Pagination {
 }
 
 const ViewReceipts = () => {
-  const {user, committee} = useAuthStore();
+  const {role, committee} = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [receiptToEdit, setReceiptToEdit] = useState<string | null>(null);
@@ -68,7 +68,7 @@ const ViewReceipts = () => {
     if (debouncedSearch) params.set('search', debouncedSearch);
     if (filters.natureOfReceipt)
       params.set('natureOfReceipt', filters.natureOfReceipt);
-    if (user?.designation === 'ad' && filters.committeeId)
+    if (role === 'ad' && filters.committeeId)
       params.set('committeeId', filters.committeeId);
     if (filters.startDate) params.set('startDate', filters.startDate);
     if (filters.endDate) params.set('endDate', filters.endDate);
@@ -80,7 +80,7 @@ const ViewReceipts = () => {
     filters.committeeId,
     filters.startDate,
     filters.endDate,
-    user?.designation,
+    role,
   ]);
 
   const fetchAllCommittees = async () => {
@@ -121,10 +121,10 @@ const ViewReceipts = () => {
 
   // Fetch committees if user is admin
   useEffect(() => {
-    if (user?.designation === 'ad') {
+    if (role === 'ad') {
       fetchAllCommittees().then(setCommittees);
     }
-  }, [user?.designation]);
+  }, [role]);
 
   //  a separate effect to update URL params only when debounced search changes:
   useEffect(() => {
@@ -258,7 +258,7 @@ const ViewReceipts = () => {
           </p>
         </div>
         {/* Committee Info Banner */}
-        {user?.designation !== 'ad' && (
+        {role !== 'ad' && (
           <div className='mb-8 p-4 rounded-xl bg-white border border-blue-100 shadow-xs'>
             <div className='flex items-center'>
               <div className='p-2 rounded-lg bg-blue-100 text-blue-600 mr-4'>
@@ -403,7 +403,7 @@ const ViewReceipts = () => {
             </div>
 
             {/* Committee Filter for Admin */}
-            {user?.designation === 'ad' && (
+            {role === 'ad' && (
               <div className='md:col-span-2'>
                 <label
                   htmlFor='committeeId'

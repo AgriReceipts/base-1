@@ -176,7 +176,7 @@ const Hero = () => {
     <section
       ref={ref}
       className='min-h-[80vh] flex items-center justify-center bg-[#f3fcf6] pt-16 sm:pt-20'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pr-12 lg:pr-20 py-12 sm:py-16 flex flex-col lg:flex-row items-center justify-between gap-8'>
+      <div className='max-w-full mx-auto px-4 sm:px-6 lg:px-8 pr-12 lg:pr-20 py-12 sm:py-16 flex flex-col lg:flex-row items-center justify-between gap-8'>
         {/* Left: Texts */}
         <div className='w-full lg:w-1/2 flex flex-col items-start text-left'>
           {/* Badge */}
