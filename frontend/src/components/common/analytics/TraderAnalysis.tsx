@@ -12,6 +12,9 @@ export default function TraderAnalysis() {
   );
   const [selectedTraderId, setSelectedTraderId] = useState<string | null>(null);
   const detailedSectionRef = useRef<HTMLDivElement>(null);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   const { committee } = useAuthStore();
   const committeeId = committee?.id;
@@ -28,7 +31,7 @@ export default function TraderAnalysis() {
     committeeId: committeeId || "",
     year: traderTimeFrame === "month" ? currentYear : undefined,
     month: traderTimeFrame === "month" ? currentMonth : undefined,
-    limit: 5,
+    limit: 1000, // Fetch all traders
   });
 
   const {
@@ -70,6 +73,26 @@ export default function TraderAnalysis() {
       quantity: item.totalQuantity,
     }));
   }, [traderData, traderTimeFrame]);
+
+  // Filtered traders by search
+  const filteredTraders = useMemo(() => {
+    if (!search.trim()) return processedTraders;
+    return processedTraders.filter((trader) =>
+      trader.name.toLowerCase().includes(search.trim().toLowerCase())
+    );
+  }, [processedTraders, search]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredTraders.length / PAGE_SIZE) || 1;
+  const paginatedTraders = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredTraders.slice(start, start + PAGE_SIZE);
+  }, [filteredTraders, page]);
+
+  useEffect(() => {
+    // Reset to first page if search changes or filteredTraders changes
+    setPage(1);
+  }, [search, traderTimeFrame]);
 
   const metrics = [
     {
@@ -240,24 +263,31 @@ export default function TraderAnalysis() {
 
       {/* Trader List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden w-full">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-xl font-bold text-gray-800">Top Traders</h3>
-          <p className="text-gray-500 mt-1">
-            {traderTimeFrame === "month" ? "This month" : "All time"} ranked by
-            trading value
-          </p>
+        <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-800">All Traders</h3>
+            <p className="text-gray-500 mt-1">
+              {traderTimeFrame === "month" ? "This month" : "All time"} ranked by trading value
+            </p>
+          </div>
+          <input
+            type="text"
+            className="mt-3 sm:mt-0 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400 w-full sm:w-64"
+            placeholder="Search traders by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-
         <div className="divide-y divide-gray-200">
           {traderLoading ? (
             <div className="flex items-center justify-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
-          ) : processedTraders.length > 0 ? (
-            processedTraders.map((trader) => (
-              <button
+          ) : paginatedTraders.length > 0 ? (
+            paginatedTraders.map((trader) => (
+              <div
                 key={trader.id}
-                className={`w-full text-left p-5 hover:bg-gray-50 transition-colors ${
+                className={`w-full text-left p-5 hover:bg-gray-50 transition-colors cursor-pointer ${
                   selectedTraderId === trader.id
                     ? "bg-blue-50 ring-2 ring-blue-200"
                     : ""
@@ -291,7 +321,7 @@ export default function TraderAnalysis() {
                     <div className="text-xs text-gray-500">Total value</div>
                   </div>
                 </div>
-              </button>
+              </div>
             ))
           ) : (
             <div className="flex items-center justify-center h-32 text-gray-500">
@@ -299,6 +329,28 @@ export default function TraderAnalysis() {
             </div>
           )}
         </div>
+        {/* Pagination Controls */}
+        {filteredTraders.length > PAGE_SIZE && (
+          <div className="flex justify-center items-center gap-4 py-4 bg-gray-50 border-t border-gray-200">
+            <button
+              className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 font-medium disabled:opacity-50"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </button>
+            <span className="text-gray-600 text-sm">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 font-medium disabled:opacity-50"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Trader Detailed Analytics Card */}
