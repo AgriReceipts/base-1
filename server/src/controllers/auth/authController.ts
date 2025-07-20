@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import prisma from "../../utils/database";
-import { handlePrismaError } from "../../utils/helpers";
-import { RegisterUserInput, RegisterUserSchema } from "../../types/auth";
+import {Request, Response} from 'express';
+import jwt from 'jsonwebtoken';
+import prisma from '../../utils/database';
+import {handlePrismaError} from '../../utils/helpers';
+import {RegisterUserInput, RegisterUserSchema} from '../../types/auth';
 
-// @desc    Register a new user
+// @desc    Register a new user (UNCHANGED)
 // @route   POST /api/auth/register
 // @access  Private (only to admin)
 export const registerUser = async (req: Request, res: Response) => {
@@ -14,7 +14,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     if (!parsed.success) {
       return res.status(400).json({
-        message: "Validation failed",
+        message: 'Validation failed',
         errors: parsed.error.flatten().fieldErrors,
       });
     }
@@ -23,32 +23,32 @@ export const registerUser = async (req: Request, res: Response) => {
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { username: data.username },
+      where: {username: data.username},
     });
 
     if (existingUser) {
       return res.status(409).json({
-        message: "Username already exists",
+        message: 'Username already exists',
       });
     }
 
     // Validate committee
     let committeeId: string | null = null;
 
-    if (data.role !== "ad") {
+    if (data.role !== 'ad') {
       if (!data.committeeName) {
         return res
           .status(400)
-          .json({ message: "committeeName is required for non-AD users" });
+          .json({message: 'committeeName is required for non-AD users'});
       }
 
       const committee = await prisma.committee.findUnique({
-        where: { name: data.committeeName },
+        where: {name: data.committeeName},
       });
 
       if (!committee) {
         return res.status(400).json({
-          message: "Invalid committee, does not exist",
+          message: 'Invalid committee, does not exist',
         });
       }
 
@@ -79,50 +79,34 @@ export const registerUser = async (req: Request, res: Response) => {
       },
     });
 
-    // Generate JWT
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) throw new Error("JWT_SECRET not defined");
-
-    const token = jwt.sign(
-      {
-        id: newUser.id,
-        role: newUser.role,
-        username: newUser.username,
-        committee: newUser.committee,
-      },
-      jwtSecret,
-      { expiresIn: "24h" },
-    );
-
     // Respond
     res.status(201).json({
-      message: "User registered successfully",
+      message: 'User registered successfully',
       user: newUser.username,
       password: data.password,
-      token,
     });
   } catch (error) {
     return handlePrismaError(res, error);
   }
 };
 
-// @desc    Logs in existing user
+// @desc    Logs in existing user (MODIFIED to use HttpOnly cookies)
 // @route   POST /api/auth/login
 // @access  Public
 export const login = async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const {username, password} = req.body;
 
     // Validate input
     if (!username || !password) {
       return res.status(400).json({
-        message: "Username and password are required",
+        message: 'Username and password are required',
       });
     }
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { username },
+      where: {username},
       include: {
         committee: {
           select: {
@@ -135,31 +119,31 @@ export const login = async (req: Request, res: Response) => {
 
     if (!user) {
       return res.status(401).json({
-        message: "Invalid credentials",
+        message: 'Invalid credentials',
       });
     }
 
     // Check if user is active
     if (!user.isActive) {
       return res.status(403).json({
-        message: "Account is deactivated",
+        message: 'Account is deactivated',
       });
     }
 
     // Verify password (direct comparison since no hashing)
     if (password !== user.password) {
       return res.status(401).json({
-        message: "Invalid credentials",
+        message: 'Invalid credentials',
       });
     }
 
     // Return user data (excluding password)
-    const { password: userPassword, ...userWithoutPassword } = user;
+    const {password: userPassword, ...userWithoutPassword} = user;
 
     // Generate JWT token
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      throw new Error("JWT_SECRET is not defined in environment variables");
+      throw new Error('JWT_SECRET is not defined in environment variables');
     }
 
     const token = jwt.sign(
@@ -170,17 +154,90 @@ export const login = async (req: Request, res: Response) => {
         committee: user.committee,
       },
       jwtSecret,
-      { expiresIn: "24h" },
+      {expiresIn: '24h'}
     );
 
+    // CHANGE 1: Set HttpOnly cookie instead of returning token
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // HTTPS in production
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    // CHANGE 2: Don't return token in response, return user data
     res.status(200).json({
-      message: "Login successful",
-      user: userWithoutPassword,
-      token,
+      message: 'Login successful',
+      user: {
+        name: userWithoutPassword.name,
+        designation: userWithoutPassword.designation,
+      },
+      role: userWithoutPassword.role,
+      committee: userWithoutPassword.committee,
     });
   } catch (error) {
     return handlePrismaError(res, error);
   }
+};
+
+// ADD: New endpoint to check auth status
+// @desc    Check if user is authenticated
+// @route   GET /api/auth/me
+// @access  Private (requires cookie)
+export const checkAuth = async (req: Request, res: Response) => {
+  try {
+    const token = req.cookies.auth_token;
+
+    if (!token) {
+      return res.status(401).json({message: 'Not authenticated'});
+    }
+
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET is not defined');
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, jwtSecret) as any;
+
+    // Get fresh user data from database
+    const user = await prisma.user.findUnique({
+      where: {id: decoded.id},
+      include: {
+        committee: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({message: 'User not found or inactive'});
+    }
+
+    res.json({
+      user: {
+        name: user.name,
+        designation: user.designation,
+      },
+      role: user.role,
+      committee: user.committee,
+    });
+  } catch (error) {
+    return res.status(401).json({message: 'Invalid token'});
+  }
+};
+
+// ADD: New endpoint to logout
+// @desc    Logout user
+// @route   POST /api/auth/logout
+// @access  Private
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie('auth_token');
+  res.json({message: 'Logged out successfully'});
 };
 
 // @desc    Get all users with their details
@@ -206,7 +263,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
         },
       },
       orderBy: {
-        username: "asc",
+        username: 'asc',
       },
     });
 
@@ -222,7 +279,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
     }));
 
     res.status(200).json({
-      message: "Users retrieved successfully",
+      message: 'Users retrieved successfully',
       users: formattedUsers,
     });
   } catch (error) {
@@ -235,11 +292,11 @@ export const getAllUsers = async (req: Request, res: Response) => {
 // @access  Private (only to admin)
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const {id} = req.params;
 
     if (!id) {
       return res.status(401).json({
-        message: "User id is required",
+        message: 'User id is required',
       });
     }
     const userId = id as string;
@@ -253,7 +310,7 @@ export const deleteUser = async (req: Request, res: Response) => {
       },
     });
     return res.status(200).json({
-      message: "User deleted successfully  ",
+      message: 'User deleted successfully  ',
     });
   } catch (error) {
     return handlePrismaError(res, error);

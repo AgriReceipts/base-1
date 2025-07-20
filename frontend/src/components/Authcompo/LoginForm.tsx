@@ -1,69 +1,52 @@
-import React, {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {handleJwtLogin} from '../../stores/authStore';
 import AuthCard from './AuthCard';
-
-import api from '@/lib/axiosInstance';
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const navigate = useNavigate();
 
-  // Reset error when user types again
   useEffect(() => {
     if (error) setError(null);
   }, [username, password]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  interface LoginResult {
+    success: boolean;
+    error?: string;
+  }
+
+  interface LoginCredentials {
+    username: string;
+    password: string;
+  }
+
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
     setError(null);
+    setIsSubmitting(true);
 
     try {
-      const res = await api.post('auth/login', {
-        username,
-        password,
-      });
-      const result = handleJwtLogin(res.data.token);
+      const credentials: LoginCredentials = {username, password};
+      const result: LoginResult = await handleJwtLogin(credentials);
+
       if (result.success) {
-        // Login successful
+        localStorage.removeItem('activeNav');
+
+        // ✅ FIX: Always navigate to '/dashboard' after a successful login.
+        // The DashboardPage component will handle rendering the correct view.
+        navigate('/dashboard');
       } else {
-        // Handle login error
-        console.error('Login failed:', result.error);
+        setError(result.error || 'Login failed. Please try again.');
       }
-      localStorage.removeItem('activeNav');
-
-      switch (result.decoded?.role) {
-        case 'deo':
-          navigate('/deo');
-          break;
-        case 'supervisor':
-          navigate('/supervisor');
-          break;
-        case 'ad':
-          navigate('/ad');
-          break;
-        case 'secretary':
-          navigate('/secretary');
-          break;
-
-        default:
-          navigate('/');
-          break;
-      }
-    } catch (err: any) {
-      const backendMessage =
-        err.response?.data?.message ||
-        (Array.isArray(err.response?.data?.errors)
-          ? err.response.data.errors.join(', ')
-          : null);
-
-      setError(backendMessage || 'Login failed. Please try again.');
+    } catch (err: unknown) {
+      console.error('Login failed:', err);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

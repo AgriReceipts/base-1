@@ -1,25 +1,28 @@
-import { Router } from "express";
-import { authorizeRoles } from "../middleware/roleAccess";
-import { authenticateUser } from "../middleware/auth";
+import {Router} from 'express';
+import {authorizeRoles} from '../middleware/roleAccess';
+import {authenticateUser} from '../middleware/auth';
 import {
+  checkAuth,
   deleteUser,
   getAllUsers,
   login,
+  logout,
   registerUser,
-} from "../controllers/auth/authController";
-import { w } from "@faker-js/faker/dist/airline-CLphikKp";
+} from '../controllers/auth/authController';
 
 const authRoutes = Router();
 
 authRoutes.post(
-  "/register",
+  '/register',
   authenticateUser,
-  authorizeRoles("ad"),
-  registerUser,
+  authorizeRoles('ad'),
+  registerUser
 );
-authRoutes.post("/login", login);
-authRoutes.get("/users", authenticateUser, authorizeRoles("ad"), getAllUsers);
+authRoutes.post('/login', login);
+authRoutes.get('/me', checkAuth);
+authRoutes.post('/logout', logout);
+authRoutes.get('/users', authenticateUser, authorizeRoles('ad'), getAllUsers);
 //authRoutes.post('/deactivate/:id',deactivate)
-authRoutes.delete("/delete/:id", authenticateUser, deleteUser);
+authRoutes.delete('/delete/:id', authenticateUser, deleteUser);
 
 export default authRoutes;

@@ -1,8 +1,6 @@
-import {z} from 'zod';
 import {create} from 'zustand';
-import {jwtDecode} from 'jwt-decode';
 
-// ------------------ Types ------------------
+// ------------------ Types (UNCHANGED) ------------------
 
 interface User {
   name: string;
@@ -27,56 +25,24 @@ type AuthState = {
     committee: Committee | null;
   }) => void;
   logout: () => void;
-  initialize: () => void;
+  initialize: () => Promise<void>;
 };
 
-// JWT Payload interface to match your actual JWT structure
-interface JwtPayload {
-  id: string;
-  role: UserRole;
-  username: string;
-  committee?: Committee;
-  iat: number;
-  exp: number;
-}
+// ------------------ API Helper ------------------
+//const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-// ------------------ Zod Schemas ------------------
-
-const UserSchema = z.object({
-  name: z.string(),
-  designation: z.string(),
-});
-
-const CommitteeSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-});
-
-// ------------------ Safe Parser ------------------
-
-const safeParseWithSchema = <T,>(
-  str: string | null,
-  schema: z.ZodSchema<T>,
-  label: string
-): T | null => {
-  try {
-    const json = JSON.parse(str || '');
-    const result = schema.safeParse(json);
-    if (!result.success) {
-      console.warn(
-        `[AuthStore] ${label} failed schema validation:`,
-        result.error.format()
-      );
-      return null;
-    }
-    return result.data;
-  } catch (err) {
-    console.error(`[AuthStore] Failed to parse ${label}:`, str, err);
-    return null;
-  }
+const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
+  return fetch(`/api/${endpoint}`, {
+    credentials: 'include', // Include cookies
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
 };
 
-// ------------------ Zustand Store ------------------
+// ------------------ Zustand Store (MINIMAL CHANGES) ------------------
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -85,105 +51,93 @@ export const useAuthStore = create<AuthState>((set) => ({
   isInitialized: false,
 
   login: ({user, role, committee}) => {
-    // Note: Storing user data in localStorage for persistence
-    // In a real app, you might want to only store the token
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('role', role ?? '');
-    if (committee) {
-      localStorage.setItem('committee', JSON.stringify(committee));
-    } else {
-      localStorage.removeItem('committee');
-    }
+    // Remove localStorage usage, just set state
     set({user, role, committee});
   },
 
   logout: () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('role');
-    localStorage.removeItem('committee');
-    localStorage.removeItem('token'); // Also remove token on logout
+    // Call logout API to clear HttpOnly cookies
+    apiRequest('auth/logout', {method: 'POST'}).catch(console.error);
     set({user: null, role: null, committee: null});
   },
 
-  initialize: () => {
+  initialize: async () => {
     try {
-      const userStr = localStorage.getItem('user');
-      const committeeStr = localStorage.getItem('committee');
-      const roleStr = localStorage.getItem('role');
+      // Check auth status from server instead of localStorage
+      const response = await apiRequest('auth/me');
 
-      const user = userStr
-        ? safeParseWithSchema(userStr, UserSchema, 'user')
-        : null;
-      const committee = committeeStr
-        ? safeParseWithSchema(committeeStr, CommitteeSchema, 'committee')
-        : null;
-      const role = (roleStr ?? null) as UserRole;
-
-      set({user, role, committee, isInitialized: true});
+      if (response.ok) {
+        const userData = await response.json();
+        set({
+          user: userData.user,
+          role: userData.role,
+          committee: userData.committee,
+          isInitialized: true,
+        });
+      } else {
+        set({
+          user: null,
+          role: null,
+          committee: null,
+          isInitialized: true,
+        });
+      }
     } catch (error) {
-      console.error(
-        '[AuthStore] Failed to initialize from localStorage. Logging out.',
-        error
-      );
-      useAuthStore.getState().logout();
+      console.error('[AuthStore] Failed to initialize from server.', error);
+      set({
+        user: null,
+        role: null,
+        committee: null,
+        isInitialized: true,
+      });
     }
   },
 }));
 
-// ------------------ JWT Login Helper ------------------
+// ------------------ Updated Login Helper ------------------
 
-export const handleJwtLogin = (token: string) => {
+export const handleJwtLogin = async (credentials: {
+  username: string;
+  password: string;
+}) => {
   try {
-    // Store the token
-    localStorage.setItem('token', token);
-
-    // Decode the JWT
-    const decoded = jwtDecode<JwtPayload>(token);
-
-    // Use the store's login method with corrected mapping
-    useAuthStore.getState().login({
-      user: {
-        name: decoded.username, // JWT has 'username'
-        designation: decoded.role || 'unknown', // JWT has 'role'
-      },
-      role: decoded.role,
-      committee: decoded.committee ?? null,
+    const response = await apiRequest('auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
     });
 
-    return {success: true, decoded};
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {success: false, error: errorData.message || 'Login failed'};
+    }
+
+    const data = await response.json();
+
+    // Use the store's login method to set the state immediately
+    useAuthStore.getState().login({
+      user: {
+        name: data.user.name,
+        designation: data.user.designation,
+      },
+      role: data.user.role,
+      committee: data.user.committee || null,
+    });
+
+    // Also refresh from server to ensure consistency
+    await useAuthStore.getState().initialize();
+
+    return {success: true, data};
   } catch (error) {
-    console.error('Failed to process JWT login:', error);
-    localStorage.removeItem('token');
+    console.error('Failed to process login:', error);
     return {success: false, error};
   }
 };
 
-// ------------------ Token Validation Helper ------------------
+// ------------------ Initialize from Server (replaces initializeFromToken) ------------------
 
-export const isTokenValid = (token: string | null): boolean => {
-  if (!token) return false;
-
-  try {
-    const decoded = jwtDecode<JwtPayload>(token);
-    const currentTime = Date.now() / 1000;
-    return decoded.exp > currentTime;
-  } catch {
-    return false;
-  }
+export const initializeFromServer = async () => {
+  await useAuthStore.getState().initialize();
 };
 
-// ------------------ Initialize from Token ------------------
-
-export const initializeFromToken = () => {
-  const token = localStorage.getItem('token');
-
-  if (token && isTokenValid(token)) {
-    handleJwtLogin(token);
-  } else {
-    // Token is invalid or expired, clean up
-    useAuthStore.getState().logout();
-  }
-
-  // Mark as initialized regardless
-  useAuthStore.setState({isInitialized: true});
-};
+// Keep the old function name for compatibility
+export const initializeFromToken = initializeFromServer;
