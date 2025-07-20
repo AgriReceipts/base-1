@@ -1,4 +1,4 @@
-import {useState, useMemo} from 'react';
+import {useState, useMemo, useRef, useEffect} from 'react';
 import AreaChartComponent from './AreaChartComponent';
 import {useAuthStore} from '@/stores/authStore';
 import {useCommitteeAnalytics} from '@/hooks/analytics/useCommitteeAnalytics';
@@ -19,6 +19,7 @@ export default function CommitteeAnalysis() {
   const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(
     null
   );
+  const detailedSectionRef = useRef<HTMLDivElement>(null);
 
   const {committee} = useAuthStore();
   const committeeId = committee?.id;
@@ -112,6 +113,17 @@ export default function CommitteeAnalysis() {
       return committeeData.currentFinancialYear?.totalFees || 0;
     }
   }, [committeeData, locationTimeFrame]);
+
+  useEffect(() => {
+    if (selectedCommodityId && detailedSectionRef.current) {
+      setTimeout(() => {
+        detailedSectionRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
+    }
+  }, [selectedCommodityId, detailedCommodityData]);
 
   if (committeeLoading && commodityLoading) {
     return (
@@ -253,15 +265,11 @@ export default function CommitteeAnalysis() {
                     selectedCommodityId === c.id ? 'ring-2 ring-blue-400' : ''
                   }`}
                   onClick={() => setSelectedCommodityId(c.id)}>
-                  <div>
-                    <div className='font-semibold text-lg text-left'>
-                      {c.name}
-                    </div>
-                    <div className='text-gray-500 text-sm'>
-                      {c.receipts} receipts
-                    </div>
+                  <div className="flex flex-col items-start text-left">
+                    <div className='font-semibold text-lg'>{c.name}</div>
+                    <div className='text-gray-500 text-sm'>{c.receipts} receipts</div>
                   </div>
-                  <div className='text-right'>
+                  <div className="flex flex-col items-end text-right">
                     <div className='font-bold text-xl'>{c.value}</div>
                     <div className='text-xs text-gray-500'>Total Value</div>
                   </div>
@@ -277,7 +285,7 @@ export default function CommitteeAnalysis() {
       </div>
 
       {selectedCommodityId && (
-        <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6'>
+        <div ref={detailedSectionRef} className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6'>
           {detailedLoading ? (
             <div className='flex items-center justify-center h-64'>
               <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>

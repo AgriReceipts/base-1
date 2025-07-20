@@ -303,7 +303,7 @@ export default function TraderAnalysis() {
 
       {/* Trader Detailed Analytics Card */}
       {selectedTraderId && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+        <div ref={detailedSectionRef} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
           {detailedLoading ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
