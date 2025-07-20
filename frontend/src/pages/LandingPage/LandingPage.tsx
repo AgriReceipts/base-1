@@ -55,7 +55,7 @@ const Header = () => {
       className={`fixed w-full z-50 transition-all duration-300 ${
         scrolled ? 'py-2' : 'py-4'
       }`}>
-      <div className='max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center'>
         <motion.div
           initial={{opacity: 0, x: -20}}
           animate={{opacity: 1, x: 0}}
@@ -81,7 +81,7 @@ const Header = () => {
             {!scrolled && (
               <>
                 <p className='text-xs text-gray-500 hidden sm:block'>
-                  Digital Receipts for Agricultural Marketing Committees
+                  Digital Receipts for Agricultural Market Committees
                 </p>
                 <motion.span
                   className='text-xs text-green-600 font-semibold hidden sm:block'
@@ -164,6 +164,7 @@ const Header = () => {
 const Hero = () => {
   const controls = useAnimation();
   const [ref, inView] = useInView({threshold: 0.1});
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (inView) {
@@ -195,19 +196,19 @@ const Hero = () => {
           </h1>
           {/* Supporting paragraph */}
           <p className='text-lg text-gray-500 mb-6 max-w-2xl'>
-            Transform your agricultural transactions with secure, digital
-            receipts. Verify authenticity instantly and build trust across the
-            entire supply chain.
+            Transform your transactions with secure, digital receipts. <br></br>
+            Verify authenticity instantly and build trust across the entire
+            supply chain.
           </p>
           {/* Primary action button */}
           <div>
-            <a
-              href='/verifyReceipt'
-              className='flex items-center gap-2 px-7 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow transition-all text-lg'>
+            <button
+              className='flex items-center gap-2 px-7 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow transition-all text-lg'
+              onClick={() => navigate('/verifyReceipt')}>
               <svg
-                className='w-5 h-5 mr-1'
+                className='w-8 h-8 mr-0.5'
                 fill='none'
-                stroke='currentColor'
+                stroke='white'
                 strokeWidth='2'
                 viewBox='0 0 24 24'>
                 <path
@@ -217,7 +218,7 @@ const Hero = () => {
                 />
               </svg>
               Verify Receipt
-            </a>
+            </button>
           </div>
         </div>
         {/* Right: Animated Image as before */}
@@ -231,13 +232,10 @@ const Hero = () => {
             animate={{y: [0, -10, 0]}}
             transition={{repeat: Infinity, duration: 6, ease: 'easeInOut'}}>
             <img
-              src='https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-              alt='Farmers using Agri Receipts platform'
+              src='/hybrid-rice.jpeg'
+              alt='Hybrid rice field'
               className='w-full h-auto'
             />
-            <div className='text-center text-xs text-gray-500 mt-2 px-4'>
-              Trusted by committees and farmers across the region.
-            </div>
           </motion.div>
         </motion.div>
       </div>
@@ -304,17 +302,17 @@ const AddReceiptsFeature = () => {
   const StaticFormMockup = () => (
     <div className='w-full max-w-xs sm:max-w-sm bg-gray-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6'>
       <h4 className='text-base sm:text-lg font-semibold mb-4 text-green-700'>
-        New Digital Receipt
+        New Receipt- AMC Kakinada Rural
       </h4>
       <div className='space-y-2 sm:space-y-3'>
         <input
           className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm'
-          placeholder='Buyer Name'
+          placeholder='Payee Name'
           disabled
         />
         <input
           className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm'
-          placeholder='Seller Name'
+          placeholder='Farmer/Trader Name'
           disabled
         />
         <input
@@ -324,18 +322,13 @@ const AddReceiptsFeature = () => {
         />
         <input
           className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm'
-          placeholder='Amount (kg)'
-          disabled
-        />
-        <input
-          className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm'
-          placeholder='Price per kg'
+          placeholder='Fees Paid (mf)'
           disabled
         />
         <button
           className='w-full mt-2 py-2 bg-green-500 text-white rounded-md font-semibold cursor-not-allowed opacity-70 text-sm'
           disabled>
-          Generate Digital Receipt
+          Generate Receipt
         </button>
       </div>
     </div>
@@ -344,35 +337,49 @@ const AddReceiptsFeature = () => {
   const StaticTableMockup = () => (
     <div className='w-full max-w-xs sm:max-w-sm md:max-w-md bg-gray-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 overflow-x-auto'>
       <h4 className='text-base sm:text-lg font-semibold mb-4 text-green-700'>
-        Recent Receipts
+        Recent Receipts Updated
       </h4>
       <table className='min-w-full text-xs sm:text-sm text-left'>
         <thead>
           <tr>
-            <th className='px-2 py-1 font-semibold text-gray-700'>ID</th>
-            <th className='px-2 py-1 font-semibold text-gray-700'>Buyer</th>
-            <th className='px-2 py-1 font-semibold text-gray-700'>Commodity</th>
-            <th className='px-2 py-1 font-semibold text-gray-700'>Status</th>
+            <th className='px-2 py-1 font-semibold text-gray-700'>
+              Book/Receipt Number
+            </th>
+            <th className='px-2 py-1 font-semibold text-gray-700'>
+              Payee Details
+            </th>
+            <th className='px-2 py-1 font-semibold text-gray-700'>
+              Commodity Details
+            </th>
+            <th className='px-2 py-1 font-semibold text-gray-700'>
+              Nature of Receipt
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td className='px-2 py-1'>RCPT-001</td>
-            <td className='px-2 py-1'>Sunshine Farms</td>
+            <td className='px-2 py-1'>05-2502</td>
+            <td className='px-2 py-1'>Sai Farms</td>
             <td className='px-2 py-1'>Wheat</td>
-            <td className='px-2 py-1 text-green-600 font-semibold'>Verified</td>
+            <td className='px-2 py-1 text-green-600 font-semibold'>
+              Market Fees
+            </td>
           </tr>
           <tr>
-            <td className='px-2 py-1'>RCPT-002</td>
-            <td className='px-2 py-1'>Green Valley</td>
-            <td className='px-2 py-1'>Corn</td>
-            <td className='px-2 py-1 text-yellow-600 font-semibold'>Pending</td>
+            <td className='px-2 py-1'>06-1405</td>
+            <td className='px-2 py-1'>Sri Valley</td>
+            <td className='px-2 py-1'>Cattle</td>
+            <td className='px-2 py-1 text-yellow-600 font-semibold'>
+              User Charges
+            </td>
           </tr>
           <tr>
             <td className='px-2 py-1'>RCPT-003</td>
             <td className='px-2 py-1'>Riverbend</td>
             <td className='px-2 py-1'>Rice</td>
-            <td className='px-2 py-1 text-green-600 font-semibold'>Verified</td>
+            <td className='px-2 py-1 text-green-600 font-semibold'>
+              Market Fees
+            </td>
           </tr>
         </tbody>
       </table>
@@ -396,7 +403,7 @@ const AddReceiptsFeature = () => {
           </h2>
           <p className='text-base sm:text-lg text-gray-600 mt-4 max-w-2xl mx-auto'>
             Explore the powerful features that make Agri Receipts indispensable
-            for modern agriculture.
+            for AMC's.
           </p>
           <div className='flex justify-center mt-4'>
             <span className='block w-16 sm:w-24 h-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500'></span>
@@ -418,8 +425,8 @@ const AddReceiptsFeature = () => {
           visual={<StaticTableMockup />}
           reverse
           subPoints={[
-            'Search and filter by buyer, commodity, or status',
-            'Export receipts for reporting or compliance',
+            'Search and filter by payee, commodity, or nature of receipt',
+            'Export receipts for reporting or auditing',
             'Quickly find any receipt, anytime',
           ]}
         />
@@ -450,7 +457,7 @@ const ImpactSection = () => {
           Discover how Agri Receipts transforms agricultural transactions for
           everyone involved.
         </p>
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 w-full'>
           <div className='p-4 sm:p-6 bg-green-50 rounded-xl shadow flex flex-col items-center'>
             <DocumentIcon className='w-8 sm:w-10 h-8 sm:h-10 text-green-500 mb-4' />
             <h3 className='font-semibold text-base sm:text-lg mb-2'>
@@ -548,7 +555,7 @@ const cardFeatures: {
     subPoints: [
       'Export data for compliance or review',
       'Customizable report formats',
-      'Share insights with stakeholders easily',
+      'Get insights and committe progress easily',
     ],
   },
   {
@@ -572,7 +579,7 @@ const cardFeatures: {
     subPoints: [
       'Granular permissions for every user type',
       'Secure authentication for all actions',
-      'Peace of mind for committees and traders',
+      'Peace of mind for AMC committees',
     ],
   },
 ];
@@ -745,18 +752,25 @@ const LandingPage = () => {
         </div>
       </div>
       <div ref={(ref) => registerRef('footer', ref)}>
-        <footer className='bg-gradient-to-br from-green-900 to-emerald-900 text-gray-100 pt-12 pb-2 border-t border-green-800'>
+        <footer className='bg-gradient-to-br from-green-900 to-emerald-900 text-gray-100 pt-14 pb-3 border-t-2 border-green-800 shadow-inner'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start gap-10'>
-            {/* Left: Logo and Navigation */}
+            {/* Left: Navigation */}
             <div className='w-full md:w-1/4 flex flex-col items-start mb-8 md:mb-0'>
-              <div className='flex items-center mb-4'>
-                <img
-                  src={logo}
-                  alt='Agri Receipts Logo'
-                  className='h-10 w-auto mr-3 rounded-lg bg-white p-1'
-                />
-                <span className='text-xl font-bold text-white'>
-                  Agri Receipts
+              <div className='flex items-center gap-2 mb-4'>
+                <svg
+                  className='w-6 h-6 text-green-300'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='M3 7h18M3 12h18M3 17h18'
+                  />
+                </svg>
+                <span className='text-xl font-bold text-white tracking-wide'>
+                  Navigation
                 </span>
               </div>
               <nav>
@@ -764,28 +778,28 @@ const LandingPage = () => {
                   <li>
                     <a
                       href='#hero'
-                      className='text-gray-300 hover:text-white text-sm'>
+                      className='text-gray-300 hover:text-green-300 text-sm transition'>
                       Home
                     </a>
                   </li>
                   <li>
                     <a
                       href='#impact'
-                      className='text-gray-300 hover:text-white text-sm'>
+                      className='text-gray-300 hover:text-green-300 text-sm transition'>
                       Why Agri Receipts
                     </a>
                   </li>
                   <li>
                     <a
                       href='#add-receipts'
-                      className='text-gray-300 hover:text-white text-sm'>
+                      className='text-gray-300 hover:text-green-300 text-sm transition'>
                       Features
                     </a>
                   </li>
                   <li>
                     <a
                       href='#committees'
-                      className='text-gray-300 hover:text-white text-sm'>
+                      className='text-gray-300 hover:text-green-300 text-sm transition'>
                       Committees
                     </a>
                   </li>
@@ -794,39 +808,55 @@ const LandingPage = () => {
             </div>
             {/* Center: Contributors */}
             <div className='w-full md:w-2/4 flex flex-col items-center'>
-              {/* Contributors heading */}
-              <h3 className='text-3xl font-bold mb-6 tracking-wider text-white'>
-                Contributors
-              </h3>
+              <div className='flex items-center gap-2 mb-6'>
+                <svg
+                  className='w-6 h-6 text-yellow-300'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='M12 4v16m8-8H4'
+                  />
+                </svg>
+                <h3 className='text-xl font-bold tracking-wider text-white'>
+                  Contributors
+                </h3>
+              </div>
               <div className='flex flex-col sm:flex-row gap-6 w-full justify-center'>
-                {/* Srivathsa */}
-                <div className='bg-white/10 hover:bg-white/20 transition-colors rounded-xl shadow-lg border border-emerald-300 flex-1 flex flex-col items-center px-4 py-4 min-w-[120px] max-w-[160px]'>
-                  <div className='bg-gray-200 w-12 h-12 flex items-center justify-center rounded-full shadow mb-2'>
-                    <span className='text-lg font-bold text-gray-700'>S</span>
+                {/* Contributor 1 */}
+                <div className='flex-1 max-w-xs bg-white/10 rounded-2xl shadow-lg border border-emerald-300 flex flex-col items-center px-6 py-6 mx-auto'>
+                  <div className='bg-gray-200 w-16 h-16 flex items-center justify-center rounded-full shadow mb-3 text-2xl font-bold text-gray-700'>
+                    S
                   </div>
-                  <span className='text-base text-white font-semibold mb-1'>
+                  <span className='text-lg text-white font-semibold mb-1'>
                     Srivathsa
                   </span>
-                  <div className='flex gap-2 mb-2'>
+                  <span className='text-xs text-gray-300 mb-2'>
+                    Lead Developer
+                  </span>
+                  <div className='flex gap-3 mb-2'>
                     <a
-                      href='https://www.linkedin.com/in/srivathsa/'
+                      href='https://www.linkedin.com/in/srivathsa252/'
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='text-blue-100 hover:text-blue-300'>
+                      className='hover:scale-110 transition'>
                       <svg
-                        className='w-5 h-5'
+                        className='w-5 h-5 text-blue-200 hover:text-blue-400'
                         fill='currentColor'
                         viewBox='0 0 24 24'>
                         <path d='M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-9h3v9zm-1.5-10.28c-.97 0-1.75-.79-1.75-1.75s.78-1.75 1.75-1.75 1.75.79 1.75 1.75-.78 1.75-1.75 1.75zm15.5 10.28h-3v-4.5c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.58h-3v-9h2.89v1.23h.04c.4-.75 1.37-1.54 2.82-1.54 3.01 0 3.57 1.98 3.57 4.56v4.75z' />
                       </svg>
                     </a>
                     <a
-                      href='https://github.com/srivathsa'
+                      href='https://github.com/srivathsa252'
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='text-gray-100 hover:text-white'>
+                      className='hover:scale-110 transition'>
                       <svg
-                        className='w-5 h-5'
+                        className='w-5 h-5 text-gray-200 hover:text-white'
                         fill='currentColor'
                         viewBox='0 0 24 24'>
                         <path d='M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.262.82-.582 0-.288-.01-1.05-.015-2.06-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.304-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3.003-.404c1.02.005 2.047.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.873.12 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.803 5.624-5.475 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.898-.015 3.293 0 .322.218.698.825.58C20.565 21.796 24 17.297 24 12c0-6.63-5.37-12-12-12z' />
@@ -834,34 +864,37 @@ const LandingPage = () => {
                     </a>
                   </div>
                 </div>
-                {/* Ajay */}
-                <div className='bg-white/10 hover:bg-white/20 transition-colors rounded-xl shadow-lg border border-emerald-300 flex-1 flex flex-col items-center px-4 py-4 min-w-[120px] max-w-[160px]'>
-                  <div className='bg-gray-200 w-12 h-12 flex items-center justify-center rounded-full shadow mb-2'>
-                    <span className='text-lg font-bold text-gray-700'>A</span>
+                {/* Contributor 2 */}
+                <div className='flex-1 max-w-xs bg-white/10 rounded-2xl shadow-lg border border-emerald-300 flex flex-col items-center px-6 py-6 mx-auto'>
+                  <div className='bg-gray-200 w-16 h-16 flex items-center justify-center rounded-full shadow mb-3 text-2xl font-bold text-gray-700'>
+                    A
                   </div>
-                  <span className='text-base text-white font-semibold mb-1'>
+                  <span className='text-lg text-white font-semibold mb-1'>
                     Ajay
                   </span>
-                  <div className='flex gap-2 mb-2'>
+                  <span className='text-xs text-gray-300 mb-2'>
+                    Full Stack Developer
+                  </span>
+                  <div className='flex gap-3 mb-2'>
                     <a
-                      href='https://www.linkedin.com/in/ajay/'
+                      href='https://www.linkedin.com/in/ajay-chandra-01565a24a/'
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='text-blue-100 hover:text-blue-300'>
+                      className='hover:scale-110 transition'>
                       <svg
-                        className='w-5 h-5'
+                        className='w-5 h-5 text-blue-200 hover:text-blue-400'
                         fill='currentColor'
                         viewBox='0 0 24 24'>
                         <path d='M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-9h3v9zm-1.5-10.28c-.97 0-1.75-.79-1.75-1.75s.78-1.75 1.75-1.75 1.75.79 1.75 1.75-.78 1.75-1.75 1.75zm15.5 10.28h-3v-4.5c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.58h-3v-9h2.89v1.23h.04c.4-.75 1.37-1.54 2.82-1.54 3.01 0 3.57 1.98 3.57 4.56v4.75z' />
                       </svg>
                     </a>
                     <a
-                      href='https://github.com/ajay'
+                      href='https://github.com/ajay-v11'
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='text-gray-100 hover:text-white'>
+                      className='hover:scale-110 transition'>
                       <svg
-                        className='w-5 h-5'
+                        className='w-5 h-5 text-gray-200 hover:text-white'
                         fill='currentColor'
                         viewBox='0 0 24 24'>
                         <path d='M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.262.82-.582 0-.288-.01-1.05-.015-2.06-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.304-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3.003-.404c1.02.005 2.047.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.873.12 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.803 5.624-5.475 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.898-.015 3.293 0 .322.218.698.825.58C20.565 21.796 24 17.297 24 12c0-6.63-5.37-12-12-12z' />
@@ -869,34 +902,37 @@ const LandingPage = () => {
                     </a>
                   </div>
                 </div>
-                {/* Sasi Kumar */}
-                <div className='bg-white/10 hover:bg-white/20 transition-colors rounded-xl shadow-lg border border-emerald-300 flex-1 flex flex-col items-center px-4 py-4 min-w-[120px] max-w-[160px]'>
-                  <div className='bg-gray-200 w-12 h-12 flex items-center justify-center rounded-full shadow mb-2'>
-                    <span className='text-lg font-bold text-gray-700'>S</span>
+                {/* Contributor 3 */}
+                <div className='flex-1 max-w-xs bg-white/10 rounded-2xl shadow-lg border border-emerald-300 flex flex-col items-center px-6 py-6 mx-auto'>
+                  <div className='bg-gray-200 w-16 h-16 flex items-center justify-center rounded-full shadow mb-3 text-2xl font-bold text-gray-700'>
+                    S
                   </div>
-                  <span className='text-base text-white font-semibold mb-1'>
+                  <span className='text-lg text-white font-semibold mb-1'>
                     Sasi Kumar
                   </span>
-                  <div className='flex gap-2 mb-2'>
+                  <span className='text-xs text-gray-300 mb-2'>
+                    Full Stack Developer
+                  </span>
+                  <div className='flex gap-3 mb-2'>
                     <a
-                      href='https://www.linkedin.com/in/sasikumar/'
+                      href='https://www.linkedin.com/in/sasi-kumar-kolli-6596b9259/'
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='text-blue-100 hover:text-blue-300'>
+                      className='hover:scale-110 transition'>
                       <svg
-                        className='w-5 h-5'
+                        className='w-5 h-5 text-blue-200 hover:text-blue-400'
                         fill='currentColor'
                         viewBox='0 0 24 24'>
                         <path d='M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-9h3v9zm-1.5-10.28c-.97 0-1.75-.79-1.75-1.75s.78-1.75 1.75-1.75 1.75.79 1.75 1.75-.78 1.75-1.75 1.75zm15.5 10.28h-3v-4.5c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.58h-3v-9h2.89v1.23h.04c.4-.75 1.37-1.54 2.82-1.54 3.01 0 3.57 1.98 3.57 4.56v4.75z' />
                       </svg>
                     </a>
                     <a
-                      href='https://github.com/sasikumar'
+                      href='https://github.com/sasikumar272004e'
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='text-gray-100 hover:text-white'>
+                      className='hover:scale-110 transition'>
                       <svg
-                        className='w-5 h-5'
+                        className='w-5 h-5 text-gray-200 hover:text-white'
                         fill='currentColor'
                         viewBox='0 0 24 24'>
                         <path d='M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.262.82-.582 0-.288-.01-1.05-.015-2.06-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.304-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3.003-.404c1.02.005 2.047.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.873.12 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.803 5.624-5.475 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.898-.015 3.293 0 .322.218.698.825.58C20.565 21.796 24 17.297 24 12c0-6.63-5.37-12-12-12z' />
@@ -907,9 +943,9 @@ const LandingPage = () => {
               </div>
             </div>
             {/* Right: Contact Us */}
-            <div className='w-full md:w-1/4 flex flex-col items-start md:items-end justify-center mt-8 md:mt-0 pr-0 md:pr-12 lg:pr-16'>
-              <div className='flex flex-col justify-center h-full w-full md:items-end'>
-                <h3 className='text-xl md:text-2xl font-bold text-white flex items-center gap-2 mb-2'>
+            <div className='w-full md:w-1/4 flex flex-col items-center md:items-end justify-center mt-8 md:mt-0 pr-0 md:pr-12 lg:pr-16'>
+              <div className='flex flex-col justify-center h-full w-full md:items-end items-center'>
+                <div className='flex items-center gap-2 mb-2'>
                   <svg
                     className='w-6 h-6 text-green-400'
                     fill='none'
@@ -922,16 +958,17 @@ const LandingPage = () => {
                       d='M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2m18 0v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8m18 0l-9 6l-9-6'
                     />
                   </svg>
-                  Contact Us
-                </h3>
-                <div className='w-8 h-1 bg-green-500 rounded mb-4'></div>
-                <p className='text-sm text-gray-200 mb-4 max-w-xs text-left md:text-right'>
-                  For any complaints or suggestions, feel free to reach out to
-                  us via email.
+                  <h3 className='text-xl md:text-2xl font-bold text-white text-right'>
+                    Contact Us
+                  </h3>
+                </div>
+                <div className='w-8 h-1 bg-green-500 rounded mb-4 self-end md:self-end'></div>
+                <p className='text-sm text-gray-200 mb-4 max-w-xs text-center md:text-right'>
+                  For any suggestions, feel free to reach out to us via email.
                 </p>
                 <a
                   href='mailto:agrireceipts@gmail.com'
-                  className='inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition-all w-full md:w-auto mb-3 justify-center'
+                  className='inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition-all w-full max-w-md mb-3 justify-center text-center'
                   aria-label='Send us an email'>
                   <svg
                     className='w-4 h-4'
@@ -943,9 +980,9 @@ const LandingPage = () => {
                   </svg>
                   Send Email
                 </a>
-                <div className='flex items-center gap-2 w-full md:justify-end justify-center'>
+                <div className='flex items-center gap-2 w-full justify-center'>
                   <button
-                    className='block text-sm font-semibold text-gray-200 break-all text-center px-4 py-1 w-full md:w-auto max-w-[180px] mx-auto bg-white/10 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 transition-all'
+                    className='block text-sm font-semibold text-gray-200 break-all text-center px-4 py-1 w-full max-w-md mx-auto bg-white/10 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 transition-all text-center'
                     style={{cursor: 'pointer'}}
                     aria-label='Copy email address'
                     onClick={() => {
@@ -961,7 +998,7 @@ const LandingPage = () => {
             </div>
           </div>
           {/* Copyright line at the very bottom */}
-          <div className='w-full pt-6 mt-8 border-t border-green-800 text-center text-xs text-gray-300'>
+          <div className='w-full pt-6 mt-8 border-t border-green-800 text-center text-xs text-gray-400 tracking-wide'>
             © {new Date().getFullYear()} Agri Receipts. All rights reserved.
           </div>
         </footer>
