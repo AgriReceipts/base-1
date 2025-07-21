@@ -105,11 +105,13 @@ Username format:
 ##### ✅ Examples
 
 For `"Kakinada Rural"`:
+
 - `deo_kakinadarural`
 - `supervisor_kakinadarural`
 - `secretary_kakinadarural`
 
 For `"Pithapuram"`:
+
 - `deo_pithapuram`
 - `supervisor_pithapuram`
 - `secretary_pithapuram`
@@ -122,7 +124,6 @@ These users are **not tied to a committee**. Predefined usernames:
 
 - `ad_user1`
 - `ad_user2`
-- `ad_user3`
 
 ---
 
@@ -130,17 +131,16 @@ These users are **not tied to a committee**. Predefined usernames:
 
 You can use any of the following committee names when generating usernames:
 
-- Karapa  
-- Kakinada Rural  
-- Pithapuram  
-- Tuni  
-- Prathipadu  
-- Jaggampeta  
-- Peddapuram  
-- Samalkota  
+- Karapa
+- Kakinada Rural
+- Pithapuram
+- Tuni
+- Prathipadu
+- Jaggampeta
+- Peddapuram
+- Samalkota
 - Kakinada
 
 ---
 
 > ℹ️ This backend is designed to be paired with the Agri Receipts frontend. Make sure both services are running and connected to the same database.
-
