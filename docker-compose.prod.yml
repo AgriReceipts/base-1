@@ -28,7 +28,11 @@ services:
     restart: unless-stopped
     # This is the key line, just like your local setup
     env_file:
-      - server/.env
+      - server/.env.production
+    environment:
+      - FRONTEND_URL=https://www.agri-receipts.in
+      - NODE_ENV=production # Also important for security settings
+      - SESSION_SECRET=${SESSION_SECRET} # Make sure to set this in your .env file!
     expose:
       - '3000'
     depends_on:
@@ -46,4 +50,3 @@ volumes:
   redis_data:
   caddy_data:
   caddy_config:
- 
