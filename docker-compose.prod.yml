@@ -17,8 +17,12 @@ services:
 
   frontend:
     image: ghcr.io/agrireceipts/base-1-frontend:latest
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_BASE_URL=https://www.agri-receipts.in/api
     expose:
-      - '5173'
+      - '80'
     restart: unless-stopped
     depends_on:
       - server

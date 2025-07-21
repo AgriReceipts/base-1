@@ -11,21 +11,11 @@ import metaDataRoutes from './routes/metadata';
 import analyticsRoutes from './routes/analytics';
 import targetRoutes from './routes/target';
 import reportRoutes from './routes/report';
-import redis from './utils/redis';
-import session from 'express-session';
-import RedisStore from 'connect-redis';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-
-// Initialize RedisStore with session
-const RedisStoreConstructor = RedisStore(session);
-const redisStore = new RedisStoreConstructor({
-  client: redis,
-  prefix: 'session:',
-});
 
 // Security middleware
 app.use(helmet());
@@ -60,27 +50,6 @@ app.use(express.urlencoded({extended: true}));
 
 // Cookie parser
 app.use(cookieParser());
-
-app.use(
-  session({
-    store: redisStore,
-    secret:
-      process.env.SESSION_SECRET ||
-      (() => {
-        if (process.env.NODE_ENV === 'production') {
-          throw new Error('SESSION_SECRET must be set in production');
-        }
-        return 'dev-secret-key';
-      })(),
-    resave: false,
-    saveUninitialized: false, // Don't create sessions for unauthenticated users
-    cookie: {
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      httpOnly: true, // Prevents client-side JS from reading the cookie
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    },
-  })
-);
 
 // Simple health check endpoint
 app.get('/api/health', (req, res) => {
