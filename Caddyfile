@@ -1,0 +1,41 @@
+# Single domain setup
+www.agri-receipts.in {
+    # API routes
+    handle /api/* {
+        reverse_proxy server:3000
+    }
+    
+    # Health check
+    handle /health {
+        respond "OK" 200
+    }
+    
+    # Frontend (catch-all)
+    handle {
+        reverse_proxy frontend:5173
+        # Handle SPA routing
+        try_files {path} /index.html
+    }
+    
+    # Enable compression
+    encode gzip
+    
+    # Security headers
+    header {
+        # Enable HSTS
+        Strict-Transport-Security max-age=31536000;
+        # Prevent MIME sniffing
+        X-Content-Type-Options nosniff
+        # Prevent clickjacking
+        X-Frame-Options DENY
+        # XSS protection
+        X-XSS-Protection "1; mode=block"
+        # Referrer policy
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+}
+
+# Redirect naked domain to www
+agri-receipts.in {
+    redir https://www.agri-receipts.in{uri} permanent
+}

@@ -1,39 +1,50 @@
-# Production Configuration for EC2
 version: '3.8'
+
 services:
-  frontend:
-    build: ./frontend
+  caddy:
+    image: caddy:2-alpine
     ports:
       - '80:80'
-    environment:
-      - VITE_API_BASE_URL=http://13.127.162.248:3000/api/
-    depends_on:
-      - server
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
     restart: unless-stopped
+    depends_on:
+      - frontend
+      - server
 
-  server:
-    build: ./server
-    ports:
-      - '3000:3000'
-    env_file:
-      - server/.env.production
+  frontend:
+    image: ghcr.io/AgriReceipts/base-1-frontend:latest
+    expose:
+      - '5173'
     environment:
       - NODE_ENV=production
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - FRONTEND_URL=http://13.127.162.248
+    restart: unless-stopped
+    depends_on:
+      - server
+
+  server:
+    image: ghcr.io/AgriReceipts/base-1-server:latest
+    expose:
+      - '3000'
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+    restart: unless-stopped
     depends_on:
       - redis
-    restart: unless-stopped
 
   redis:
     image: redis:alpine
-    ports:
-      - '6379:6379'
+    expose:
+      - '6379'
+    restart: unless-stopped
     volumes:
       - redis_data:/data
-    restart: unless-stopped
-    command: redis-server --appendonly yes
 
 volumes:
   redis_data:
+  caddy_data:
+  caddy_config:
