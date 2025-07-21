@@ -46,4 +46,4 @@ volumes:
   redis_data:
   caddy_data:
   caddy_config:
-  db_data: # Remove if your DB is external
+ 
