@@ -1,0 +1,20 @@
+version: 1.0
+runtime: nodejs20
+build:
+  commands:
+    build:
+      - echo "Installing dependencies"
+      - npm ci
+      - echo "Generating Prisma client"
+      - npx prisma generate
+      - echo "Building application"
+      - npm run build
+run:
+  runtime-version: 20
+  command: node dist/server.js
+  network:
+    port: 3000
+    env: PORT
+  env:
+    - name: NODE_ENV
+      value: production
