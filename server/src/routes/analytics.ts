@@ -10,7 +10,7 @@ import {
   getDetailedCommodityAnalytics,
   getTopCommoditiesAnalytics,
 } from '../controllers/analytics/commodities';
-//import {cacheMiddleware} from '../middleware/cacheMiddleware';
+import {cacheMiddleware} from '../middleware/cacheMiddleware';
 import {authorizeRoles} from '../middleware/roleAccess';
 import {getDistrictAnalyticsController} from '../controllers/analytics/district';
 import {getOverviewData} from '../controllers/analytics/overview';
@@ -18,7 +18,7 @@ import {getOverviewData} from '../controllers/analytics/overview';
 const analyticsRoutes = Router();
 
 analyticsRoutes.use(authenticateUser);
-//analyticsRoutes.use(cacheMiddleware());
+analyticsRoutes.use(cacheMiddleware());
 //overview endpoint
 
 analyticsRoutes.get('/overview/:committeeId', getOverviewData);

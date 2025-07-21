@@ -22,7 +22,11 @@ authRoutes.post('/login', login);
 authRoutes.get('/me', checkAuth);
 authRoutes.post('/logout', logout);
 authRoutes.get('/users', authenticateUser, authorizeRoles('ad'), getAllUsers);
-//authRoutes.post('/deactivate/:id',deactivate)
-authRoutes.delete('/delete/:id', authenticateUser, deleteUser);
+authRoutes.delete(
+  '/delete/:id',
+  authenticateUser,
+  authorizeRoles('ad'),
+  deleteUser
+);
 
 export default authRoutes;
