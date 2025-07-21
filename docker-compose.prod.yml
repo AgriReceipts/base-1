@@ -1,4 +1,4 @@
-version: '3.8'
+# docker-compose.prod.yml
 
 services:
   caddy:
@@ -19,28 +19,26 @@ services:
     image: ghcr.io/agrireceipts/base-1-frontend:latest
     expose:
       - '5173'
-    environment:
-      - NODE_ENV=production
     restart: unless-stopped
     depends_on:
       - server
 
   server:
     image: ghcr.io/agrireceipts/base-1-server:latest
+    restart: unless-stopped
+    # This is the key line, just like your local setup
+    env_file:
+      - server/.env
     expose:
       - '3000'
-    environment:
-      - NODE_ENV=production
-      - REDIS_URL=redis://redis:6379
-    restart: unless-stopped
     depends_on:
       - redis
 
   redis:
     image: redis:alpine
+    restart: unless-stopped
     expose:
       - '6379'
-    restart: unless-stopped
     volumes:
       - redis_data:/data
 
@@ -48,3 +46,4 @@ volumes:
   redis_data:
   caddy_data:
   caddy_config:
+  db_data: # Remove if your DB is external
