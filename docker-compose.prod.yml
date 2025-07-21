@@ -16,7 +16,7 @@ services:
       - server
 
   frontend:
-    image: ghcr.io/AgriReceipts/base-1-frontend:latest
+    image: ghcr.io/agrireceipts/base-1-frontend:latest
     expose:
       - '5173'
     environment:
@@ -26,7 +26,7 @@ services:
       - server
 
   server:
-    image: ghcr.io/AgriReceipts/base-1-server:latest
+    image: ghcr.io/agrireceipts/base-1-server:latest
     expose:
       - '3000'
     environment:
