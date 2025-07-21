@@ -55,7 +55,7 @@ const Header = () => {
       className={`fixed w-full z-50 transition-all duration-300 ${
         scrolled ? 'py-2' : 'py-4'
       }`}>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center'>
+      <div className='max-w-full mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center'>
         <motion.div
           initial={{opacity: 0, x: -20}}
           animate={{opacity: 1, x: 0}}

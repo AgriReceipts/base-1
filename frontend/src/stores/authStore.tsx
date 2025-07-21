@@ -1,3 +1,5 @@
+import api from '@/lib/axiosInstance';
+import toast from 'react-hot-toast';
 import {create} from 'zustand';
 
 // ------------------ Types (UNCHANGED) ------------------
@@ -27,22 +29,14 @@ type AuthState = {
   logout: () => void;
   initialize: () => Promise<void>;
 };
+interface AppState {
+  isApiInitialized: boolean;
+  initializeApi: () => Promise<void>;
+}
+// ------------------ API Helper (REMOVED) ------------------
+// We now use the central axios instance from `api.ts`
 
-// ------------------ API Helper ------------------
-//const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-
-const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
-  return fetch(`/api/${endpoint}`, {
-    credentials: 'include', // Include cookies
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
-};
-
-// ------------------ Zustand Store (MINIMAL CHANGES) ------------------
+// ------------------ Zustand Store (UPDATED) ------------------
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -51,38 +45,30 @@ export const useAuthStore = create<AuthState>((set) => ({
   isInitialized: false,
 
   login: ({user, role, committee}) => {
-    // Remove localStorage usage, just set state
     set({user, role, committee});
   },
 
   logout: () => {
-    // Call logout API to clear HttpOnly cookies
-    apiRequest('auth/logout', {method: 'POST'}).catch(console.error);
+    // Use the central api instance to call the logout endpoint
+    api.post('auth/logout').catch(console.error);
     set({user: null, role: null, committee: null});
   },
 
   initialize: async () => {
     try {
-      // Check auth status from server instead of localStorage
-      const response = await apiRequest('auth/me');
+      // The CSRF token is handled automatically by the axios instance now.
+      // We just need to check the user's session status.
+      const response = await api.get('auth/me');
+      const userData = response.data;
 
-      if (response.ok) {
-        const userData = await response.json();
-        set({
-          user: userData.user,
-          role: userData.role,
-          committee: userData.committee,
-          isInitialized: true,
-        });
-      } else {
-        set({
-          user: null,
-          role: null,
-          committee: null,
-          isInitialized: true,
-        });
-      }
+      set({
+        user: userData.user,
+        role: userData.role,
+        committee: userData.committee,
+        isInitialized: true,
+      });
     } catch (error) {
+      // The axios interceptor will handle 401s, but we catch other errors here.
       console.error('[AuthStore] Failed to initialize from server.', error);
       set({
         user: null,
@@ -101,19 +87,15 @@ export const handleJwtLogin = async (credentials: {
   password: string;
 }) => {
   try {
-    const response = await apiRequest('auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
+    // Use the central api instance for login
+    const response = await api.post('auth/login', credentials);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      return {success: false, error: errorData.message || 'Login failed'};
+    if (!response.data) {
+      return {success: false, error: 'Login failed'};
     }
 
-    const data = await response.json();
+    const data = response.data;
 
-    // Use the store's login method to set the state immediately
     useAuthStore.getState().login({
       user: {
         name: data.user.name,
@@ -123,21 +105,46 @@ export const handleJwtLogin = async (credentials: {
       committee: data.user.committee || null,
     });
 
-    // Also refresh from server to ensure consistency
+    // No need to call initialize() again here unless you want to re-fetch
+    // after login, which is generally a good pattern.
     await useAuthStore.getState().initialize();
 
     return {success: true, data};
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to process login:', error);
-    return {success: false, error};
+    const errorMessage =
+      error.response?.data?.message || 'Login failed due to a network error.';
+    return {success: false, error: errorMessage};
   }
 };
 
-// ------------------ Initialize from Server (replaces initializeFromToken) ------------------
+// ------------------ Initialize from Server ------------------
 
 export const initializeFromServer = async () => {
   await useAuthStore.getState().initialize();
 };
 
-// Keep the old function name for compatibility
 export const initializeFromToken = initializeFromServer;
+
+export const useAppStore = create<AppState>((set) => ({
+  isApiInitialized: false,
+  initializeApi: async () => {
+    try {
+      // Use the raw axios instance before the default is set
+      const {data} = await api.get('/health', {withCredentials: true});
+      const csrfToken = data.csrfToken;
+
+      if (csrfToken) {
+        api.defaults.headers.common['x-csrf-token'] = csrfToken;
+        set({isApiInitialized: true});
+        console.log('✅ API Initialized Successfully.');
+      } else {
+        throw new Error('CSRF token not received from server.');
+      }
+    } catch (error) {
+      console.error('Failed to initialize API:', error);
+      toast.error('Could not establish a secure connection.');
+      // Keep isApiInitialized as false
+    }
+  },
+}));

@@ -1,6 +1,5 @@
 import {useState, useEffect} from 'react';
 import ViewReceipts from '@/components/common/viewReceipt/ViewReceipts';
-import Overview from '@/components/common/overview/Overview';
 import Sidebar from '@/components/common/Sidebar';
 import Nav from '@/components/ui/Nav';
 import {

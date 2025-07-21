@@ -3,39 +3,67 @@ import {useAuthStore} from '@/stores/authStore';
 import {toast} from 'react-hot-toast';
 import type {Target, TargetType} from '@/types/targets';
 
-// Updated to work with HttpOnly cookies instead of localStorage tokens
+// Create the axios instance
 const api = axios.create({
-  // baseURL: import.meta.env.VITE_API_BASE_URL, // This should point to backend
   baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // This is crucial for HttpOnly cookies
+  withCredentials: true, // Crucial for HttpOnly cookies (both session and CSRF secret)
 });
 
-// Remove the request interceptor since we no longer need to set Authorization headers
-// The browser will automatically include HttpOnly cookies with each request
+/**
+ * Initializes the API client by fetching the CSRF token from the health endpoint.
+ * This token is then set as a default header for all subsequent requests.
+ *
+ * This function should be called once when the application starts up.
+ * For example, in your main App component's useEffect hook.
+ */
+export const initializeApi = async () => {
+  try {
+    // Make a request to the public health endpoint to get the CSRF token
+    const {data} = await api.get('/health');
+    const csrfToken = data.csrfToken;
 
-// Updated response interceptor to handle session expiration
+    if (csrfToken) {
+      console.log('CSRF token received and set.');
+      // Set the CSRF token as a default header for the axios instance.
+      // Axios will now automatically send this header with every request.
+      api.defaults.headers.common['x-csrf-token'] = csrfToken;
+    } else {
+      console.error('CSRF token was not provided by the server.');
+    }
+  } catch (error) {
+    console.error('Failed to initialize API and fetch CSRF token:', error);
+    toast.error(
+      'Could not establish a secure connection. Please refresh the page.'
+    );
+  }
+};
+
+// The response interceptor remains the same. It handles session expiration.
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     const isLoginPage = window.location.pathname === '/login';
 
-    // Handle 401 Unauthorized responses (session expired or invalid)
     if (err.response?.status === 401 && !isLoginPage) {
       toast.error('Session expired. Please log in again.');
-
-      // Call the store's logout method which will clear cookies on the server
       useAuthStore.getState().logout();
-
-      // Redirect to login page
       window.location.href = '/login';
+    }
+
+    // Also handle CSRF failure specifically if you want a custom message
+    if (err.response?.status === 403) {
+      toast.error('Security token mismatch. Please refresh and try again.');
     }
 
     return Promise.reject(err);
   }
 );
+
+// Your other services can now use the 'api' instance without any changes.
+// The CSRF token will be attached automatically.
 
 export const targetService = {
   // Get targets for a specific year and committee
