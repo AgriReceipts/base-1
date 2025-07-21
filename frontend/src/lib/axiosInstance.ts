@@ -5,41 +5,12 @@ import type {Target, TargetType} from '@/types/targets';
 
 // Create the axios instance
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Crucial for HttpOnly cookies (both session and CSRF secret)
 });
-
-/**
- * Initializes the API client by fetching the CSRF token from the health endpoint.
- * This token is then set as a default header for all subsequent requests.
- *
- * This function should be called once when the application starts up.
- * For example, in your main App component's useEffect hook.
- */
-export const initializeApi = async () => {
-  try {
-    // Make a request to the public health endpoint to get the CSRF token
-    const {data} = await api.get('/health');
-    const csrfToken = data.csrfToken;
-
-    if (csrfToken) {
-      console.log('CSRF token received and set.');
-      // Set the CSRF token as a default header for the axios instance.
-      // Axios will now automatically send this header with every request.
-      api.defaults.headers.common['x-csrf-token'] = csrfToken;
-    } else {
-      console.error('CSRF token was not provided by the server.');
-    }
-  } catch (error) {
-    console.error('Failed to initialize API and fetch CSRF token:', error);
-    toast.error(
-      'Could not establish a secure connection. Please refresh the page.'
-    );
-  }
-};
 
 // The response interceptor remains the same. It handles session expiration.
 api.interceptors.response.use(

@@ -1,5 +1,4 @@
 import api from '@/lib/axiosInstance';
-import toast from 'react-hot-toast';
 import {create} from 'zustand';
 
 // ------------------ Types (UNCHANGED) ------------------
@@ -29,10 +28,7 @@ type AuthState = {
   logout: () => void;
   initialize: () => Promise<void>;
 };
-interface AppState {
-  isApiInitialized: boolean;
-  initializeApi: () => Promise<void>;
-}
+
 // ------------------ API Helper (REMOVED) ------------------
 // We now use the central axios instance from `api.ts`
 
@@ -125,26 +121,3 @@ export const initializeFromServer = async () => {
 };
 
 export const initializeFromToken = initializeFromServer;
-
-export const useAppStore = create<AppState>((set) => ({
-  isApiInitialized: false,
-  initializeApi: async () => {
-    try {
-      // Use the raw axios instance before the default is set
-      const {data} = await api.get('/health', {withCredentials: true});
-      const csrfToken = data.csrfToken;
-
-      if (csrfToken) {
-        api.defaults.headers.common['x-csrf-token'] = csrfToken;
-        set({isApiInitialized: true});
-        console.log('✅ API Initialized Successfully.');
-      } else {
-        throw new Error('CSRF token not received from server.');
-      }
-    } catch (error) {
-      console.error('Failed to initialize API:', error);
-      toast.error('Could not establish a secure connection.');
-      // Keep isApiInitialized as false
-    }
-  },
-}));
