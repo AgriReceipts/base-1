@@ -103,12 +103,6 @@ const DistrictAnalysis: React.FC = () => {
     }
   };
 
-  // Helper function to get month name
-  const getMonthName = (monthValue: string): string => {
-    const month = months.find((m) => m.value === monthValue);
-    return month ? month.label : 'All';
-  };
-
   // Error component for individual chart failures
   const ChartError: React.FC<{title: string; error?: string}> = ({
     title,
