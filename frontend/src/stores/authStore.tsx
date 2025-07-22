@@ -44,16 +44,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({user, role, committee});
   },
 
-  logout: () => {
-    // Use the central api instance to call the logout endpoint
-    api.post('auth/logout').catch(console.error);
+  logout: async () => {
+    try {
+      await api.post('auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     set({user: null, role: null, committee: null});
   },
 
   initialize: async () => {
     try {
-      // The CSRF token is handled automatically by the axios instance now.
-      // We just need to check the user's session status.
       const response = await api.get('auth/me');
       const userData = response.data;
 
@@ -63,9 +64,12 @@ export const useAuthStore = create<AuthState>((set) => ({
         committee: userData.committee,
         isInitialized: true,
       });
-    } catch (error) {
-      // The axios interceptor will handle 401s, but we catch other errors here.
-      console.error('[AuthStore] Failed to initialize from server.', error);
+    } catch (error: any) {
+      // Only log errors that aren't 401s, as 401s are expected for non-authenticated users
+      if (error.response?.status !== 401) {
+        console.error('[AuthStore] Failed to initialize from server.', error);
+      }
+
       set({
         user: null,
         role: null,

@@ -29,7 +29,7 @@ const DashboardPage = () => {
 
   // // 2. After checking, if there is no role, redirect to the login page.
   if (!role) {
-    return <Navigate to='/login' replace />;
+    return <Navigate to='/' replace />;
   }
 
   // 3. If a role exists, render the correct dashboard component.
@@ -44,7 +44,7 @@ const DashboardPage = () => {
       return <SecretaryDashboard />;
     default:
       // As a fallback for an invalid role, redirect to login.
-      return <Navigate to='/login' replace />;
+      return <Navigate to='/' replace />;
   }
 };
 

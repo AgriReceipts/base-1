@@ -12,21 +12,22 @@ const api = axios.create({
   withCredentials: true, // Crucial for HttpOnly cookies (both session and CSRF secret)
 });
 
-// The response interceptor remains the same. It handles session expiration.
+// Updated response interceptor - only show session expired for authenticated users
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
+  async (err) => {
     const isLoginPage = window.location.pathname === '/login';
+    const authStore = useAuthStore.getState();
 
     if (err.response?.status === 401 && !isLoginPage) {
-      toast.error('Session expired. Please log in again.');
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
-    }
-
-    // Also handle CSRF failure specifically if you want a custom message
-    if (err.response?.status === 403) {
-      toast.error('Security token mismatch. Please refresh and try again.');
+      // Only show "session expired" if user was previously authenticated
+      // Check if user has any auth data (was logged in before)
+      if (authStore.user || authStore.role) {
+        toast.error('Session expired. Please log in again.');
+        await authStore.logout();
+        window.location.href = '/';
+      }
+      // For users who were never logged in, silently fail - no toast needed
     }
 
     return Promise.reject(err);

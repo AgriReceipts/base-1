@@ -51,7 +51,7 @@ const Header = () => {
     <motion.header
       initial={{y: -60, opacity: 0}}
       animate={{y: 0, opacity: 1}}
-      transition={{duration: 0.7, ease: 'easeOut'}}
+      transition={{duration: 0.2, ease: 'easeOut'}}
       className={`fixed w-full z-50 transition-all duration-300 ${
         scrolled ? 'py-2' : 'py-4'
       }`}>
@@ -59,7 +59,7 @@ const Header = () => {
         <motion.div
           initial={{opacity: 0, x: -20}}
           animate={{opacity: 1, x: 0}}
-          transition={{delay: 0.2}}
+          transition={{delay: 0.1}}
           className='flex items-center space-x-3 cursor-pointer'
           onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
           <motion.img
@@ -98,7 +98,7 @@ const Header = () => {
           <motion.div
             initial={{opacity: 0, x: 20}}
             animate={{opacity: 1, x: 0}}
-            transition={{delay: 0.3}}
+            transition={{delay: 0.2}}
             className='hidden md:flex space-x-4'>
             <motion.button
               whileHover={{scale: 1.07}}
@@ -134,7 +134,7 @@ const Header = () => {
           initial={{height: 0, opacity: 0}}
           animate={{height: 'auto', opacity: 1}}
           exit={{height: 0, opacity: 0}}
-          transition={{duration: 0.3}}
+          transition={{duration: 0.2}}
           className='md:hidden bg-white shadow-lg'>
           <div className='flex flex-col items-center py-4 space-y-4'>
             <button
@@ -175,19 +175,19 @@ const Hero = () => {
   return (
     <section
       ref={ref}
-      className='min-h-[80vh] flex items-center justify-center bg-[#f3fcf6] pt-16 sm:pt-20'>
-      <div className='max-w-full mx-auto px-4 sm:px-6 lg:px-8 pr-12 lg:pr-20 py-12 sm:py-16 flex flex-col lg:flex-row items-center justify-between gap-8'>
+      className='min-h-[80vh] xl:min-h-[90vh] flex items-center justify-center bg-[#f3fcf6] pt-16 sm:pt-20'>
+      <div className='max-w-full xl:max-w-8xl  mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-12 sm:py-16 xl:py-20 2xl:py-24 flex flex-col lg:flex-row items-center justify-between gap-8 xl:gap-12 2xl:gap-16'>
         {/* Left: Texts */}
-        <div className='w-full lg:w-1/2 flex flex-col items-start text-left'>
+        <div className='w-full lg:w-1/2 xl:w-[48%] flex flex-col items-start text-left'>
           {/* Badge */}
-          <div className='mb-2'>
-            <span className='inline-flex items-center px-4 py-1 rounded-full bg-green-100 text-green-700 font-medium text-sm'>
-              <span className='mr-2'>🌱</span>
+          <div className='mb-3 xl:mb-4'>
+            <span className='inline-flex items-center px-4 xl:px-5 py-1.5 xl:py-2 rounded-full bg-green-100 text-green-700 font-medium text-sm xl:text-sm'>
+              <span className='mr-2 text-base xl:text-lg'>🌱</span>
               Agricultural Innovation
             </span>
           </div>
           {/* Heading */}
-          <h1 className='text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight mb-4'>
+          <h1 className='text-3xl sm:text-4xl md:text-5xl xl:text-5xl 2xl:text-6xl font-extrabold leading-tight mb-4 xl:mb-6'>
             <span className='block text-gray-900'>Empowering</span>
             <span className='block'>
               <span className='text-green-600'>Agricultural</span>
@@ -195,7 +195,7 @@ const Hero = () => {
             <span className='block text-gray-900'>Market Committees</span>
           </h1>
           {/* Supporting paragraph */}
-          <p className='text-lg text-gray-500 mb-6 max-w-2xl'>
+          <p className='text-lg xl:text-xl 2xl:text-xl text-gray-500 mb-6 xl:mb-8 max-w-2xl xl:max-w-2xl leading-relaxed'>
             Transform your transactions with secure, digital receipts. <br></br>
             Verify authenticity instantly and build trust across the entire
             supply chain.
@@ -203,10 +203,10 @@ const Hero = () => {
           {/* Primary action button */}
           <div>
             <button
-              className='flex items-center gap-2 px-7 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow transition-all text-lg'
+              className='flex items-center gap-2 xl:gap-3 px-7 xl:px-8 py-3 xl:py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl xl:rounded-2xl shadow-lg xl:shadow-xl transition-all text-lg xl:text-lg'
               onClick={() => navigate('/verifyReceipt')}>
               <svg
-                className='w-8 h-8 mr-0.5'
+                className='w-8 h-8 xl:w-9 xl:h-9 2xl:w-10 2xl:h-10 mr-0.5'
                 fill='none'
                 stroke='white'
                 strokeWidth='2'
@@ -221,14 +221,14 @@ const Hero = () => {
             </button>
           </div>
         </div>
-        {/* Right: Animated Image as before */}
+        {/* Right: Animated Image */}
         <motion.div
-          className='w-full lg:w-1/2 flex justify-center lg:justify-end items-center mt-8 lg:mt-0 mr-8 max-w-[90%]'
+          className='w-full lg:w-1/2 xl:w-[48%] flex justify-center lg:justify-end items-center mt-8 lg:mt-0 xl:mr-0 max-w-[90%] xl:max-w-full'
           initial={{y: 40, opacity: 0}}
           animate={{y: 0, opacity: 1}}
-          transition={{delay: 0.5, duration: 0.8}}>
+          transition={{delay: 0.2, duration: 0.5}}>
           <motion.div
-            className='max-w-md w-full rounded-2xl shadow-2xl overflow-hidden border border-gray-200'
+            className='max-w-md xl:max-w-lg 2xl:max-w-xl w-full rounded-2xl xl:rounded-3xl shadow-2xl xl:shadow-3xl overflow-hidden border border-gray-200'
             animate={{y: [0, -10, 0]}}
             transition={{repeat: Infinity, duration: 6, ease: 'easeInOut'}}>
             <img

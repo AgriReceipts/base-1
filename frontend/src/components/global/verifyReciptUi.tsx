@@ -12,7 +12,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import logo from '../../assets/logo-ap.png';
-import React, {useRef, useState} from 'react';
+import React, {useRef, useState, useMemo} from 'react';
 
 interface VefrifyFormProps {
   formData: VerifyReceiptForm;
@@ -41,6 +41,15 @@ const VefrifyForm: React.FC<VefrifyFormProps> = ({
 }) => {
   const [copied, setCopied] = useState<string | null>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
+
+  // Check if form is valid for submission
+  const isFormValid = useMemo(() => {
+    const hasReceiptNumber = formData.receiptNumber.trim() !== '';
+    const hasBookAndCommittee =
+      formData.bookNumber.trim() !== '' && formData.committeeId !== '';
+
+    return hasReceiptNumber || hasBookAndCommittee;
+  }, [formData.receiptNumber, formData.bookNumber, formData.committeeId]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -116,6 +125,15 @@ const VefrifyForm: React.FC<VefrifyFormProps> = ({
                   <span className='text-sm font-medium'>{errors.general}</span>
                 </div>
               )}
+
+              {/* Guidance Text */}
+              <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
+                <p className='text-sm text-blue-700 font-medium text-center'>
+                  💡 Enter only <strong>Receipt Number</strong> and search, or
+                  enter both <strong>Committee</strong> and{' '}
+                  <strong>Book Number</strong> to verify
+                </p>
+              </div>
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 {/* Receipt Number */}
@@ -207,17 +225,25 @@ const VefrifyForm: React.FC<VefrifyFormProps> = ({
               <div className='flex flex-col sm:flex-row gap-4 pt-2'>
                 <button
                   type='submit'
-                  disabled={loading}
-                  className='flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg group'>
+                  disabled={loading || !isFormValid}
+                  className={`flex items-center justify-center px-6 py-3 rounded-lg focus:outline-none focus:ring-4 focus:ring-opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md font-semibold ${
+                    isFormValid && !loading
+                      ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 hover:shadow-lg'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}>
                   {loading ? (
                     <>
                       <Loader2 className='w-5 h-5 mr-3 animate-spin' />
-                      <span className='font-semibold'>Verifying...</span>
+                      <span>Verifying...</span>
                     </>
                   ) : (
                     <>
-                      <Search className='w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-150' />
-                      <span className='font-semibold'>Verify Receipt</span>
+                      <Search
+                        className={`w-5 h-5 mr-3 transition-transform duration-150 ${
+                          isFormValid ? 'group-hover:scale-110' : ''
+                        }`}
+                      />
+                      <span>Verify Receipt</span>
                     </>
                   )}
                 </button>

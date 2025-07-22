@@ -3,11 +3,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 
-# This line declares a build-time argument that we can pass in
-ARG VITE_API_BASE_URL
 
-# This line makes the argument available as an environment variable for the 'npm run build' command
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=https://www.agri-receipts.in/api
 
 
 COPY package*.json ./
