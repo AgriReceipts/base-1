@@ -16,7 +16,6 @@ services:
       - server
 
   frontend:
-    image: ghcr.io/agrireceipts/base-1-frontend:latest
     build:
       context: ./frontend
       args:
