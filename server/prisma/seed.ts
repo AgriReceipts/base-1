@@ -121,16 +121,16 @@ async function main() {
   );
 
   // ==================== SEED USERS AND TRADERS ====================
-  console.log('👥 Seeding users and traders...');
+  // console.log('👥 Seeding users and traders...');
 
-  const {users, traders} = await seedUsersAndTraders(
-    prisma,
-    SEED_CONFIG,
-    USER_PASSWORD,
-    createdCommittees
-  );
+  // const {users, traders} = await seedUsersAndTraders(
+  //   prisma,
+  //   SEED_CONFIG,
+  //   USER_PASSWORD,
+  //   createdCommittees
+  // );
 
-  console.log(`✅ Created ${users.length} users and ${traders.length} traders`);
+  // console.log(`✅ Created ${users.length} users and ${traders.length} traders`);
 
   // // ==================== SEED TARGETS ====================
   // console.log('🎯 Seeding targets...');
@@ -140,19 +140,19 @@ async function main() {
   // console.log('✅ Targets seeded successfully');
 
   // ==================== SEED RECEIPTS AND ANALYTICS ====================
-  console.log('🧾 Seeding receipts and live analytics...');
+  // console.log('🧾 Seeding receipts and live analytics...');
 
-  await seedReceiptsAndAllAnalytics(
-    prisma,
-    SEED_CONFIG,
-    users,
-    traders,
-    createdCommittees,
-    createdCommodities,
-    createdCheckposts
-  );
+  // await seedReceiptsAndAllAnalytics(
+  //   prisma,
+  //   SEED_CONFIG,
+  //   users,
+  //   traders,
+  //   createdCommittees,
+  //   createdCommodities,
+  //   createdCheckposts
+  // );
 
-  console.log('✅ Receipts and analytics seeded successfully');
+  // console.log('✅ Receipts and analytics seeded successfully');
 
   // // ==================== GENERATE MONTHLY REPORTS ====================
   // console.log('📊 Generating monthly reports...');
