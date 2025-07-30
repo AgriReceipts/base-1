@@ -1,6 +1,4 @@
 import { z } from "zod";
-
-// Export as a value, not just a type
 export const CreateReceiptSchema = z
   .object({
     receiptDate: z.string().min(1, "Receipt date is required"),
@@ -41,9 +39,23 @@ export const CreateReceiptSchema = z
     designation: z.string().min(1, "Designation is required"),
     committeeId: z.string().min(1, "Committee ID is required"),
   })
+  // ADD THIS NEW REFINE FOR TRADER VALIDATION
   .refine(
     (data) => {
-      // Fix case sensitivity issue - check for both 'Other' and 'other'
+      // You'll need to pass the traders array to validation - see implementation note below
+      // For now, this ensures if traderName is "New", newTraderName must be provided
+      if (data.traderName === "New") {
+        return !!data.newTraderName?.trim();
+      }
+      return true;
+    },
+    {
+      message: "Please enter a new trader name",
+      path: ["newTraderName"],
+    },
+  )
+  .refine(
+    (data) => {
       if (data.commodity === "Other" || data.commodity === "other") {
         return !!data.newCommodityName?.trim();
       }
@@ -102,6 +114,8 @@ export const CreateReceiptSchema = z
       path: ["collectionOtherText"],
     },
   );
+
+// Export as a value, not just a type
 export type CreateReceiptRequest = z.infer<typeof CreateReceiptSchema>;
 export interface UpdateReceipt extends CreateReceiptRequest {
   id: string;
