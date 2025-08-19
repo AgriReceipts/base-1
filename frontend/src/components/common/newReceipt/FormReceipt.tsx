@@ -320,7 +320,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                   >
                     <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                   </svg>
-                  Payee Details
+                  చెల్లించిన వారి పేరు, చిరునామా 
                 </h3>
                 <div className="space-y-4">
                   <div>
@@ -429,7 +429,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                   )}
                 </div>
               </div>
-              {/* Farmer/Trader Details */}
+              {/* రైతు పేరు, చిరునామా */}
               <div className="bg-teal-50 rounded p-4 border border-teal-100">
                 <h3 className="text-base font-semibold text-gray-700 mb-3 flex items-center">
                   <svg
@@ -439,7 +439,6 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                   >
                     <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
                   </svg>
-                  Farmer/Trader Details
                 </h3>
                 <div className="space-y-4">
                   <div>
@@ -447,7 +446,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       htmlFor="payeeName"
                       className="block text-sm font-medium text-gray-600 mb-1"
                     >
-                      Farmer/Trader Name<span className="text-red-600">*</span>
+                      Farmer Name<span className="text-red-600">*</span>
                     </label>
                     <input
                       type="text"
@@ -465,7 +464,7 @@ const FormReceipt: React.FC<FormReceiptProps> = ({
                       htmlFor="payeeAddress"
                       className="block text-sm font-medium text-gray-600 mb-1"
                     >
-                      Farmer/Trader Address
+                      Farmer Address
                     </label>
                     <input
                       type="text"
